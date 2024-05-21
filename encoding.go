@@ -1,10 +1,11 @@
 package streamvbyte
 
 type Encoding interface {
-	Encode(input []uint32) []byte
-	EncodeTo(input []uint32, output []byte) int
-	Decode(input []byte) ([]uint32, error)
-	DecodeTo(input []byte, output []uint32) int
+	Encode(input []uint32, output []byte) []byte
+	Decode(input []byte, output []uint32) []uint32
+
+	EncodeDelta(input []uint32, output []byte, prev uint32) []byte
+	DecodeDelta(input []byte, output []uint32, prev uint32) []uint32
 }
 
 func MaxEncodedLen(n int) int {

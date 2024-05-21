@@ -16,14 +16,14 @@ func TestZigZagConvert(t *testing.T) {
 	}
 
 	// Encode
-	encoded := streamvbyte.ZizZag.Encode(input)
-	decoded := streamvbyte.ZizZag.Decode(encoded)
+	encoded := streamvbyte.ZizZag.Encode(input, nil)
+	decoded := streamvbyte.ZizZag.Decode(encoded, nil)
 
 	assert.Equal(t, input, decoded)
 
 	// EncodeDelta
-	encoded = streamvbyte.ZizZag.EncodeDelta(input, 0)
-	decoded = streamvbyte.ZizZag.DecodeDelta(encoded, 0)
+	encoded = streamvbyte.ZizZag.EncodeDelta(input, nil, 0)
+	decoded = streamvbyte.ZizZag.DecodeDelta(encoded, nil, 0)
 
 	assert.Equal(t, input, decoded)
 }
