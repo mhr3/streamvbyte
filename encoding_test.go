@@ -123,45 +123,83 @@ func init() {
 func BenchmarkEncode(b *testing.B) {
 	var encoded []byte
 
-	for i := 0; i < b.N; i++ {
-		encoded = streamvbyte.StdEncoding.Encode(benchUint32Data, encoded)
-		_ = encoded
-	}
+	b.Run("std", func(b *testing.B) {
+		b.SetBytes(int64(4 * benchSize))
+		for i := 0; i < b.N; i++ {
+			encoded = streamvbyte.StdEncoding.Encode(benchUint32Data, encoded)
+			_ = encoded
+		}
+	})
 
-	b.SetBytes(int64(4 * benchSize))
+	b.Run("alt", func(b *testing.B) {
+		b.SetBytes(int64(4 * benchSize))
+		for i := 0; i < b.N; i++ {
+			encoded = streamvbyte.AltEncoding.Encode(benchUint32Data, encoded)
+			_ = encoded
+		}
+	})
 }
 
 func BenchmarkDeltaEncode(b *testing.B) {
 	var encoded []byte
 
-	for i := 0; i < b.N; i++ {
-		encoded = streamvbyte.StdEncoding.EncodeDelta(benchUint32DataSorted, encoded, 0)
-		_ = encoded
-	}
+	b.Run("std", func(b *testing.B) {
+		b.SetBytes(int64(4 * benchSize))
+		for i := 0; i < b.N; i++ {
+			encoded = streamvbyte.StdEncoding.EncodeDelta(benchUint32DataSorted, encoded, 0)
+			_ = encoded
+		}
+	})
 
-	b.SetBytes(int64(4 * benchSize))
+	b.Run("alt", func(b *testing.B) {
+		b.SetBytes(int64(4 * benchSize))
+		for i := 0; i < b.N; i++ {
+			encoded = streamvbyte.AltEncoding.EncodeDelta(benchUint32DataSorted, encoded, 0)
+			_ = encoded
+		}
+	})
 }
 
 func BenchmarkDecode(b *testing.B) {
-	b.SetBytes(int64(4 * benchSize))
 	encoded := streamvbyte.StdEncoding.Encode(benchUint32Data, nil)
 
-	b.ResetTimer()
 	var decoded []uint32
-	for i := 0; i < b.N; i++ {
-		decoded = streamvbyte.StdEncoding.Decode(encoded, len(benchUint32Data), decoded)
-		_ = decoded
-	}
+
+	b.Run("std", func(b *testing.B) {
+		b.SetBytes(int64(4 * benchSize))
+		for i := 0; i < b.N; i++ {
+			decoded = streamvbyte.StdEncoding.Decode(encoded, len(benchUint32Data), decoded)
+			_ = decoded
+		}
+	})
+
+	b.Run("alt", func(b *testing.B) {
+		b.SetBytes(int64(4 * benchSize))
+		for i := 0; i < b.N; i++ {
+			decoded = streamvbyte.AltEncoding.Decode(encoded, len(benchUint32Data), decoded)
+			_ = decoded
+		}
+	})
 }
 
 func BenchmarkDeltaDecode(b *testing.B) {
-	b.SetBytes(int64(4 * benchSize))
 	encoded := streamvbyte.StdEncoding.EncodeDelta(benchUint32DataSorted, nil, 0)
 
-	b.ResetTimer()
 	var decoded []uint32
-	for i := 0; i < b.N; i++ {
-		decoded = streamvbyte.StdEncoding.DecodeDelta(encoded, len(benchUint32DataSorted), decoded, 0)
-		_ = decoded
-	}
+
+	b.Run("std", func(b *testing.B) {
+		b.SetBytes(int64(4 * benchSize))
+		for i := 0; i < b.N; i++ {
+			decoded = streamvbyte.StdEncoding.DecodeDelta(encoded, len(benchUint32DataSorted), decoded, 0)
+			_ = decoded
+		}
+	})
+
+	b.Run("alt", func(b *testing.B) {
+		b.SetBytes(int64(4 * benchSize))
+		for i := 0; i < b.N; i++ {
+			decoded = streamvbyte.AltEncoding.DecodeDelta(encoded, len(benchUint32DataSorted), decoded, 0)
+			_ = decoded
+		}
+	})
 }

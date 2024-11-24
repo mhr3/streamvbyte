@@ -3,8 +3,8 @@
 
 #include "svb_scalar_decode.c"
 #include "svb_scalar_encode.c"
-#include "svb_decode_neon.c"
-#include "svb_encode_neon.c"
+#include "svb_neon_decode.c"
+#include "svb_neon_encode.c"
 
 // gocc: svb_encode(in []uint32, out *byte) uint64
 uint64_t svb_encode(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint8_t *out)
