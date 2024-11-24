@@ -8,4 +8,4 @@ package streamvbyte
 func svb_decode(in []byte, count int, out *uint32) uint64
 
 //go:noescape
-func svb_delta_decode_vector(out []uint32, in []uint8, prev uint32) uint64
+func svb_delta_decode(in []byte, count int, prev uint32, out *uint32) uint64

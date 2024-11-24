@@ -27,26 +27,25 @@ LBB0_2:
 	RET                 // <--                                  // ret
 
 LBB0_3:
-	NOP                           // (skipped)                            // stp	x29, x30, [sp, #-16]!
-	ADD  R9, R0, R8               // <--                                  // add	x8, x0, x9
-	CMP  $4, R3                   // <--                                  // cmp	x3, #4
-	NOP                           // (skipped)                            // mov	x29, sp
-	BCC  LBB0_8                   // <--                                  // b.lo	.LBB0_8
-	AND  $-16, R1, R10            // <--                                  // and	x10, x1, #0xfffffffffffffff0
-	CMP  R10, R9                  // <--                                  // cmp	x9, x10
-	BGE  LBB0_8                   // <--                                  // b.ge	.LBB0_8
-	ADD  R10, R0, R10             // <--                                  // add	x10, x0, x10
-	ADD  R3>>2, R0, R11           // <--                                  // add	x11, x0, x3, lsr #2
-	MOVD R4, R9                   // <--                                  // mov	x9, x4
-	MOVD $shuffleTable<>(SB), R12 // <--                                  // adrp	x12, shuffleTable
-	ADD  $0, R12, R12             // <--                                  // add	x12, x12, :lo12:shuffleTable
-	MOVD $lengthTable<>(SB), R13  // <--                                  // adrp	x13, lengthTable
-	ADD  $0, R13, R13             // <--                                  // add	x13, x13, :lo12:lengthTable
+	NOP                                // (skipped)                            // stp	x29, x30, [sp, #-16]!
+	ADD  R9, R0, R8                    // <--                                  // add	x8, x0, x9
+	CMP  $4, R3                        // <--                                  // cmp	x3, #4
+	NOP                                // (skipped)                            // mov	x29, sp
+	BCC  LBB0_8                        // <--                                  // b.lo	.LBB0_8
+	AND  $-16, R1, R10                 // <--                                  // and	x10, x1, #0xfffffffffffffff0
+	CMP  R10, R9                       // <--                                  // cmp	x9, x10
+	BGE  LBB0_8                        // <--                                  // b.ge	.LBB0_8
+	ADD  R10, R0, R10                  // <--                                  // add	x10, x0, x10
+	ADD  R3>>2, R0, R11                // <--                                  // add	x11, x0, x3, lsr #2
+	MOVD R4, R9                        // <--                                  // mov	x9, x4
+	MOVD $shuffleTable_1234<>(SB), R12 // <--                                  // adrp	x12, shuffleTable_1234
+	ADD  $0, R12, R12                  // <--                                  // add	x12, x12, :lo12:shuffleTable_1234
+	MOVD $lengthTable_1234<>(SB), R13  // <--                                  // adrp	x13, lengthTable_1234
+	ADD  $0, R13, R13                  // <--                                  // add	x13, x13, :lo12:lengthTable_1234
 
 LBB0_6:
 	WORD $0x3840140e              // MOVBU.P 1(R0), R14                   // ldrb	w14, [x0], #1
 	WORD $0x3dc00101              // FMOVQ (R8), F1                       // ldr	q1, [x8]
-	SUB  $4, R3, R3               // <--                                  // sub	x3, x3, #4
 	CMP  R11, R0                  // <--                                  // cmp	x0, x11
 	WORD $0x3cee7980              // FMOVQ (R12)(R14<<4), F0              // ldr	q0, [x12, x14, lsl #4]
 	WORD $0x386e69ae              // MOVBU (R13)(R14), R14                // ldrb	w14, [x13, x14]
@@ -62,65 +61,67 @@ LBB0_8:
 	MOVD R4, R9 // <--                                  // mov	x9, x4
 
 LBB0_9:
-	CMP   $0, R8         // <--                                  // cmp	x8, #0
-	CCMPW NE, R3, $0, $4 // <--                                  // ccmp	w3, #0, #4, ne
-	BNE   LBB0_11        // <--                                  // b.ne	.LBB0_11
+	SUB  R4, R9, R11  // <--                                  // sub	x11, x9, x4
+	CBZ  R8, LBB0_23  // <--                                  // cbz	x8, .LBB0_23
+	LSR  $2, R11, R10 // <--                                  // lsr	x10, x11, #2
+	SUBW R10, R3, R10 // <--                                  // sub	w10, w3, w10
+	CBZW R10, LBB0_23 // <--                                  // cbz	w10, .LBB0_23
+	MOVW ZR, R11      // <--                                  // mov	w11, wzr
+	WORD $0x3840140c  // MOVBU.P 1(R0), R12                   // ldrb	w12, [x0], #1
+	JMP  LBB0_14      // <--                                  // b	.LBB0_14
 
-LBB0_10:
-	SUB  R4, R9, R9     // <--                                  // sub	x9, x9, x4
+LBB0_12:
+	WORD $0x7940010d // MOVHU (R8), R13                      // ldrh	w13, [x8]
+	MOVW $2, R14     // <--                                  // mov	w14, #2
+
+LBB0_13:
+	ADD   R14, R8, R8  // <--                                  // add	x8, x8, x14
+	ADDW  $2, R11, R11 // <--                                  // add	w11, w11, #2
+	SUBSW $1, R10, R10 // <--                                  // subs	w10, w10, #1
+	WORD  $0xb800452d  // MOVW.P R13, 4(R9)                    // str	w13, [x9], #4
+	BEQ   LBB0_22      // <--                                  // b.eq	.LBB0_22
+
+LBB0_14:
+	ANDW $255, R11, R13 // <--                                  // and	w13, w11, #0xff
+	CMPW $8, R13        // <--                                  // cmp	w13, #8
+	BNE  LBB0_16        // <--                                  // b.ne	.LBB0_16
+	MOVW ZR, R11        // <--                                  // mov	w11, wzr
+	WORD $0x3840140c    // MOVBU.P 1(R0), R12                   // ldrb	w12, [x0], #1
+
+LBB0_16:
+	LSRW  R11, R12, R13 // <--                                  // lsr	w13, w12, w11
+	ANDW  $3, R13, R13  // <--                                  // and	w13, w13, #0x3
+	CMPW  $2, R13       // <--                                  // cmp	w13, #2
+	BEQ   LBB0_20       // <--                                  // b.eq	.LBB0_20
+	CMPW  $1, R13       // <--                                  // cmp	w13, #1
+	BEQ   LBB0_12       // <--                                  // b.eq	.LBB0_12
+	CBNZW R13, LBB0_21  // <--                                  // cbnz	w13, .LBB0_21
+	WORD  $0x3940010d   // MOVBU (R8), R13                      // ldrb	w13, [x8]
+	MOVW  $1, R14       // <--                                  // mov	w14, #1
+	JMP   LBB0_13       // <--                                  // b	.LBB0_13
+
+LBB0_20:
+	WORD $0x3940090d       // MOVBU 2(R8), R13                     // ldrb	w13, [x8, #2]
+	WORD $0x7940010e       // MOVHU (R8), R14                      // ldrh	w14, [x8]
+	ORRW R13<<16, R14, R13 // <--                                  // orr	w13, w14, w13, lsl #16
+	MOVW $3, R14           // <--                                  // mov	w14, #3
+	JMP  LBB0_13           // <--                                  // b	.LBB0_13
+
+LBB0_21:
+	WORD $0xb940010d // MOVWU (R8), R13                      // ldr	w13, [x8]
+	MOVW $4, R14     // <--                                  // mov	w14, #4
+	JMP  LBB0_13     // <--                                  // b	.LBB0_13
+
+LBB0_22:
+	SUB R4, R9, R11 // <--                                  // sub	x11, x9, x4
+
+LBB0_23:
+	ASR  $2, R11, R9    // <--                                  // asr	x9, x11, #2
 	CMP  $0, R8         // <--                                  // cmp	x8, #0
-	ASR  $2, R9, R9     // <--                                  // asr	x9, x9, #2
 	CSEL EQ, ZR, R9, R0 // <--                                  // csel	x0, xzr, x9, eq
 	NOP                 // (skipped)                            // ldp	x29, x30, [sp], #16
 	MOVD R0, ret+40(FP) // <--
 	RET                 // <--                                  // ret
-
-LBB0_11:
-	MOVW ZR, R10     // <--                                  // mov	w10, wzr
-	WORD $0x3840140b // MOVBU.P 1(R0), R11                   // ldrb	w11, [x0], #1
-	JMP  LBB0_14     // <--                                  // b	.LBB0_14
-
-LBB0_12:
-	WORD $0x3940090c       // MOVBU 2(R8), R12                     // ldrb	w12, [x8, #2]
-	WORD $0x7940010d       // MOVHU (R8), R13                      // ldrh	w13, [x8]
-	ORRW R12<<16, R13, R12 // <--                                  // orr	w12, w13, w12, lsl #16
-	MOVW $3, R13           // <--                                  // mov	w13, #3
-
-LBB0_13:
-	ADD   R13, R8, R8  // <--                                  // add	x8, x8, x13
-	ADDW  $2, R10, R10 // <--                                  // add	w10, w10, #2
-	SUBSW $1, R3, R3   // <--                                  // subs	w3, w3, #1
-	WORD  $0xb800452c  // MOVW.P R12, 4(R9)                    // str	w12, [x9], #4
-	BEQ   LBB0_10      // <--                                  // b.eq	.LBB0_10
-
-LBB0_14:
-	ANDW $255, R10, R12 // <--                                  // and	w12, w10, #0xff
-	CMPW $8, R12        // <--                                  // cmp	w12, #8
-	BNE  LBB0_16        // <--                                  // b.ne	.LBB0_16
-	MOVW ZR, R10        // <--                                  // mov	w10, wzr
-	WORD $0x3840140b    // MOVBU.P 1(R0), R11                   // ldrb	w11, [x0], #1
-
-LBB0_16:
-	LSRW  R10, R11, R12 // <--                                  // lsr	w12, w11, w10
-	ANDW  $3, R12, R12  // <--                                  // and	w12, w12, #0x3
-	CMPW  $2, R12       // <--                                  // cmp	w12, #2
-	BEQ   LBB0_12       // <--                                  // b.eq	.LBB0_12
-	CMPW  $1, R12       // <--                                  // cmp	w12, #1
-	BEQ   LBB0_20       // <--                                  // b.eq	.LBB0_20
-	CBNZW R12, LBB0_21  // <--                                  // cbnz	w12, .LBB0_21
-	WORD  $0x3940010c   // MOVBU (R8), R12                      // ldrb	w12, [x8]
-	MOVW  $1, R13       // <--                                  // mov	w13, #1
-	JMP   LBB0_13       // <--                                  // b	.LBB0_13
-
-LBB0_20:
-	WORD $0x7940010c // MOVHU (R8), R12                      // ldrh	w12, [x8]
-	MOVW $2, R13     // <--                                  // mov	w13, #2
-	JMP  LBB0_13     // <--                                  // b	.LBB0_13
-
-LBB0_21:
-	WORD $0xb940010c // MOVWU (R8), R12                      // ldr	w12, [x8]
-	MOVW $4, R13     // <--                                  // mov	w13, #4
-	JMP  LBB0_13     // <--                                  // b	.LBB0_13
 
 LCPI1_0:
 
@@ -142,601 +143,684 @@ DATA LCPI1_0<>+0x0e(SB)/1, $0x0e
 DATA LCPI1_0<>+0x0f(SB)/1, $0x0f
 GLOBL LCPI1_0<>(SB), (RODATA|NOPTR), $16
 
-DATA shuffleTable<>+0x00(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0x08(SB)/8, $0xffffff03ffffff02
-DATA shuffleTable<>+0x10(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0x18(SB)/8, $0xffffff04ffffff03
-DATA shuffleTable<>+0x20(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0x28(SB)/8, $0xffffff05ffffff04
-DATA shuffleTable<>+0x30(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0x38(SB)/8, $0xffffff06ffffff05
-DATA shuffleTable<>+0x40(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0x48(SB)/8, $0xffffff04ffffff03
-DATA shuffleTable<>+0x50(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0x58(SB)/8, $0xffffff05ffffff04
-DATA shuffleTable<>+0x60(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0x68(SB)/8, $0xffffff06ffffff05
-DATA shuffleTable<>+0x70(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0x78(SB)/8, $0xffffff07ffffff06
-DATA shuffleTable<>+0x80(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0x88(SB)/8, $0xffffff05ffffff04
-DATA shuffleTable<>+0x90(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0x98(SB)/8, $0xffffff06ffffff05
-DATA shuffleTable<>+0xa0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0xa8(SB)/8, $0xffffff07ffffff06
-DATA shuffleTable<>+0xb0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0xb8(SB)/8, $0xffffff08ffffff07
-DATA shuffleTable<>+0xc0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0xc8(SB)/8, $0xffffff06ffffff05
-DATA shuffleTable<>+0xd0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0xd8(SB)/8, $0xffffff07ffffff06
-DATA shuffleTable<>+0xe0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0xe8(SB)/8, $0xffffff08ffffff07
-DATA shuffleTable<>+0xf0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0xf8(SB)/8, $0xffffff09ffffff08
-DATA shuffleTable<>+0x100(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0x108(SB)/8, $0xffffff04ffff0302
-DATA shuffleTable<>+0x110(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0x118(SB)/8, $0xffffff05ffff0403
-DATA shuffleTable<>+0x120(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0x128(SB)/8, $0xffffff06ffff0504
-DATA shuffleTable<>+0x130(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0x138(SB)/8, $0xffffff07ffff0605
-DATA shuffleTable<>+0x140(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0x148(SB)/8, $0xffffff05ffff0403
-DATA shuffleTable<>+0x150(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0x158(SB)/8, $0xffffff06ffff0504
-DATA shuffleTable<>+0x160(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0x168(SB)/8, $0xffffff07ffff0605
-DATA shuffleTable<>+0x170(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0x178(SB)/8, $0xffffff08ffff0706
-DATA shuffleTable<>+0x180(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0x188(SB)/8, $0xffffff06ffff0504
-DATA shuffleTable<>+0x190(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0x198(SB)/8, $0xffffff07ffff0605
-DATA shuffleTable<>+0x1a0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0x1a8(SB)/8, $0xffffff08ffff0706
-DATA shuffleTable<>+0x1b0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0x1b8(SB)/8, $0xffffff09ffff0807
-DATA shuffleTable<>+0x1c0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0x1c8(SB)/8, $0xffffff07ffff0605
-DATA shuffleTable<>+0x1d0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0x1d8(SB)/8, $0xffffff08ffff0706
-DATA shuffleTable<>+0x1e0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0x1e8(SB)/8, $0xffffff09ffff0807
-DATA shuffleTable<>+0x1f0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0x1f8(SB)/8, $0xffffff0affff0908
-DATA shuffleTable<>+0x200(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0x208(SB)/8, $0xffffff05ff040302
-DATA shuffleTable<>+0x210(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0x218(SB)/8, $0xffffff06ff050403
-DATA shuffleTable<>+0x220(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0x228(SB)/8, $0xffffff07ff060504
-DATA shuffleTable<>+0x230(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0x238(SB)/8, $0xffffff08ff070605
-DATA shuffleTable<>+0x240(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0x248(SB)/8, $0xffffff06ff050403
-DATA shuffleTable<>+0x250(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0x258(SB)/8, $0xffffff07ff060504
-DATA shuffleTable<>+0x260(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0x268(SB)/8, $0xffffff08ff070605
-DATA shuffleTable<>+0x270(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0x278(SB)/8, $0xffffff09ff080706
-DATA shuffleTable<>+0x280(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0x288(SB)/8, $0xffffff07ff060504
-DATA shuffleTable<>+0x290(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0x298(SB)/8, $0xffffff08ff070605
-DATA shuffleTable<>+0x2a0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0x2a8(SB)/8, $0xffffff09ff080706
-DATA shuffleTable<>+0x2b0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0x2b8(SB)/8, $0xffffff0aff090807
-DATA shuffleTable<>+0x2c0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0x2c8(SB)/8, $0xffffff08ff070605
-DATA shuffleTable<>+0x2d0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0x2d8(SB)/8, $0xffffff09ff080706
-DATA shuffleTable<>+0x2e0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0x2e8(SB)/8, $0xffffff0aff090807
-DATA shuffleTable<>+0x2f0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0x2f8(SB)/8, $0xffffff0bff0a0908
-DATA shuffleTable<>+0x300(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0x308(SB)/8, $0xffffff0605040302
-DATA shuffleTable<>+0x310(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0x318(SB)/8, $0xffffff0706050403
-DATA shuffleTable<>+0x320(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0x328(SB)/8, $0xffffff0807060504
-DATA shuffleTable<>+0x330(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0x338(SB)/8, $0xffffff0908070605
-DATA shuffleTable<>+0x340(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0x348(SB)/8, $0xffffff0706050403
-DATA shuffleTable<>+0x350(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0x358(SB)/8, $0xffffff0807060504
-DATA shuffleTable<>+0x360(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0x368(SB)/8, $0xffffff0908070605
-DATA shuffleTable<>+0x370(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0x378(SB)/8, $0xffffff0a09080706
-DATA shuffleTable<>+0x380(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0x388(SB)/8, $0xffffff0807060504
-DATA shuffleTable<>+0x390(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0x398(SB)/8, $0xffffff0908070605
-DATA shuffleTable<>+0x3a0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0x3a8(SB)/8, $0xffffff0a09080706
-DATA shuffleTable<>+0x3b0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0x3b8(SB)/8, $0xffffff0b0a090807
-DATA shuffleTable<>+0x3c0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0x3c8(SB)/8, $0xffffff0908070605
-DATA shuffleTable<>+0x3d0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0x3d8(SB)/8, $0xffffff0a09080706
-DATA shuffleTable<>+0x3e0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0x3e8(SB)/8, $0xffffff0b0a090807
-DATA shuffleTable<>+0x3f0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0x3f8(SB)/8, $0xffffff0c0b0a0908
-DATA shuffleTable<>+0x400(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0x408(SB)/8, $0xffff0403ffffff02
-DATA shuffleTable<>+0x410(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0x418(SB)/8, $0xffff0504ffffff03
-DATA shuffleTable<>+0x420(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0x428(SB)/8, $0xffff0605ffffff04
-DATA shuffleTable<>+0x430(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0x438(SB)/8, $0xffff0706ffffff05
-DATA shuffleTable<>+0x440(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0x448(SB)/8, $0xffff0504ffffff03
-DATA shuffleTable<>+0x450(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0x458(SB)/8, $0xffff0605ffffff04
-DATA shuffleTable<>+0x460(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0x468(SB)/8, $0xffff0706ffffff05
-DATA shuffleTable<>+0x470(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0x478(SB)/8, $0xffff0807ffffff06
-DATA shuffleTable<>+0x480(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0x488(SB)/8, $0xffff0605ffffff04
-DATA shuffleTable<>+0x490(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0x498(SB)/8, $0xffff0706ffffff05
-DATA shuffleTable<>+0x4a0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0x4a8(SB)/8, $0xffff0807ffffff06
-DATA shuffleTable<>+0x4b0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0x4b8(SB)/8, $0xffff0908ffffff07
-DATA shuffleTable<>+0x4c0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0x4c8(SB)/8, $0xffff0706ffffff05
-DATA shuffleTable<>+0x4d0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0x4d8(SB)/8, $0xffff0807ffffff06
-DATA shuffleTable<>+0x4e0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0x4e8(SB)/8, $0xffff0908ffffff07
-DATA shuffleTable<>+0x4f0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0x4f8(SB)/8, $0xffff0a09ffffff08
-DATA shuffleTable<>+0x500(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0x508(SB)/8, $0xffff0504ffff0302
-DATA shuffleTable<>+0x510(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0x518(SB)/8, $0xffff0605ffff0403
-DATA shuffleTable<>+0x520(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0x528(SB)/8, $0xffff0706ffff0504
-DATA shuffleTable<>+0x530(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0x538(SB)/8, $0xffff0807ffff0605
-DATA shuffleTable<>+0x540(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0x548(SB)/8, $0xffff0605ffff0403
-DATA shuffleTable<>+0x550(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0x558(SB)/8, $0xffff0706ffff0504
-DATA shuffleTable<>+0x560(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0x568(SB)/8, $0xffff0807ffff0605
-DATA shuffleTable<>+0x570(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0x578(SB)/8, $0xffff0908ffff0706
-DATA shuffleTable<>+0x580(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0x588(SB)/8, $0xffff0706ffff0504
-DATA shuffleTable<>+0x590(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0x598(SB)/8, $0xffff0807ffff0605
-DATA shuffleTable<>+0x5a0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0x5a8(SB)/8, $0xffff0908ffff0706
-DATA shuffleTable<>+0x5b0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0x5b8(SB)/8, $0xffff0a09ffff0807
-DATA shuffleTable<>+0x5c0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0x5c8(SB)/8, $0xffff0807ffff0605
-DATA shuffleTable<>+0x5d0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0x5d8(SB)/8, $0xffff0908ffff0706
-DATA shuffleTable<>+0x5e0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0x5e8(SB)/8, $0xffff0a09ffff0807
-DATA shuffleTable<>+0x5f0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0x5f8(SB)/8, $0xffff0b0affff0908
-DATA shuffleTable<>+0x600(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0x608(SB)/8, $0xffff0605ff040302
-DATA shuffleTable<>+0x610(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0x618(SB)/8, $0xffff0706ff050403
-DATA shuffleTable<>+0x620(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0x628(SB)/8, $0xffff0807ff060504
-DATA shuffleTable<>+0x630(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0x638(SB)/8, $0xffff0908ff070605
-DATA shuffleTable<>+0x640(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0x648(SB)/8, $0xffff0706ff050403
-DATA shuffleTable<>+0x650(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0x658(SB)/8, $0xffff0807ff060504
-DATA shuffleTable<>+0x660(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0x668(SB)/8, $0xffff0908ff070605
-DATA shuffleTable<>+0x670(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0x678(SB)/8, $0xffff0a09ff080706
-DATA shuffleTable<>+0x680(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0x688(SB)/8, $0xffff0807ff060504
-DATA shuffleTable<>+0x690(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0x698(SB)/8, $0xffff0908ff070605
-DATA shuffleTable<>+0x6a0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0x6a8(SB)/8, $0xffff0a09ff080706
-DATA shuffleTable<>+0x6b0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0x6b8(SB)/8, $0xffff0b0aff090807
-DATA shuffleTable<>+0x6c0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0x6c8(SB)/8, $0xffff0908ff070605
-DATA shuffleTable<>+0x6d0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0x6d8(SB)/8, $0xffff0a09ff080706
-DATA shuffleTable<>+0x6e0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0x6e8(SB)/8, $0xffff0b0aff090807
-DATA shuffleTable<>+0x6f0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0x6f8(SB)/8, $0xffff0c0bff0a0908
-DATA shuffleTable<>+0x700(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0x708(SB)/8, $0xffff070605040302
-DATA shuffleTable<>+0x710(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0x718(SB)/8, $0xffff080706050403
-DATA shuffleTable<>+0x720(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0x728(SB)/8, $0xffff090807060504
-DATA shuffleTable<>+0x730(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0x738(SB)/8, $0xffff0a0908070605
-DATA shuffleTable<>+0x740(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0x748(SB)/8, $0xffff080706050403
-DATA shuffleTable<>+0x750(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0x758(SB)/8, $0xffff090807060504
-DATA shuffleTable<>+0x760(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0x768(SB)/8, $0xffff0a0908070605
-DATA shuffleTable<>+0x770(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0x778(SB)/8, $0xffff0b0a09080706
-DATA shuffleTable<>+0x780(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0x788(SB)/8, $0xffff090807060504
-DATA shuffleTable<>+0x790(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0x798(SB)/8, $0xffff0a0908070605
-DATA shuffleTable<>+0x7a0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0x7a8(SB)/8, $0xffff0b0a09080706
-DATA shuffleTable<>+0x7b0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0x7b8(SB)/8, $0xffff0c0b0a090807
-DATA shuffleTable<>+0x7c0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0x7c8(SB)/8, $0xffff0a0908070605
-DATA shuffleTable<>+0x7d0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0x7d8(SB)/8, $0xffff0b0a09080706
-DATA shuffleTable<>+0x7e0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0x7e8(SB)/8, $0xffff0c0b0a090807
-DATA shuffleTable<>+0x7f0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0x7f8(SB)/8, $0xffff0d0c0b0a0908
-DATA shuffleTable<>+0x800(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0x808(SB)/8, $0xff050403ffffff02
-DATA shuffleTable<>+0x810(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0x818(SB)/8, $0xff060504ffffff03
-DATA shuffleTable<>+0x820(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0x828(SB)/8, $0xff070605ffffff04
-DATA shuffleTable<>+0x830(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0x838(SB)/8, $0xff080706ffffff05
-DATA shuffleTable<>+0x840(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0x848(SB)/8, $0xff060504ffffff03
-DATA shuffleTable<>+0x850(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0x858(SB)/8, $0xff070605ffffff04
-DATA shuffleTable<>+0x860(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0x868(SB)/8, $0xff080706ffffff05
-DATA shuffleTable<>+0x870(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0x878(SB)/8, $0xff090807ffffff06
-DATA shuffleTable<>+0x880(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0x888(SB)/8, $0xff070605ffffff04
-DATA shuffleTable<>+0x890(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0x898(SB)/8, $0xff080706ffffff05
-DATA shuffleTable<>+0x8a0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0x8a8(SB)/8, $0xff090807ffffff06
-DATA shuffleTable<>+0x8b0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0x8b8(SB)/8, $0xff0a0908ffffff07
-DATA shuffleTable<>+0x8c0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0x8c8(SB)/8, $0xff080706ffffff05
-DATA shuffleTable<>+0x8d0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0x8d8(SB)/8, $0xff090807ffffff06
-DATA shuffleTable<>+0x8e0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0x8e8(SB)/8, $0xff0a0908ffffff07
-DATA shuffleTable<>+0x8f0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0x8f8(SB)/8, $0xff0b0a09ffffff08
-DATA shuffleTable<>+0x900(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0x908(SB)/8, $0xff060504ffff0302
-DATA shuffleTable<>+0x910(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0x918(SB)/8, $0xff070605ffff0403
-DATA shuffleTable<>+0x920(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0x928(SB)/8, $0xff080706ffff0504
-DATA shuffleTable<>+0x930(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0x938(SB)/8, $0xff090807ffff0605
-DATA shuffleTable<>+0x940(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0x948(SB)/8, $0xff070605ffff0403
-DATA shuffleTable<>+0x950(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0x958(SB)/8, $0xff080706ffff0504
-DATA shuffleTable<>+0x960(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0x968(SB)/8, $0xff090807ffff0605
-DATA shuffleTable<>+0x970(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0x978(SB)/8, $0xff0a0908ffff0706
-DATA shuffleTable<>+0x980(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0x988(SB)/8, $0xff080706ffff0504
-DATA shuffleTable<>+0x990(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0x998(SB)/8, $0xff090807ffff0605
-DATA shuffleTable<>+0x9a0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0x9a8(SB)/8, $0xff0a0908ffff0706
-DATA shuffleTable<>+0x9b0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0x9b8(SB)/8, $0xff0b0a09ffff0807
-DATA shuffleTable<>+0x9c0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0x9c8(SB)/8, $0xff090807ffff0605
-DATA shuffleTable<>+0x9d0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0x9d8(SB)/8, $0xff0a0908ffff0706
-DATA shuffleTable<>+0x9e0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0x9e8(SB)/8, $0xff0b0a09ffff0807
-DATA shuffleTable<>+0x9f0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0x9f8(SB)/8, $0xff0c0b0affff0908
-DATA shuffleTable<>+0xa00(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0xa08(SB)/8, $0xff070605ff040302
-DATA shuffleTable<>+0xa10(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0xa18(SB)/8, $0xff080706ff050403
-DATA shuffleTable<>+0xa20(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0xa28(SB)/8, $0xff090807ff060504
-DATA shuffleTable<>+0xa30(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0xa38(SB)/8, $0xff0a0908ff070605
-DATA shuffleTable<>+0xa40(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0xa48(SB)/8, $0xff080706ff050403
-DATA shuffleTable<>+0xa50(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0xa58(SB)/8, $0xff090807ff060504
-DATA shuffleTable<>+0xa60(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0xa68(SB)/8, $0xff0a0908ff070605
-DATA shuffleTable<>+0xa70(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0xa78(SB)/8, $0xff0b0a09ff080706
-DATA shuffleTable<>+0xa80(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0xa88(SB)/8, $0xff090807ff060504
-DATA shuffleTable<>+0xa90(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0xa98(SB)/8, $0xff0a0908ff070605
-DATA shuffleTable<>+0xaa0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0xaa8(SB)/8, $0xff0b0a09ff080706
-DATA shuffleTable<>+0xab0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0xab8(SB)/8, $0xff0c0b0aff090807
-DATA shuffleTable<>+0xac0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0xac8(SB)/8, $0xff0a0908ff070605
-DATA shuffleTable<>+0xad0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0xad8(SB)/8, $0xff0b0a09ff080706
-DATA shuffleTable<>+0xae0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0xae8(SB)/8, $0xff0c0b0aff090807
-DATA shuffleTable<>+0xaf0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0xaf8(SB)/8, $0xff0d0c0bff0a0908
-DATA shuffleTable<>+0xb00(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0xb08(SB)/8, $0xff08070605040302
-DATA shuffleTable<>+0xb10(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0xb18(SB)/8, $0xff09080706050403
-DATA shuffleTable<>+0xb20(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0xb28(SB)/8, $0xff0a090807060504
-DATA shuffleTable<>+0xb30(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0xb38(SB)/8, $0xff0b0a0908070605
-DATA shuffleTable<>+0xb40(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0xb48(SB)/8, $0xff09080706050403
-DATA shuffleTable<>+0xb50(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0xb58(SB)/8, $0xff0a090807060504
-DATA shuffleTable<>+0xb60(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0xb68(SB)/8, $0xff0b0a0908070605
-DATA shuffleTable<>+0xb70(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0xb78(SB)/8, $0xff0c0b0a09080706
-DATA shuffleTable<>+0xb80(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0xb88(SB)/8, $0xff0a090807060504
-DATA shuffleTable<>+0xb90(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0xb98(SB)/8, $0xff0b0a0908070605
-DATA shuffleTable<>+0xba0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0xba8(SB)/8, $0xff0c0b0a09080706
-DATA shuffleTable<>+0xbb0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0xbb8(SB)/8, $0xff0d0c0b0a090807
-DATA shuffleTable<>+0xbc0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0xbc8(SB)/8, $0xff0b0a0908070605
-DATA shuffleTable<>+0xbd0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0xbd8(SB)/8, $0xff0c0b0a09080706
-DATA shuffleTable<>+0xbe0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0xbe8(SB)/8, $0xff0d0c0b0a090807
-DATA shuffleTable<>+0xbf0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0xbf8(SB)/8, $0xff0e0d0c0b0a0908
-DATA shuffleTable<>+0xc00(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0xc08(SB)/8, $0x06050403ffffff02
-DATA shuffleTable<>+0xc10(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0xc18(SB)/8, $0x07060504ffffff03
-DATA shuffleTable<>+0xc20(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0xc28(SB)/8, $0x08070605ffffff04
-DATA shuffleTable<>+0xc30(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0xc38(SB)/8, $0x09080706ffffff05
-DATA shuffleTable<>+0xc40(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0xc48(SB)/8, $0x07060504ffffff03
-DATA shuffleTable<>+0xc50(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0xc58(SB)/8, $0x08070605ffffff04
-DATA shuffleTable<>+0xc60(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0xc68(SB)/8, $0x09080706ffffff05
-DATA shuffleTable<>+0xc70(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0xc78(SB)/8, $0x0a090807ffffff06
-DATA shuffleTable<>+0xc80(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0xc88(SB)/8, $0x08070605ffffff04
-DATA shuffleTable<>+0xc90(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0xc98(SB)/8, $0x09080706ffffff05
-DATA shuffleTable<>+0xca0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0xca8(SB)/8, $0x0a090807ffffff06
-DATA shuffleTable<>+0xcb0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0xcb8(SB)/8, $0x0b0a0908ffffff07
-DATA shuffleTable<>+0xcc0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0xcc8(SB)/8, $0x09080706ffffff05
-DATA shuffleTable<>+0xcd0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0xcd8(SB)/8, $0x0a090807ffffff06
-DATA shuffleTable<>+0xce0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0xce8(SB)/8, $0x0b0a0908ffffff07
-DATA shuffleTable<>+0xcf0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0xcf8(SB)/8, $0x0c0b0a09ffffff08
-DATA shuffleTable<>+0xd00(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0xd08(SB)/8, $0x07060504ffff0302
-DATA shuffleTable<>+0xd10(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0xd18(SB)/8, $0x08070605ffff0403
-DATA shuffleTable<>+0xd20(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0xd28(SB)/8, $0x09080706ffff0504
-DATA shuffleTable<>+0xd30(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0xd38(SB)/8, $0x0a090807ffff0605
-DATA shuffleTable<>+0xd40(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0xd48(SB)/8, $0x08070605ffff0403
-DATA shuffleTable<>+0xd50(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0xd58(SB)/8, $0x09080706ffff0504
-DATA shuffleTable<>+0xd60(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0xd68(SB)/8, $0x0a090807ffff0605
-DATA shuffleTable<>+0xd70(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0xd78(SB)/8, $0x0b0a0908ffff0706
-DATA shuffleTable<>+0xd80(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0xd88(SB)/8, $0x09080706ffff0504
-DATA shuffleTable<>+0xd90(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0xd98(SB)/8, $0x0a090807ffff0605
-DATA shuffleTable<>+0xda0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0xda8(SB)/8, $0x0b0a0908ffff0706
-DATA shuffleTable<>+0xdb0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0xdb8(SB)/8, $0x0c0b0a09ffff0807
-DATA shuffleTable<>+0xdc0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0xdc8(SB)/8, $0x0a090807ffff0605
-DATA shuffleTable<>+0xdd0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0xdd8(SB)/8, $0x0b0a0908ffff0706
-DATA shuffleTable<>+0xde0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0xde8(SB)/8, $0x0c0b0a09ffff0807
-DATA shuffleTable<>+0xdf0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0xdf8(SB)/8, $0x0d0c0b0affff0908
-DATA shuffleTable<>+0xe00(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0xe08(SB)/8, $0x08070605ff040302
-DATA shuffleTable<>+0xe10(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0xe18(SB)/8, $0x09080706ff050403
-DATA shuffleTable<>+0xe20(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0xe28(SB)/8, $0x0a090807ff060504
-DATA shuffleTable<>+0xe30(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0xe38(SB)/8, $0x0b0a0908ff070605
-DATA shuffleTable<>+0xe40(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0xe48(SB)/8, $0x09080706ff050403
-DATA shuffleTable<>+0xe50(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0xe58(SB)/8, $0x0a090807ff060504
-DATA shuffleTable<>+0xe60(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0xe68(SB)/8, $0x0b0a0908ff070605
-DATA shuffleTable<>+0xe70(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0xe78(SB)/8, $0x0c0b0a09ff080706
-DATA shuffleTable<>+0xe80(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0xe88(SB)/8, $0x0a090807ff060504
-DATA shuffleTable<>+0xe90(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0xe98(SB)/8, $0x0b0a0908ff070605
-DATA shuffleTable<>+0xea0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0xea8(SB)/8, $0x0c0b0a09ff080706
-DATA shuffleTable<>+0xeb0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0xeb8(SB)/8, $0x0d0c0b0aff090807
-DATA shuffleTable<>+0xec0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0xec8(SB)/8, $0x0b0a0908ff070605
-DATA shuffleTable<>+0xed0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0xed8(SB)/8, $0x0c0b0a09ff080706
-DATA shuffleTable<>+0xee0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0xee8(SB)/8, $0x0d0c0b0aff090807
-DATA shuffleTable<>+0xef0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0xef8(SB)/8, $0x0e0d0c0bff0a0908
-DATA shuffleTable<>+0xf00(SB)/8, $0xffffff01ffffff00
-DATA shuffleTable<>+0xf08(SB)/8, $0x0908070605040302
-DATA shuffleTable<>+0xf10(SB)/8, $0xffffff02ffff0100
-DATA shuffleTable<>+0xf18(SB)/8, $0x0a09080706050403
-DATA shuffleTable<>+0xf20(SB)/8, $0xffffff03ff020100
-DATA shuffleTable<>+0xf28(SB)/8, $0x0b0a090807060504
-DATA shuffleTable<>+0xf30(SB)/8, $0xffffff0403020100
-DATA shuffleTable<>+0xf38(SB)/8, $0x0c0b0a0908070605
-DATA shuffleTable<>+0xf40(SB)/8, $0xffff0201ffffff00
-DATA shuffleTable<>+0xf48(SB)/8, $0x0a09080706050403
-DATA shuffleTable<>+0xf50(SB)/8, $0xffff0302ffff0100
-DATA shuffleTable<>+0xf58(SB)/8, $0x0b0a090807060504
-DATA shuffleTable<>+0xf60(SB)/8, $0xffff0403ff020100
-DATA shuffleTable<>+0xf68(SB)/8, $0x0c0b0a0908070605
-DATA shuffleTable<>+0xf70(SB)/8, $0xffff050403020100
-DATA shuffleTable<>+0xf78(SB)/8, $0x0d0c0b0a09080706
-DATA shuffleTable<>+0xf80(SB)/8, $0xff030201ffffff00
-DATA shuffleTable<>+0xf88(SB)/8, $0x0b0a090807060504
-DATA shuffleTable<>+0xf90(SB)/8, $0xff040302ffff0100
-DATA shuffleTable<>+0xf98(SB)/8, $0x0c0b0a0908070605
-DATA shuffleTable<>+0xfa0(SB)/8, $0xff050403ff020100
-DATA shuffleTable<>+0xfa8(SB)/8, $0x0d0c0b0a09080706
-DATA shuffleTable<>+0xfb0(SB)/8, $0xff06050403020100
-DATA shuffleTable<>+0xfb8(SB)/8, $0x0e0d0c0b0a090807
-DATA shuffleTable<>+0xfc0(SB)/8, $0x04030201ffffff00
-DATA shuffleTable<>+0xfc8(SB)/8, $0x0c0b0a0908070605
-DATA shuffleTable<>+0xfd0(SB)/8, $0x05040302ffff0100
-DATA shuffleTable<>+0xfd8(SB)/8, $0x0d0c0b0a09080706
-DATA shuffleTable<>+0xfe0(SB)/8, $0x06050403ff020100
-DATA shuffleTable<>+0xfe8(SB)/8, $0x0e0d0c0b0a090807
-DATA shuffleTable<>+0xff0(SB)/8, $0x0706050403020100
-DATA shuffleTable<>+0xff8(SB)/8, $0x0f0e0d0c0b0a0908
-GLOBL shuffleTable<>(SB), (RODATA|NOPTR), $4096
+DATA shuffleTable_1234<>+0x00(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0x08(SB)/8, $0xffffff03ffffff02
+DATA shuffleTable_1234<>+0x10(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0x18(SB)/8, $0xffffff04ffffff03
+DATA shuffleTable_1234<>+0x20(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0x28(SB)/8, $0xffffff05ffffff04
+DATA shuffleTable_1234<>+0x30(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0x38(SB)/8, $0xffffff06ffffff05
+DATA shuffleTable_1234<>+0x40(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0x48(SB)/8, $0xffffff04ffffff03
+DATA shuffleTable_1234<>+0x50(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0x58(SB)/8, $0xffffff05ffffff04
+DATA shuffleTable_1234<>+0x60(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0x68(SB)/8, $0xffffff06ffffff05
+DATA shuffleTable_1234<>+0x70(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0x78(SB)/8, $0xffffff07ffffff06
+DATA shuffleTable_1234<>+0x80(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0x88(SB)/8, $0xffffff05ffffff04
+DATA shuffleTable_1234<>+0x90(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0x98(SB)/8, $0xffffff06ffffff05
+DATA shuffleTable_1234<>+0xa0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0xa8(SB)/8, $0xffffff07ffffff06
+DATA shuffleTable_1234<>+0xb0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0xb8(SB)/8, $0xffffff08ffffff07
+DATA shuffleTable_1234<>+0xc0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0xc8(SB)/8, $0xffffff06ffffff05
+DATA shuffleTable_1234<>+0xd0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0xd8(SB)/8, $0xffffff07ffffff06
+DATA shuffleTable_1234<>+0xe0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0xe8(SB)/8, $0xffffff08ffffff07
+DATA shuffleTable_1234<>+0xf0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0xf8(SB)/8, $0xffffff09ffffff08
+DATA shuffleTable_1234<>+0x100(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0x108(SB)/8, $0xffffff04ffff0302
+DATA shuffleTable_1234<>+0x110(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0x118(SB)/8, $0xffffff05ffff0403
+DATA shuffleTable_1234<>+0x120(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0x128(SB)/8, $0xffffff06ffff0504
+DATA shuffleTable_1234<>+0x130(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0x138(SB)/8, $0xffffff07ffff0605
+DATA shuffleTable_1234<>+0x140(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0x148(SB)/8, $0xffffff05ffff0403
+DATA shuffleTable_1234<>+0x150(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0x158(SB)/8, $0xffffff06ffff0504
+DATA shuffleTable_1234<>+0x160(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0x168(SB)/8, $0xffffff07ffff0605
+DATA shuffleTable_1234<>+0x170(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0x178(SB)/8, $0xffffff08ffff0706
+DATA shuffleTable_1234<>+0x180(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0x188(SB)/8, $0xffffff06ffff0504
+DATA shuffleTable_1234<>+0x190(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0x198(SB)/8, $0xffffff07ffff0605
+DATA shuffleTable_1234<>+0x1a0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0x1a8(SB)/8, $0xffffff08ffff0706
+DATA shuffleTable_1234<>+0x1b0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0x1b8(SB)/8, $0xffffff09ffff0807
+DATA shuffleTable_1234<>+0x1c0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0x1c8(SB)/8, $0xffffff07ffff0605
+DATA shuffleTable_1234<>+0x1d0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0x1d8(SB)/8, $0xffffff08ffff0706
+DATA shuffleTable_1234<>+0x1e0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0x1e8(SB)/8, $0xffffff09ffff0807
+DATA shuffleTable_1234<>+0x1f0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0x1f8(SB)/8, $0xffffff0affff0908
+DATA shuffleTable_1234<>+0x200(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0x208(SB)/8, $0xffffff05ff040302
+DATA shuffleTable_1234<>+0x210(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0x218(SB)/8, $0xffffff06ff050403
+DATA shuffleTable_1234<>+0x220(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0x228(SB)/8, $0xffffff07ff060504
+DATA shuffleTable_1234<>+0x230(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0x238(SB)/8, $0xffffff08ff070605
+DATA shuffleTable_1234<>+0x240(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0x248(SB)/8, $0xffffff06ff050403
+DATA shuffleTable_1234<>+0x250(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0x258(SB)/8, $0xffffff07ff060504
+DATA shuffleTable_1234<>+0x260(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0x268(SB)/8, $0xffffff08ff070605
+DATA shuffleTable_1234<>+0x270(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0x278(SB)/8, $0xffffff09ff080706
+DATA shuffleTable_1234<>+0x280(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0x288(SB)/8, $0xffffff07ff060504
+DATA shuffleTable_1234<>+0x290(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0x298(SB)/8, $0xffffff08ff070605
+DATA shuffleTable_1234<>+0x2a0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0x2a8(SB)/8, $0xffffff09ff080706
+DATA shuffleTable_1234<>+0x2b0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0x2b8(SB)/8, $0xffffff0aff090807
+DATA shuffleTable_1234<>+0x2c0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0x2c8(SB)/8, $0xffffff08ff070605
+DATA shuffleTable_1234<>+0x2d0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0x2d8(SB)/8, $0xffffff09ff080706
+DATA shuffleTable_1234<>+0x2e0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0x2e8(SB)/8, $0xffffff0aff090807
+DATA shuffleTable_1234<>+0x2f0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0x2f8(SB)/8, $0xffffff0bff0a0908
+DATA shuffleTable_1234<>+0x300(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0x308(SB)/8, $0xffffff0605040302
+DATA shuffleTable_1234<>+0x310(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0x318(SB)/8, $0xffffff0706050403
+DATA shuffleTable_1234<>+0x320(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0x328(SB)/8, $0xffffff0807060504
+DATA shuffleTable_1234<>+0x330(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0x338(SB)/8, $0xffffff0908070605
+DATA shuffleTable_1234<>+0x340(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0x348(SB)/8, $0xffffff0706050403
+DATA shuffleTable_1234<>+0x350(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0x358(SB)/8, $0xffffff0807060504
+DATA shuffleTable_1234<>+0x360(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0x368(SB)/8, $0xffffff0908070605
+DATA shuffleTable_1234<>+0x370(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0x378(SB)/8, $0xffffff0a09080706
+DATA shuffleTable_1234<>+0x380(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0x388(SB)/8, $0xffffff0807060504
+DATA shuffleTable_1234<>+0x390(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0x398(SB)/8, $0xffffff0908070605
+DATA shuffleTable_1234<>+0x3a0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0x3a8(SB)/8, $0xffffff0a09080706
+DATA shuffleTable_1234<>+0x3b0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0x3b8(SB)/8, $0xffffff0b0a090807
+DATA shuffleTable_1234<>+0x3c0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0x3c8(SB)/8, $0xffffff0908070605
+DATA shuffleTable_1234<>+0x3d0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0x3d8(SB)/8, $0xffffff0a09080706
+DATA shuffleTable_1234<>+0x3e0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0x3e8(SB)/8, $0xffffff0b0a090807
+DATA shuffleTable_1234<>+0x3f0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0x3f8(SB)/8, $0xffffff0c0b0a0908
+DATA shuffleTable_1234<>+0x400(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0x408(SB)/8, $0xffff0403ffffff02
+DATA shuffleTable_1234<>+0x410(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0x418(SB)/8, $0xffff0504ffffff03
+DATA shuffleTable_1234<>+0x420(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0x428(SB)/8, $0xffff0605ffffff04
+DATA shuffleTable_1234<>+0x430(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0x438(SB)/8, $0xffff0706ffffff05
+DATA shuffleTable_1234<>+0x440(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0x448(SB)/8, $0xffff0504ffffff03
+DATA shuffleTable_1234<>+0x450(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0x458(SB)/8, $0xffff0605ffffff04
+DATA shuffleTable_1234<>+0x460(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0x468(SB)/8, $0xffff0706ffffff05
+DATA shuffleTable_1234<>+0x470(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0x478(SB)/8, $0xffff0807ffffff06
+DATA shuffleTable_1234<>+0x480(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0x488(SB)/8, $0xffff0605ffffff04
+DATA shuffleTable_1234<>+0x490(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0x498(SB)/8, $0xffff0706ffffff05
+DATA shuffleTable_1234<>+0x4a0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0x4a8(SB)/8, $0xffff0807ffffff06
+DATA shuffleTable_1234<>+0x4b0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0x4b8(SB)/8, $0xffff0908ffffff07
+DATA shuffleTable_1234<>+0x4c0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0x4c8(SB)/8, $0xffff0706ffffff05
+DATA shuffleTable_1234<>+0x4d0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0x4d8(SB)/8, $0xffff0807ffffff06
+DATA shuffleTable_1234<>+0x4e0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0x4e8(SB)/8, $0xffff0908ffffff07
+DATA shuffleTable_1234<>+0x4f0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0x4f8(SB)/8, $0xffff0a09ffffff08
+DATA shuffleTable_1234<>+0x500(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0x508(SB)/8, $0xffff0504ffff0302
+DATA shuffleTable_1234<>+0x510(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0x518(SB)/8, $0xffff0605ffff0403
+DATA shuffleTable_1234<>+0x520(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0x528(SB)/8, $0xffff0706ffff0504
+DATA shuffleTable_1234<>+0x530(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0x538(SB)/8, $0xffff0807ffff0605
+DATA shuffleTable_1234<>+0x540(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0x548(SB)/8, $0xffff0605ffff0403
+DATA shuffleTable_1234<>+0x550(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0x558(SB)/8, $0xffff0706ffff0504
+DATA shuffleTable_1234<>+0x560(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0x568(SB)/8, $0xffff0807ffff0605
+DATA shuffleTable_1234<>+0x570(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0x578(SB)/8, $0xffff0908ffff0706
+DATA shuffleTable_1234<>+0x580(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0x588(SB)/8, $0xffff0706ffff0504
+DATA shuffleTable_1234<>+0x590(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0x598(SB)/8, $0xffff0807ffff0605
+DATA shuffleTable_1234<>+0x5a0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0x5a8(SB)/8, $0xffff0908ffff0706
+DATA shuffleTable_1234<>+0x5b0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0x5b8(SB)/8, $0xffff0a09ffff0807
+DATA shuffleTable_1234<>+0x5c0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0x5c8(SB)/8, $0xffff0807ffff0605
+DATA shuffleTable_1234<>+0x5d0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0x5d8(SB)/8, $0xffff0908ffff0706
+DATA shuffleTable_1234<>+0x5e0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0x5e8(SB)/8, $0xffff0a09ffff0807
+DATA shuffleTable_1234<>+0x5f0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0x5f8(SB)/8, $0xffff0b0affff0908
+DATA shuffleTable_1234<>+0x600(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0x608(SB)/8, $0xffff0605ff040302
+DATA shuffleTable_1234<>+0x610(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0x618(SB)/8, $0xffff0706ff050403
+DATA shuffleTable_1234<>+0x620(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0x628(SB)/8, $0xffff0807ff060504
+DATA shuffleTable_1234<>+0x630(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0x638(SB)/8, $0xffff0908ff070605
+DATA shuffleTable_1234<>+0x640(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0x648(SB)/8, $0xffff0706ff050403
+DATA shuffleTable_1234<>+0x650(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0x658(SB)/8, $0xffff0807ff060504
+DATA shuffleTable_1234<>+0x660(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0x668(SB)/8, $0xffff0908ff070605
+DATA shuffleTable_1234<>+0x670(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0x678(SB)/8, $0xffff0a09ff080706
+DATA shuffleTable_1234<>+0x680(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0x688(SB)/8, $0xffff0807ff060504
+DATA shuffleTable_1234<>+0x690(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0x698(SB)/8, $0xffff0908ff070605
+DATA shuffleTable_1234<>+0x6a0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0x6a8(SB)/8, $0xffff0a09ff080706
+DATA shuffleTable_1234<>+0x6b0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0x6b8(SB)/8, $0xffff0b0aff090807
+DATA shuffleTable_1234<>+0x6c0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0x6c8(SB)/8, $0xffff0908ff070605
+DATA shuffleTable_1234<>+0x6d0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0x6d8(SB)/8, $0xffff0a09ff080706
+DATA shuffleTable_1234<>+0x6e0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0x6e8(SB)/8, $0xffff0b0aff090807
+DATA shuffleTable_1234<>+0x6f0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0x6f8(SB)/8, $0xffff0c0bff0a0908
+DATA shuffleTable_1234<>+0x700(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0x708(SB)/8, $0xffff070605040302
+DATA shuffleTable_1234<>+0x710(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0x718(SB)/8, $0xffff080706050403
+DATA shuffleTable_1234<>+0x720(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0x728(SB)/8, $0xffff090807060504
+DATA shuffleTable_1234<>+0x730(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0x738(SB)/8, $0xffff0a0908070605
+DATA shuffleTable_1234<>+0x740(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0x748(SB)/8, $0xffff080706050403
+DATA shuffleTable_1234<>+0x750(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0x758(SB)/8, $0xffff090807060504
+DATA shuffleTable_1234<>+0x760(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0x768(SB)/8, $0xffff0a0908070605
+DATA shuffleTable_1234<>+0x770(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0x778(SB)/8, $0xffff0b0a09080706
+DATA shuffleTable_1234<>+0x780(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0x788(SB)/8, $0xffff090807060504
+DATA shuffleTable_1234<>+0x790(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0x798(SB)/8, $0xffff0a0908070605
+DATA shuffleTable_1234<>+0x7a0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0x7a8(SB)/8, $0xffff0b0a09080706
+DATA shuffleTable_1234<>+0x7b0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0x7b8(SB)/8, $0xffff0c0b0a090807
+DATA shuffleTable_1234<>+0x7c0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0x7c8(SB)/8, $0xffff0a0908070605
+DATA shuffleTable_1234<>+0x7d0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0x7d8(SB)/8, $0xffff0b0a09080706
+DATA shuffleTable_1234<>+0x7e0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0x7e8(SB)/8, $0xffff0c0b0a090807
+DATA shuffleTable_1234<>+0x7f0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0x7f8(SB)/8, $0xffff0d0c0b0a0908
+DATA shuffleTable_1234<>+0x800(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0x808(SB)/8, $0xff050403ffffff02
+DATA shuffleTable_1234<>+0x810(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0x818(SB)/8, $0xff060504ffffff03
+DATA shuffleTable_1234<>+0x820(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0x828(SB)/8, $0xff070605ffffff04
+DATA shuffleTable_1234<>+0x830(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0x838(SB)/8, $0xff080706ffffff05
+DATA shuffleTable_1234<>+0x840(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0x848(SB)/8, $0xff060504ffffff03
+DATA shuffleTable_1234<>+0x850(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0x858(SB)/8, $0xff070605ffffff04
+DATA shuffleTable_1234<>+0x860(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0x868(SB)/8, $0xff080706ffffff05
+DATA shuffleTable_1234<>+0x870(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0x878(SB)/8, $0xff090807ffffff06
+DATA shuffleTable_1234<>+0x880(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0x888(SB)/8, $0xff070605ffffff04
+DATA shuffleTable_1234<>+0x890(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0x898(SB)/8, $0xff080706ffffff05
+DATA shuffleTable_1234<>+0x8a0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0x8a8(SB)/8, $0xff090807ffffff06
+DATA shuffleTable_1234<>+0x8b0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0x8b8(SB)/8, $0xff0a0908ffffff07
+DATA shuffleTable_1234<>+0x8c0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0x8c8(SB)/8, $0xff080706ffffff05
+DATA shuffleTable_1234<>+0x8d0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0x8d8(SB)/8, $0xff090807ffffff06
+DATA shuffleTable_1234<>+0x8e0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0x8e8(SB)/8, $0xff0a0908ffffff07
+DATA shuffleTable_1234<>+0x8f0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0x8f8(SB)/8, $0xff0b0a09ffffff08
+DATA shuffleTable_1234<>+0x900(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0x908(SB)/8, $0xff060504ffff0302
+DATA shuffleTable_1234<>+0x910(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0x918(SB)/8, $0xff070605ffff0403
+DATA shuffleTable_1234<>+0x920(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0x928(SB)/8, $0xff080706ffff0504
+DATA shuffleTable_1234<>+0x930(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0x938(SB)/8, $0xff090807ffff0605
+DATA shuffleTable_1234<>+0x940(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0x948(SB)/8, $0xff070605ffff0403
+DATA shuffleTable_1234<>+0x950(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0x958(SB)/8, $0xff080706ffff0504
+DATA shuffleTable_1234<>+0x960(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0x968(SB)/8, $0xff090807ffff0605
+DATA shuffleTable_1234<>+0x970(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0x978(SB)/8, $0xff0a0908ffff0706
+DATA shuffleTable_1234<>+0x980(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0x988(SB)/8, $0xff080706ffff0504
+DATA shuffleTable_1234<>+0x990(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0x998(SB)/8, $0xff090807ffff0605
+DATA shuffleTable_1234<>+0x9a0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0x9a8(SB)/8, $0xff0a0908ffff0706
+DATA shuffleTable_1234<>+0x9b0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0x9b8(SB)/8, $0xff0b0a09ffff0807
+DATA shuffleTable_1234<>+0x9c0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0x9c8(SB)/8, $0xff090807ffff0605
+DATA shuffleTable_1234<>+0x9d0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0x9d8(SB)/8, $0xff0a0908ffff0706
+DATA shuffleTable_1234<>+0x9e0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0x9e8(SB)/8, $0xff0b0a09ffff0807
+DATA shuffleTable_1234<>+0x9f0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0x9f8(SB)/8, $0xff0c0b0affff0908
+DATA shuffleTable_1234<>+0xa00(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0xa08(SB)/8, $0xff070605ff040302
+DATA shuffleTable_1234<>+0xa10(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0xa18(SB)/8, $0xff080706ff050403
+DATA shuffleTable_1234<>+0xa20(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0xa28(SB)/8, $0xff090807ff060504
+DATA shuffleTable_1234<>+0xa30(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0xa38(SB)/8, $0xff0a0908ff070605
+DATA shuffleTable_1234<>+0xa40(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0xa48(SB)/8, $0xff080706ff050403
+DATA shuffleTable_1234<>+0xa50(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0xa58(SB)/8, $0xff090807ff060504
+DATA shuffleTable_1234<>+0xa60(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0xa68(SB)/8, $0xff0a0908ff070605
+DATA shuffleTable_1234<>+0xa70(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0xa78(SB)/8, $0xff0b0a09ff080706
+DATA shuffleTable_1234<>+0xa80(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0xa88(SB)/8, $0xff090807ff060504
+DATA shuffleTable_1234<>+0xa90(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0xa98(SB)/8, $0xff0a0908ff070605
+DATA shuffleTable_1234<>+0xaa0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0xaa8(SB)/8, $0xff0b0a09ff080706
+DATA shuffleTable_1234<>+0xab0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0xab8(SB)/8, $0xff0c0b0aff090807
+DATA shuffleTable_1234<>+0xac0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0xac8(SB)/8, $0xff0a0908ff070605
+DATA shuffleTable_1234<>+0xad0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0xad8(SB)/8, $0xff0b0a09ff080706
+DATA shuffleTable_1234<>+0xae0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0xae8(SB)/8, $0xff0c0b0aff090807
+DATA shuffleTable_1234<>+0xaf0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0xaf8(SB)/8, $0xff0d0c0bff0a0908
+DATA shuffleTable_1234<>+0xb00(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0xb08(SB)/8, $0xff08070605040302
+DATA shuffleTable_1234<>+0xb10(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0xb18(SB)/8, $0xff09080706050403
+DATA shuffleTable_1234<>+0xb20(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0xb28(SB)/8, $0xff0a090807060504
+DATA shuffleTable_1234<>+0xb30(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0xb38(SB)/8, $0xff0b0a0908070605
+DATA shuffleTable_1234<>+0xb40(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0xb48(SB)/8, $0xff09080706050403
+DATA shuffleTable_1234<>+0xb50(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0xb58(SB)/8, $0xff0a090807060504
+DATA shuffleTable_1234<>+0xb60(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0xb68(SB)/8, $0xff0b0a0908070605
+DATA shuffleTable_1234<>+0xb70(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0xb78(SB)/8, $0xff0c0b0a09080706
+DATA shuffleTable_1234<>+0xb80(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0xb88(SB)/8, $0xff0a090807060504
+DATA shuffleTable_1234<>+0xb90(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0xb98(SB)/8, $0xff0b0a0908070605
+DATA shuffleTable_1234<>+0xba0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0xba8(SB)/8, $0xff0c0b0a09080706
+DATA shuffleTable_1234<>+0xbb0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0xbb8(SB)/8, $0xff0d0c0b0a090807
+DATA shuffleTable_1234<>+0xbc0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0xbc8(SB)/8, $0xff0b0a0908070605
+DATA shuffleTable_1234<>+0xbd0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0xbd8(SB)/8, $0xff0c0b0a09080706
+DATA shuffleTable_1234<>+0xbe0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0xbe8(SB)/8, $0xff0d0c0b0a090807
+DATA shuffleTable_1234<>+0xbf0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0xbf8(SB)/8, $0xff0e0d0c0b0a0908
+DATA shuffleTable_1234<>+0xc00(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0xc08(SB)/8, $0x06050403ffffff02
+DATA shuffleTable_1234<>+0xc10(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0xc18(SB)/8, $0x07060504ffffff03
+DATA shuffleTable_1234<>+0xc20(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0xc28(SB)/8, $0x08070605ffffff04
+DATA shuffleTable_1234<>+0xc30(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0xc38(SB)/8, $0x09080706ffffff05
+DATA shuffleTable_1234<>+0xc40(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0xc48(SB)/8, $0x07060504ffffff03
+DATA shuffleTable_1234<>+0xc50(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0xc58(SB)/8, $0x08070605ffffff04
+DATA shuffleTable_1234<>+0xc60(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0xc68(SB)/8, $0x09080706ffffff05
+DATA shuffleTable_1234<>+0xc70(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0xc78(SB)/8, $0x0a090807ffffff06
+DATA shuffleTable_1234<>+0xc80(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0xc88(SB)/8, $0x08070605ffffff04
+DATA shuffleTable_1234<>+0xc90(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0xc98(SB)/8, $0x09080706ffffff05
+DATA shuffleTable_1234<>+0xca0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0xca8(SB)/8, $0x0a090807ffffff06
+DATA shuffleTable_1234<>+0xcb0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0xcb8(SB)/8, $0x0b0a0908ffffff07
+DATA shuffleTable_1234<>+0xcc0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0xcc8(SB)/8, $0x09080706ffffff05
+DATA shuffleTable_1234<>+0xcd0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0xcd8(SB)/8, $0x0a090807ffffff06
+DATA shuffleTable_1234<>+0xce0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0xce8(SB)/8, $0x0b0a0908ffffff07
+DATA shuffleTable_1234<>+0xcf0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0xcf8(SB)/8, $0x0c0b0a09ffffff08
+DATA shuffleTable_1234<>+0xd00(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0xd08(SB)/8, $0x07060504ffff0302
+DATA shuffleTable_1234<>+0xd10(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0xd18(SB)/8, $0x08070605ffff0403
+DATA shuffleTable_1234<>+0xd20(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0xd28(SB)/8, $0x09080706ffff0504
+DATA shuffleTable_1234<>+0xd30(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0xd38(SB)/8, $0x0a090807ffff0605
+DATA shuffleTable_1234<>+0xd40(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0xd48(SB)/8, $0x08070605ffff0403
+DATA shuffleTable_1234<>+0xd50(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0xd58(SB)/8, $0x09080706ffff0504
+DATA shuffleTable_1234<>+0xd60(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0xd68(SB)/8, $0x0a090807ffff0605
+DATA shuffleTable_1234<>+0xd70(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0xd78(SB)/8, $0x0b0a0908ffff0706
+DATA shuffleTable_1234<>+0xd80(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0xd88(SB)/8, $0x09080706ffff0504
+DATA shuffleTable_1234<>+0xd90(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0xd98(SB)/8, $0x0a090807ffff0605
+DATA shuffleTable_1234<>+0xda0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0xda8(SB)/8, $0x0b0a0908ffff0706
+DATA shuffleTable_1234<>+0xdb0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0xdb8(SB)/8, $0x0c0b0a09ffff0807
+DATA shuffleTable_1234<>+0xdc0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0xdc8(SB)/8, $0x0a090807ffff0605
+DATA shuffleTable_1234<>+0xdd0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0xdd8(SB)/8, $0x0b0a0908ffff0706
+DATA shuffleTable_1234<>+0xde0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0xde8(SB)/8, $0x0c0b0a09ffff0807
+DATA shuffleTable_1234<>+0xdf0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0xdf8(SB)/8, $0x0d0c0b0affff0908
+DATA shuffleTable_1234<>+0xe00(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0xe08(SB)/8, $0x08070605ff040302
+DATA shuffleTable_1234<>+0xe10(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0xe18(SB)/8, $0x09080706ff050403
+DATA shuffleTable_1234<>+0xe20(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0xe28(SB)/8, $0x0a090807ff060504
+DATA shuffleTable_1234<>+0xe30(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0xe38(SB)/8, $0x0b0a0908ff070605
+DATA shuffleTable_1234<>+0xe40(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0xe48(SB)/8, $0x09080706ff050403
+DATA shuffleTable_1234<>+0xe50(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0xe58(SB)/8, $0x0a090807ff060504
+DATA shuffleTable_1234<>+0xe60(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0xe68(SB)/8, $0x0b0a0908ff070605
+DATA shuffleTable_1234<>+0xe70(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0xe78(SB)/8, $0x0c0b0a09ff080706
+DATA shuffleTable_1234<>+0xe80(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0xe88(SB)/8, $0x0a090807ff060504
+DATA shuffleTable_1234<>+0xe90(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0xe98(SB)/8, $0x0b0a0908ff070605
+DATA shuffleTable_1234<>+0xea0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0xea8(SB)/8, $0x0c0b0a09ff080706
+DATA shuffleTable_1234<>+0xeb0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0xeb8(SB)/8, $0x0d0c0b0aff090807
+DATA shuffleTable_1234<>+0xec0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0xec8(SB)/8, $0x0b0a0908ff070605
+DATA shuffleTable_1234<>+0xed0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0xed8(SB)/8, $0x0c0b0a09ff080706
+DATA shuffleTable_1234<>+0xee0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0xee8(SB)/8, $0x0d0c0b0aff090807
+DATA shuffleTable_1234<>+0xef0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0xef8(SB)/8, $0x0e0d0c0bff0a0908
+DATA shuffleTable_1234<>+0xf00(SB)/8, $0xffffff01ffffff00
+DATA shuffleTable_1234<>+0xf08(SB)/8, $0x0908070605040302
+DATA shuffleTable_1234<>+0xf10(SB)/8, $0xffffff02ffff0100
+DATA shuffleTable_1234<>+0xf18(SB)/8, $0x0a09080706050403
+DATA shuffleTable_1234<>+0xf20(SB)/8, $0xffffff03ff020100
+DATA shuffleTable_1234<>+0xf28(SB)/8, $0x0b0a090807060504
+DATA shuffleTable_1234<>+0xf30(SB)/8, $0xffffff0403020100
+DATA shuffleTable_1234<>+0xf38(SB)/8, $0x0c0b0a0908070605
+DATA shuffleTable_1234<>+0xf40(SB)/8, $0xffff0201ffffff00
+DATA shuffleTable_1234<>+0xf48(SB)/8, $0x0a09080706050403
+DATA shuffleTable_1234<>+0xf50(SB)/8, $0xffff0302ffff0100
+DATA shuffleTable_1234<>+0xf58(SB)/8, $0x0b0a090807060504
+DATA shuffleTable_1234<>+0xf60(SB)/8, $0xffff0403ff020100
+DATA shuffleTable_1234<>+0xf68(SB)/8, $0x0c0b0a0908070605
+DATA shuffleTable_1234<>+0xf70(SB)/8, $0xffff050403020100
+DATA shuffleTable_1234<>+0xf78(SB)/8, $0x0d0c0b0a09080706
+DATA shuffleTable_1234<>+0xf80(SB)/8, $0xff030201ffffff00
+DATA shuffleTable_1234<>+0xf88(SB)/8, $0x0b0a090807060504
+DATA shuffleTable_1234<>+0xf90(SB)/8, $0xff040302ffff0100
+DATA shuffleTable_1234<>+0xf98(SB)/8, $0x0c0b0a0908070605
+DATA shuffleTable_1234<>+0xfa0(SB)/8, $0xff050403ff020100
+DATA shuffleTable_1234<>+0xfa8(SB)/8, $0x0d0c0b0a09080706
+DATA shuffleTable_1234<>+0xfb0(SB)/8, $0xff06050403020100
+DATA shuffleTable_1234<>+0xfb8(SB)/8, $0x0e0d0c0b0a090807
+DATA shuffleTable_1234<>+0xfc0(SB)/8, $0x04030201ffffff00
+DATA shuffleTable_1234<>+0xfc8(SB)/8, $0x0c0b0a0908070605
+DATA shuffleTable_1234<>+0xfd0(SB)/8, $0x05040302ffff0100
+DATA shuffleTable_1234<>+0xfd8(SB)/8, $0x0d0c0b0a09080706
+DATA shuffleTable_1234<>+0xfe0(SB)/8, $0x06050403ff020100
+DATA shuffleTable_1234<>+0xfe8(SB)/8, $0x0e0d0c0b0a090807
+DATA shuffleTable_1234<>+0xff0(SB)/8, $0x0706050403020100
+DATA shuffleTable_1234<>+0xff8(SB)/8, $0x0f0e0d0c0b0a0908
+GLOBL shuffleTable_1234<>(SB), (RODATA|NOPTR), $4096
 
-DATA lengthTable<>+0x00(SB)/8, $0x0807060507060504
-DATA lengthTable<>+0x08(SB)/8, $0x0a09080709080706
-DATA lengthTable<>+0x10(SB)/8, $0x0908070608070605
-DATA lengthTable<>+0x18(SB)/8, $0x0b0a09080a090807
-DATA lengthTable<>+0x20(SB)/8, $0x0a09080709080706
-DATA lengthTable<>+0x28(SB)/8, $0x0c0b0a090b0a0908
-DATA lengthTable<>+0x30(SB)/8, $0x0b0a09080a090807
-DATA lengthTable<>+0x38(SB)/8, $0x0d0c0b0a0c0b0a09
-DATA lengthTable<>+0x40(SB)/8, $0x0908070608070605
-DATA lengthTable<>+0x48(SB)/8, $0x0b0a09080a090807
-DATA lengthTable<>+0x50(SB)/8, $0x0a09080709080706
-DATA lengthTable<>+0x58(SB)/8, $0x0c0b0a090b0a0908
-DATA lengthTable<>+0x60(SB)/8, $0x0b0a09080a090807
-DATA lengthTable<>+0x68(SB)/8, $0x0d0c0b0a0c0b0a09
-DATA lengthTable<>+0x70(SB)/8, $0x0c0b0a090b0a0908
-DATA lengthTable<>+0x78(SB)/8, $0x0e0d0c0b0d0c0b0a
-DATA lengthTable<>+0x80(SB)/8, $0x0a09080709080706
-DATA lengthTable<>+0x88(SB)/8, $0x0c0b0a090b0a0908
-DATA lengthTable<>+0x90(SB)/8, $0x0b0a09080a090807
-DATA lengthTable<>+0x98(SB)/8, $0x0d0c0b0a0c0b0a09
-DATA lengthTable<>+0xa0(SB)/8, $0x0c0b0a090b0a0908
-DATA lengthTable<>+0xa8(SB)/8, $0x0e0d0c0b0d0c0b0a
-DATA lengthTable<>+0xb0(SB)/8, $0x0d0c0b0a0c0b0a09
-DATA lengthTable<>+0xb8(SB)/8, $0x0f0e0d0c0e0d0c0b
-DATA lengthTable<>+0xc0(SB)/8, $0x0b0a09080a090807
-DATA lengthTable<>+0xc8(SB)/8, $0x0d0c0b0a0c0b0a09
-DATA lengthTable<>+0xd0(SB)/8, $0x0c0b0a090b0a0908
-DATA lengthTable<>+0xd8(SB)/8, $0x0e0d0c0b0d0c0b0a
-DATA lengthTable<>+0xe0(SB)/8, $0x0d0c0b0a0c0b0a09
-DATA lengthTable<>+0xe8(SB)/8, $0x0f0e0d0c0e0d0c0b
-DATA lengthTable<>+0xf0(SB)/8, $0x0e0d0c0b0d0c0b0a
-DATA lengthTable<>+0xf8(SB)/8, $0x100f0e0d0f0e0d0c
-GLOBL lengthTable<>(SB), (RODATA|NOPTR), $256
+DATA lengthTable_1234<>+0x00(SB)/8, $0x0807060507060504
+DATA lengthTable_1234<>+0x08(SB)/8, $0x0a09080709080706
+DATA lengthTable_1234<>+0x10(SB)/8, $0x0908070608070605
+DATA lengthTable_1234<>+0x18(SB)/8, $0x0b0a09080a090807
+DATA lengthTable_1234<>+0x20(SB)/8, $0x0a09080709080706
+DATA lengthTable_1234<>+0x28(SB)/8, $0x0c0b0a090b0a0908
+DATA lengthTable_1234<>+0x30(SB)/8, $0x0b0a09080a090807
+DATA lengthTable_1234<>+0x38(SB)/8, $0x0d0c0b0a0c0b0a09
+DATA lengthTable_1234<>+0x40(SB)/8, $0x0908070608070605
+DATA lengthTable_1234<>+0x48(SB)/8, $0x0b0a09080a090807
+DATA lengthTable_1234<>+0x50(SB)/8, $0x0a09080709080706
+DATA lengthTable_1234<>+0x58(SB)/8, $0x0c0b0a090b0a0908
+DATA lengthTable_1234<>+0x60(SB)/8, $0x0b0a09080a090807
+DATA lengthTable_1234<>+0x68(SB)/8, $0x0d0c0b0a0c0b0a09
+DATA lengthTable_1234<>+0x70(SB)/8, $0x0c0b0a090b0a0908
+DATA lengthTable_1234<>+0x78(SB)/8, $0x0e0d0c0b0d0c0b0a
+DATA lengthTable_1234<>+0x80(SB)/8, $0x0a09080709080706
+DATA lengthTable_1234<>+0x88(SB)/8, $0x0c0b0a090b0a0908
+DATA lengthTable_1234<>+0x90(SB)/8, $0x0b0a09080a090807
+DATA lengthTable_1234<>+0x98(SB)/8, $0x0d0c0b0a0c0b0a09
+DATA lengthTable_1234<>+0xa0(SB)/8, $0x0c0b0a090b0a0908
+DATA lengthTable_1234<>+0xa8(SB)/8, $0x0e0d0c0b0d0c0b0a
+DATA lengthTable_1234<>+0xb0(SB)/8, $0x0d0c0b0a0c0b0a09
+DATA lengthTable_1234<>+0xb8(SB)/8, $0x0f0e0d0c0e0d0c0b
+DATA lengthTable_1234<>+0xc0(SB)/8, $0x0b0a09080a090807
+DATA lengthTable_1234<>+0xc8(SB)/8, $0x0d0c0b0a0c0b0a09
+DATA lengthTable_1234<>+0xd0(SB)/8, $0x0c0b0a090b0a0908
+DATA lengthTable_1234<>+0xd8(SB)/8, $0x0e0d0c0b0d0c0b0a
+DATA lengthTable_1234<>+0xe0(SB)/8, $0x0d0c0b0a0c0b0a09
+DATA lengthTable_1234<>+0xe8(SB)/8, $0x0f0e0d0c0e0d0c0b
+DATA lengthTable_1234<>+0xf0(SB)/8, $0x0e0d0c0b0d0c0b0a
+DATA lengthTable_1234<>+0xf8(SB)/8, $0x100f0e0d0f0e0d0c
+GLOBL lengthTable_1234<>(SB), (RODATA|NOPTR), $256
 
-TEXT ·svb_delta_decode_vector(SB), NOSPLIT, $0-64
-	MOVD out+0(FP), R0
-	MOVD out_len+8(FP), R1
-	MOVD out_cap+16(FP), R2
-	MOVD in+24(FP), R3
-	MOVD in_len+32(FP), R4
-	MOVD in_cap+40(FP), R5
-	MOVW prev+48(FP), R6
-	ADD  $3, R1, R8         // <--                                  // add	x8, x1, #3
-	CMP  $4, R1             // <--                                  // cmp	x1, #4
-	ADD  R8>>2, R3, R8      // <--                                  // add	x8, x3, x8, lsr #2
-	BCS  LBB1_2             // <--                                  // b.hs	.LBB1_2
-	SUB  R8, R8, R0         // <--                                  // sub	x0, x8, x8
-	MOVD R0, ret+56(FP)     // <--
-	RET                     // <--                                  // ret
+TEXT ·svb_delta_decode(SB), NOSPLIT, $0-56
+	MOVD in+0(FP), R0
+	MOVD in_len+8(FP), R1
+	MOVD in_cap+16(FP), R2
+	MOVD count+24(FP), R3
+	MOVW prev+32(FP), R4
+	MOVD out+40(FP), R5
+	CMP  $1, R3            // <--                                  // cmp	x3, #1
+	BLT  LBB1_2            // <--                                  // b.lt	.LBB1_2
+	ADD  $3, R3, R8        // <--                                  // add	x8, x3, #3
+	LSR  $2, R8, R9        // <--                                  // lsr	x9, x8, #2
+	CMP  R1, R9            // <--                                  // cmp	x9, x1
+	BLS  LBB1_3            // <--                                  // b.ls	.LBB1_3
 
 LBB1_2:
-	NOP                           // (skipped)                            // stp	x29, x30, [sp, #-16]!
-	MOVD $LCPI1_0<>(SB), R10      // <--                                  // adrp	x10, .LCPI1_0
-	LSR  $2, R1, R9               // <--                                  // lsr	x9, x1, #2
-	WORD $0x6f00e400              // VMOVI $0, V0.D2                      // movi	v0.2d, #0000000000000000
-	MOVD $shuffleTable<>(SB), R11 // <--                                  // adrp	x11, shuffleTable
-	ADD  $0, R11, R11             // <--                                  // add	x11, x11, :lo12:shuffleTable
-	MOVD $lengthTable<>(SB), R12  // <--                                  // adrp	x12, lengthTable
-	ADD  $0, R12, R12             // <--                                  // add	x12, x12, :lo12:lengthTable
-	WORD $0x3dc00141              // FMOVQ (R10), F1                      // ldr	q1, [x10, :lo12:.LCPI1_0]
-	MOVD R8, R10                  // <--                                  // mov	x10, x8
-	VDUP R6, V2.S4                // <--                                  // dup	v2.4s, w6
-	NOP                           // (skipped)                            // mov	x29, sp
+	MOVD ZR, R0         // <--                                  // mov	x0, xzr
+	MOVD R0, ret+48(FP) // <--
+	RET                 // <--                                  // ret
 
 LBB1_3:
-	WORD $0x3840146d                 // MOVBU.P 1(R3), R13                   // ldrb	w13, [x3], #1
-	WORD $0x3dc00144                 // FMOVQ (R10), F4                      // ldr	q4, [x10]
-	SUBS $1, R9, R9                  // <--                                  // subs	x9, x9, #1
+	NOP                                // (skipped)                            // stp	x29, x30, [sp, #-16]!
+	ADD  R9, R0, R8                    // <--                                  // add	x8, x0, x9
+	CMP  $4, R3                        // <--                                  // cmp	x3, #4
+	NOP                                // (skipped)                            // mov	x29, sp
+	BCC  LBB1_10                       // <--                                  // b.lo	.LBB1_10
+	AND  $-16, R1, R10                 // <--                                  // and	x10, x1, #0xfffffffffffffff0
+	CMP  R10, R9                       // <--                                  // cmp	x9, x10
+	BGE  LBB1_10                       // <--                                  // b.ge	.LBB1_10
+	MOVD $LCPI1_0<>(SB), R9            // <--                                  // adrp	x9, .LCPI1_0
+	ADD  R10, R0, R10                  // <--                                  // add	x10, x0, x10
+	WORD $0x6f00e400                   // VMOVI $0, V0.D2                      // movi	v0.2d, #0000000000000000
+	ADD  R3>>2, R0, R11                // <--                                  // add	x11, x0, x3, lsr #2
+	MOVD $shuffleTable_1234<>(SB), R12 // <--                                  // adrp	x12, shuffleTable_1234
+	ADD  $0, R12, R12                  // <--                                  // add	x12, x12, :lo12:shuffleTable_1234
+	WORD $0x3dc00121                   // FMOVQ (R9), F1                       // ldr	q1, [x9, :lo12:.LCPI1_0]
+	MOVD R5, R9                        // <--                                  // mov	x9, x5
+	MOVD $lengthTable_1234<>(SB), R13  // <--                                  // adrp	x13, lengthTable_1234
+	ADD  $0, R13, R13                  // <--                                  // add	x13, x13, :lo12:lengthTable_1234
+	VDUP R4, V2.S4                     // <--                                  // dup	v2.4s, w4
+
+LBB1_6:
+	WORD $0x3840140e                 // MOVBU.P 1(R0), R14                   // ldrb	w14, [x0], #1
+	WORD $0x3dc00104                 // FMOVQ (R8), F4                       // ldr	q4, [x8]
+	CMP  R11, R0                     // <--                                  // cmp	x0, x11
 	VTBL V1.B16, [V2.B16], V2.B16    // <--                                  // tbl	v2.16b, { v2.16b }, v1.16b
-	WORD $0x3ced7963                 // FMOVQ (R11)(R13<<4), F3              // ldr	q3, [x11, x13, lsl #4]
-	WORD $0x386d698d                 // MOVBU (R12)(R13), R13                // ldrb	w13, [x12, x13]
+	WORD $0x3cee7983                 // FMOVQ (R12)(R14<<4), F3              // ldr	q3, [x12, x14, lsl #4]
+	WORD $0x386e69ae                 // MOVBU (R13)(R14), R14                // ldrb	w14, [x13, x14]
 	VTBL V3.B16, [V4.B16], V3.B16    // <--                                  // tbl	v3.16b, { v4.16b }, v3.16b
-	ADD  R13, R10, R10               // <--                                  // add	x10, x10, x13
+	ADD  R14, R8, R8                 // <--                                  // add	x8, x8, x14
 	VEXT $12, V3.B16, V0.B16, V4.B16 // <--                                  // ext	v4.16b, v0.16b, v3.16b, #12
 	VADD V3.S4, V4.S4, V3.S4         // <--                                  // add	v3.4s, v4.4s, v3.4s
 	VEXT $8, V3.B16, V0.B16, V4.B16  // <--                                  // ext	v4.16b, v0.16b, v3.16b, #8
 	VADD V2.S4, V3.S4, V2.S4         // <--                                  // add	v2.4s, v3.4s, v2.4s
 	VADD V4.S4, V2.S4, V2.S4         // <--                                  // add	v2.4s, v2.4s, v4.4s
-	WORD $0x3c810402                 // FMOVQ.P F2, 16(R0)                   // str	q2, [x0], #16
-	BNE  LBB1_3                      // <--                                  // b.ne	.LBB1_3
-	NOP                              // (skipped)                            // ldp	x29, x30, [sp], #16
-	SUB  R8, R10, R0                 // <--                                  // sub	x0, x10, x8
-	MOVD R0, ret+56(FP)              // <--
-	RET                              // <--                                  // ret
+	WORD $0x3c810522                 // FMOVQ.P F2, 16(R9)                   // str	q2, [x9], #16
+	BCS  LBB1_8                      // <--                                  // b.hs	.LBB1_8
+	CMP  R10, R8                     // <--                                  // cmp	x8, x10
+	BCC  LBB1_6                      // <--                                  // b.lo	.LBB1_6
+
+LBB1_8:
+	SUB  R5, R9, R10    // <--                                  // sub	x10, x9, x5
+	ASR  $2, R10, R10   // <--                                  // asr	x10, x10, #2
+	SUB  R10, R3, R3    // <--                                  // sub	x3, x3, x10
+	CMP  $1, R3         // <--                                  // cmp	x3, #1
+	CCMP GE, R9, R5, $0 // <--                                  // ccmp	x9, x5, #0, ge
+	BLS  LBB1_11        // <--                                  // b.ls	.LBB1_11
+	WORD $0xb85fc124    // MOVWU -4(R9), R4                     // ldur	w4, [x9, #-4]
+	JMP  LBB1_11        // <--                                  // b	.LBB1_11
+
+LBB1_10:
+	MOVD ZR, R10 // <--                                  // mov	x10, xzr
+	MOVD R5, R9  // <--                                  // mov	x9, x5
+
+LBB1_11:
+	CBZ  R8, LBB1_25 // <--                                  // cbz	x8, .LBB1_25
+	CBZW R3, LBB1_25 // <--                                  // cbz	w3, .LBB1_25
+	MOVW ZR, R10     // <--                                  // mov	w10, wzr
+	WORD $0x3840140b // MOVBU.P 1(R0), R11                   // ldrb	w11, [x0], #1
+	JMP  LBB1_16     // <--                                  // b	.LBB1_16
+
+LBB1_14:
+	WORD $0x7940010c // MOVHU (R8), R12                      // ldrh	w12, [x8]
+	MOVW $2, R13     // <--                                  // mov	w13, #2
+
+LBB1_15:
+	ADD   R13, R8, R8  // <--                                  // add	x8, x8, x13
+	ADDW  R4, R12, R4  // <--                                  // add	w4, w12, w4
+	ADDW  $2, R10, R10 // <--                                  // add	w10, w10, #2
+	SUBSW $1, R3, R3   // <--                                  // subs	w3, w3, #1
+	WORD  $0xb8004524  // MOVW.P R4, 4(R9)                     // str	w4, [x9], #4
+	BEQ   LBB1_24      // <--                                  // b.eq	.LBB1_24
+
+LBB1_16:
+	ANDW $255, R10, R12 // <--                                  // and	w12, w10, #0xff
+	CMPW $8, R12        // <--                                  // cmp	w12, #8
+	BNE  LBB1_18        // <--                                  // b.ne	.LBB1_18
+	MOVW ZR, R10        // <--                                  // mov	w10, wzr
+	WORD $0x3840140b    // MOVBU.P 1(R0), R11                   // ldrb	w11, [x0], #1
+
+LBB1_18:
+	LSRW  R10, R11, R12 // <--                                  // lsr	w12, w11, w10
+	ANDW  $3, R12, R12  // <--                                  // and	w12, w12, #0x3
+	CMPW  $2, R12       // <--                                  // cmp	w12, #2
+	BEQ   LBB1_22       // <--                                  // b.eq	.LBB1_22
+	CMPW  $1, R12       // <--                                  // cmp	w12, #1
+	BEQ   LBB1_14       // <--                                  // b.eq	.LBB1_14
+	CBNZW R12, LBB1_23  // <--                                  // cbnz	w12, .LBB1_23
+	WORD  $0x3940010c   // MOVBU (R8), R12                      // ldrb	w12, [x8]
+	MOVW  $1, R13       // <--                                  // mov	w13, #1
+	JMP   LBB1_15       // <--                                  // b	.LBB1_15
+
+LBB1_22:
+	WORD $0x3940090c       // MOVBU 2(R8), R12                     // ldrb	w12, [x8, #2]
+	WORD $0x7940010d       // MOVHU (R8), R13                      // ldrh	w13, [x8]
+	ORRW R12<<16, R13, R12 // <--                                  // orr	w12, w13, w12, lsl #16
+	MOVW $3, R13           // <--                                  // mov	w13, #3
+	JMP  LBB1_15           // <--                                  // b	.LBB1_15
+
+LBB1_23:
+	WORD $0xb940010c // MOVWU (R8), R12                      // ldr	w12, [x8]
+	MOVW $4, R13     // <--                                  // mov	w13, #4
+	JMP  LBB1_15     // <--                                  // b	.LBB1_15
+
+LBB1_24:
+	SUB R5, R9, R9  // <--                                  // sub	x9, x9, x5
+	ASR $2, R9, R10 // <--                                  // asr	x10, x9, #2
+
+LBB1_25:
+	CMP  $0, R8          // <--                                  // cmp	x8, #0
+	CSEL EQ, ZR, R10, R0 // <--                                  // csel	x0, xzr, x10, eq
+	NOP                  // (skipped)                            // ldp	x29, x30, [sp], #16
+	MOVD R0, ret+48(FP)  // <--
+	RET                  // <--                                  // ret
