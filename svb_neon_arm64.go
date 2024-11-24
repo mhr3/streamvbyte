@@ -5,6 +5,9 @@ package streamvbyte
 
 
 //go:noescape
+func svb_encode(in []uint32, out *byte) uint64
+
+//go:noescape
 func svb_decode(in []byte, count int, out *uint32) uint64
 
 //go:noescape

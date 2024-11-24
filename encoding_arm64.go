@@ -3,12 +3,15 @@
 package streamvbyte
 
 func (e stdEncoding) Encode(input []uint32, output []byte) []byte {
-	// TODO: missing optimized implementation
+	if len(input) == 0 {
+		return nil
+	}
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeScalar1234(output[:sz], input)
+
+	n := svb_encode(input, &output[0])
 	return output[:n]
 }
 
