@@ -18,7 +18,7 @@ uint64_t svb_encode(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, 
 
     for (uint32_t c = 0; c < count_quads; c++)
     {
-        dataPtr += streamvbyte_encode_quad(in, dataPtr, keyPtr);
+        dataPtr += svb_encode_quad(in, dataPtr, keyPtr);
         keyPtr++;
         in += 4;
     }
