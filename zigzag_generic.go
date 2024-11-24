@@ -1,13 +1,19 @@
+//go:build noasm || (!amd64 && !arm64)
+
 package streamvbyte
 
-import "unsafe"
+func zigzag_encode32(val int32) uint32 {
+	return uint32(val+val) ^ (uint32)(val>>31)
+}
 
 func svb_zigzag_encode(in []int32, out []uint32) {
 	if len(in) > len(out) {
 		panic("output slice is too small")
 	}
 
-	zigzag_encode(unsafe.SliceData(in), unsafe.SliceData(out), int64(len(in)))
+	for i, v := range in {
+		out[i] = zigzag_encode32(v)
+	}
 }
 
 func svb_zigzag_delta_encode(in []int32, out []uint32, prev int32) {
@@ -15,7 +21,14 @@ func svb_zigzag_delta_encode(in []int32, out []uint32, prev int32) {
 		panic("output slice is too small")
 	}
 
-	zigzag_delta_encode(unsafe.SliceData(in), unsafe.SliceData(out), int64(len(in)), prev)
+	for i, v := range in {
+		out[i] = zigzag_encode32(v - prev)
+		prev = v
+	}
+}
+
+func zigzag_decode32(val uint32) int32 {
+	return int32((val >> 1) ^ (0 - (val & 1)))
 }
 
 func svb_zigzag_decode(in []uint32, out []int32) {
@@ -23,7 +36,9 @@ func svb_zigzag_decode(in []uint32, out []int32) {
 		panic("output slice is too small")
 	}
 
-	zigzag_decode(unsafe.SliceData(in), unsafe.SliceData(out), int64(len(in)))
+	for i, v := range in {
+		out[i] = zigzag_decode32(v)
+	}
 }
 
 func svb_zigzag_delta_decode(in []uint32, out []int32, prev int32) {
@@ -31,5 +46,9 @@ func svb_zigzag_delta_decode(in []uint32, out []int32, prev int32) {
 		panic("output slice is too small")
 	}
 
-	zigzag_delta_decode(unsafe.SliceData(in), unsafe.SliceData(out), int64(len(in)), prev)
+	for i, v := range in {
+		val := zigzag_decode32(v)
+		out[i] = val + prev
+		prev += val
+	}
 }
