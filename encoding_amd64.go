@@ -2,8 +2,6 @@
 
 package streamvbyte
 
-import "unsafe"
-
 func (e stdEncoding) Encode(input []uint32, output []byte) []byte {
 	// TODO: missing optimized implementation
 	if len(output) < MaxEncodedLen(len(input)) {
@@ -14,11 +12,12 @@ func (e stdEncoding) Encode(input []uint32, output []byte) []byte {
 }
 
 func (e stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+	// TODO: missing optimized implementation
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	sz := svb_decode(input, count, unsafe.SliceData(output))
-	return output[:sz]
+	decodeScalar1234(output, input)
+	return output[:count]
 }
 
 func (e stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
@@ -26,8 +25,7 @@ func (e stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []b
 }
 
 func (e stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
-	sz := svb_delta_decode_vector(output, input, prev)
-	return output[:sz]
+	panic("not implemented")
 }
 
 /*

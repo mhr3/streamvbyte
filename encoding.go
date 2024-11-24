@@ -18,10 +18,9 @@ type stdEncoding struct{}
 type altEncoding struct{}
 
 var (
-	_ Encoding = StdEncoding
-)
-
-var (
 	StdEncoding = stdEncoding{}
 	AltEncoding = altEncoding{}
+
+	_ Encoding = StdEncoding
+	_ Encoding = AltEncoding
 )
