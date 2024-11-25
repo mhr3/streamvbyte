@@ -39,8 +39,8 @@ static inline uint32x4_t svb_prefix_sum(uint32x4_t curr, uint32x4_t prev)
 {
     uint32x4_t zero = {0, 0, 0, 0};
     uint32x4_t add = vextq_u32(zero, curr, 3);
-    uint8x16_t BroadcastLast = {12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15};
-    prev = vreinterpretq_u32_u8(vqtbl1q_u8(vreinterpretq_u8_u32(prev), BroadcastLast));
+
+    prev = vdupq_laneq_u32(prev, 3);
     curr = vaddq_u32(curr, add);
     add = vextq_u32(zero, curr, 2);
     curr = vaddq_u32(curr, prev);
