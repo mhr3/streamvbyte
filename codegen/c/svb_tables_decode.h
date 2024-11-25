@@ -1,5 +1,6 @@
 #ifndef STREAMVBYTE_SHUFFLE_TABLES_H
 #define STREAMVBYTE_SHUFFLE_TABLES_H
+
 #include <stdint.h>
 
 // using 1,2,3,4 bytes per value

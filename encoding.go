@@ -18,7 +18,14 @@ type stdEncoding struct{}
 type altEncoding struct{}
 
 var (
+	// StdEncoding is the standard streamvbyte encoding, which encodes the data with the 1234 scheme.
+	// This means every uint32 value is encoded with 1, 2, 3 or 4 bytes (plus 2 control bits).
 	StdEncoding = stdEncoding{}
+
+	// AltEncoding optimizes for data containing lots of zeros, and encodes the data with the 0124 scheme.
+	// This means zeroes are only represented in the control bits, but don't add to the data bytes.
+	// As an example a slice of 2000 zeroes would be encoded in 2500 bytes with standard encoding, but only
+	// 500 bytes with the alternative encoding.
 	AltEncoding = altEncoding{}
 
 	_ Encoding = StdEncoding

@@ -62,12 +62,14 @@ func (e altEncoding) Encode(input []uint32, output []byte) []byte {
 }
 
 func (e altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
-	// TODO: missing optimized implementation
+	if count <= 0 {
+		return nil
+	}
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeScalar0124(output, input)
-	return output[:count]
+	sz := svb_decode_alt(input, count, &output[0])
+	return output[:sz]
 }
 
 func (e altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
@@ -81,10 +83,12 @@ func (e altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []b
 }
 
 func (e altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
-	// TODO: missing optimized implementation
+	if count <= 0 {
+		return nil
+	}
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeDeltaScalar0124(output, input, prev)
-	return output[:count]
+	sz := svb_delta_decode_alt(input, count, prev, &output[0])
+	return output[:sz]
 }

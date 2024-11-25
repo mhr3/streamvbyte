@@ -1,12 +1,10 @@
-package streamvbyte_test
+package streamvbyte
 
 import (
 	"math"
 	"math/rand"
 	"sort"
 	"testing"
-
-	"github.com/mhr3/streamvbyte"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -63,35 +61,61 @@ func TestEncodeDecode(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			input := tc.generator()
 			// Encode
-			encoded := streamvbyte.StdEncoding.Encode(input, nil)
-			decoded := streamvbyte.StdEncoding.Decode(encoded, len(input), nil)
+			encoded := StdEncoding.Encode(input, nil)
+			decoded := StdEncoding.Decode(encoded, len(input), nil)
 
 			require.Len(t, decoded, len(input))
 			assert.Equal(t, input, decoded)
+
+			// re-check against the scalar implementation
+			scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
+			n := encodeScalar1234(scalar_encoded, input)
+			scalar_encoded = scalar_encoded[:n]
+			assert.Equal(t, scalar_encoded, encoded)
+
+			scalar_decoded := make([]uint32, len(input))
+			decodeScalar1234(scalar_decoded, scalar_encoded)
+			assert.Equal(t, input, scalar_decoded)
 
 			// AltEncoding
-			encoded = streamvbyte.AltEncoding.Encode(input, nil)
-			decoded = streamvbyte.AltEncoding.Decode(encoded, len(input), nil)
+			encoded = AltEncoding.Encode(input, nil)
+			decoded = AltEncoding.Decode(encoded, len(input), nil)
 
 			require.Len(t, decoded, len(input))
 			assert.Equal(t, input, decoded)
+
+			scalar_encoded = make([]byte, MaxEncodedLen(len(input)))
+			n = encodeScalar0124(scalar_encoded, input)
+			scalar_encoded = scalar_encoded[:n]
+			assert.Equal(t, scalar_encoded, encoded)
 		})
 
 		t.Run("delta-"+tc.name, func(t *testing.T) {
 			input := tc.generator()
 			// Encode
-			encoded := streamvbyte.StdEncoding.EncodeDelta(input, nil, 0)
-			decoded := streamvbyte.StdEncoding.DecodeDelta(encoded, len(input), nil, 0)
+			encoded := StdEncoding.EncodeDelta(input, nil, 0)
+			decoded := StdEncoding.DecodeDelta(encoded, len(input), nil, 0)
 
 			require.Len(t, decoded, len(input))
 			assert.Equal(t, input, decoded)
+
+			// re-check against the scalar implementation
+			scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
+			n := encodeDeltaScalar1234(scalar_encoded, input, 0)
+			scalar_encoded = scalar_encoded[:n]
+			assert.Equal(t, scalar_encoded, encoded)
 
 			// AltEncoding
-			encoded = streamvbyte.AltEncoding.EncodeDelta(input, nil, 0)
-			decoded = streamvbyte.AltEncoding.DecodeDelta(encoded, len(input), nil, 0)
+			encoded = AltEncoding.EncodeDelta(input, nil, 0)
+			decoded = AltEncoding.DecodeDelta(encoded, len(input), nil, 0)
 
 			require.Len(t, decoded, len(input))
 			assert.Equal(t, input, decoded)
+
+			scalar_encoded = make([]byte, MaxEncodedLen(len(input)))
+			n = encodeDeltaScalar0124(scalar_encoded, input, 0)
+			scalar_encoded = scalar_encoded[:n]
+			assert.Equal(t, scalar_encoded, encoded)
 		})
 	}
 }
@@ -126,7 +150,7 @@ func BenchmarkEncode(b *testing.B) {
 	b.Run("std", func(b *testing.B) {
 		b.SetBytes(int64(4 * benchSize))
 		for i := 0; i < b.N; i++ {
-			encoded = streamvbyte.StdEncoding.Encode(benchUint32Data, encoded)
+			encoded = StdEncoding.Encode(benchUint32Data, encoded)
 			_ = encoded
 		}
 	})
@@ -134,19 +158,19 @@ func BenchmarkEncode(b *testing.B) {
 	b.Run("alt", func(b *testing.B) {
 		b.SetBytes(int64(4 * benchSize))
 		for i := 0; i < b.N; i++ {
-			encoded = streamvbyte.AltEncoding.Encode(benchUint32Data, encoded)
+			encoded = AltEncoding.Encode(benchUint32Data, encoded)
 			_ = encoded
 		}
 	})
 }
 
-func BenchmarkDeltaEncode(b *testing.B) {
+func BenchmarkEncodeDelta(b *testing.B) {
 	var encoded []byte
 
 	b.Run("std", func(b *testing.B) {
 		b.SetBytes(int64(4 * benchSize))
 		for i := 0; i < b.N; i++ {
-			encoded = streamvbyte.StdEncoding.EncodeDelta(benchUint32DataSorted, encoded, 0)
+			encoded = StdEncoding.EncodeDelta(benchUint32DataSorted, encoded, 0)
 			_ = encoded
 		}
 	})
@@ -154,21 +178,21 @@ func BenchmarkDeltaEncode(b *testing.B) {
 	b.Run("alt", func(b *testing.B) {
 		b.SetBytes(int64(4 * benchSize))
 		for i := 0; i < b.N; i++ {
-			encoded = streamvbyte.AltEncoding.EncodeDelta(benchUint32DataSorted, encoded, 0)
+			encoded = AltEncoding.EncodeDelta(benchUint32DataSorted, encoded, 0)
 			_ = encoded
 		}
 	})
 }
 
 func BenchmarkDecode(b *testing.B) {
-	encoded := streamvbyte.StdEncoding.Encode(benchUint32Data, nil)
+	encoded := StdEncoding.Encode(benchUint32Data, nil)
 
 	var decoded []uint32
 
 	b.Run("std", func(b *testing.B) {
 		b.SetBytes(int64(4 * benchSize))
 		for i := 0; i < b.N; i++ {
-			decoded = streamvbyte.StdEncoding.Decode(encoded, len(benchUint32Data), decoded)
+			decoded = StdEncoding.Decode(encoded, len(benchUint32Data), decoded)
 			_ = decoded
 		}
 	})
@@ -176,21 +200,21 @@ func BenchmarkDecode(b *testing.B) {
 	b.Run("alt", func(b *testing.B) {
 		b.SetBytes(int64(4 * benchSize))
 		for i := 0; i < b.N; i++ {
-			decoded = streamvbyte.AltEncoding.Decode(encoded, len(benchUint32Data), decoded)
+			decoded = AltEncoding.Decode(encoded, len(benchUint32Data), decoded)
 			_ = decoded
 		}
 	})
 }
 
-func BenchmarkDeltaDecode(b *testing.B) {
-	encoded := streamvbyte.StdEncoding.EncodeDelta(benchUint32DataSorted, nil, 0)
+func BenchmarkDecodeDelta(b *testing.B) {
+	encoded := StdEncoding.EncodeDelta(benchUint32DataSorted, nil, 0)
 
 	var decoded []uint32
 
 	b.Run("std", func(b *testing.B) {
 		b.SetBytes(int64(4 * benchSize))
 		for i := 0; i < b.N; i++ {
-			decoded = streamvbyte.StdEncoding.DecodeDelta(encoded, len(benchUint32DataSorted), decoded, 0)
+			decoded = StdEncoding.DecodeDelta(encoded, len(benchUint32DataSorted), decoded, 0)
 			_ = decoded
 		}
 	})
@@ -198,7 +222,7 @@ func BenchmarkDeltaDecode(b *testing.B) {
 	b.Run("alt", func(b *testing.B) {
 		b.SetBytes(int64(4 * benchSize))
 		for i := 0; i < b.N; i++ {
-			decoded = streamvbyte.AltEncoding.DecodeDelta(encoded, len(benchUint32DataSorted), decoded, 0)
+			decoded = AltEncoding.DecodeDelta(encoded, len(benchUint32DataSorted), decoded, 0)
 			_ = decoded
 		}
 	})
