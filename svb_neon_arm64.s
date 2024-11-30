@@ -84,19 +84,20 @@ LBB0_4:
 	JMP  LBB0_28     // <--                                  // b	.LBB0_28
 
 LBB0_7:
-	LSRW  $16, R12, R14 // <--                                  // lsr	w14, w12, #16
-	CBNZW R14, LBB0_9   // <--                                  // cbnz	w14, .LBB0_9
-	MOVW  $1, R10       // <--                                  // mov	w10, #1
-	MOVW  $2, R13       // <--                                  // mov	w13, #2
-	WORD  $0x7900010c   // MOVH R12, (R8)                       // strh	w12, [x8]
-	ADD   R13, R8, R8   // <--                                  // add	x8, x8, x13
-	CMP   $1, R11       // <--                                  // cmp	x11, #1
-	BNE   LBB0_12       // <--                                  // b.ne	.LBB0_12
-	JMP   LBB0_28       // <--                                  // b	.LBB0_28
+	CMPW $(16<<12), R12 // <--                                  // cmp	w12, #16, lsl #12
+	BCS  LBB0_9         // <--                                  // b.hs	.LBB0_9
+	MOVW $1, R10        // <--                                  // mov	w10, #1
+	MOVW $2, R13        // <--                                  // mov	w13, #2
+	WORD $0x7900010c    // MOVH R12, (R8)                       // strh	w12, [x8]
+	ADD  R13, R8, R8    // <--                                  // add	x8, x8, x13
+	CMP  $1, R11        // <--                                  // cmp	x11, #1
+	BNE  LBB0_12        // <--                                  // b.ne	.LBB0_12
+	JMP  LBB0_28        // <--                                  // b	.LBB0_28
 
 LBB0_9:
 	LSRW  $24, R12, R10 // <--                                  // lsr	w10, w12, #24
 	CBNZW R10, LBB0_11  // <--                                  // cbnz	w10, .LBB0_11
+	LSRW  $16, R12, R14 // <--                                  // lsr	w14, w12, #16
 	MOVW  $2, R10       // <--                                  // mov	w10, #2
 	MOVW  $3, R13       // <--                                  // mov	w13, #3
 	WORD  $0x7900010c   // MOVH R12, (R8)                       // strh	w12, [x8]
@@ -195,122 +196,198 @@ LBB0_29:
 	MOVD R0, ret+32(FP) // <--
 	RET                 // <--                                  // ret
 
-TEXT ·svb_decode(SB), NOSPLIT, $0-48
+LCPI1_0:
+
+DATA LCPI1_0<>+0x00(SB)/1, $0x0c
+DATA LCPI1_0<>+0x01(SB)/1, $0x08
+DATA LCPI1_0<>+0x02(SB)/1, $0x04
+DATA LCPI1_0<>+0x03(SB)/1, $0x00
+DATA LCPI1_0<>+0x04(SB)/1, $0x0c
+DATA LCPI1_0<>+0x05(SB)/1, $0x08
+DATA LCPI1_0<>+0x06(SB)/1, $0x04
+DATA LCPI1_0<>+0x07(SB)/1, $0x00
+GLOBL LCPI1_0<>(SB), (RODATA|NOPTR), $8
+
+TEXT ·svb_encode_alt(SB), NOSPLIT, $0-40
 	MOVD in+0(FP), R0
 	MOVD in_len+8(FP), R1
 	MOVD in_cap+16(FP), R2
-	MOVD count+24(FP), R3
-	MOVD out+32(FP), R4
-	CMP  $1, R3            // <--                                  // cmp	x3, #1
-	BLT  LBB1_2            // <--                                  // b.lt	.LBB1_2
-	ADD  $3, R3, R8        // <--                                  // add	x8, x3, #3
-	LSR  $2, R8, R9        // <--                                  // lsr	x9, x8, #2
-	CMP  R1, R9            // <--                                  // cmp	x9, x1
-	BLS  LBB1_3            // <--                                  // b.ls	.LBB1_3
+	MOVD out+24(FP), R3
+	NOP                    // (skipped)                            // stp	x29, x30, [sp, #-16]!
+	ADDW $3, R1, R8        // <--                                  // add	w8, w1, #3
+	CMPW $4, R1            // <--                                  // cmp	w1, #4
+	LSRW $2, R8, R8        // <--                                  // lsr	w8, w8, #2
+	NOP                    // (skipped)                            // mov	x29, sp
+	ADD  R8, R3, R8        // <--                                  // add	x8, x3, x8
+	BCS  LBB1_6            // <--                                  // b.hs	.LBB1_6
+	MOVD R3, R9            // <--                                  // mov	x9, x3
 
 LBB1_2:
-	MOVD ZR, R0         // <--                                  // mov	x0, xzr
-	MOVD R0, ret+40(FP) // <--
-	RET                 // <--                                  // ret
-
-LBB1_3:
-	NOP                                // (skipped)                            // stp	x29, x30, [sp, #-16]!
-	ADD  R9, R0, R8                    // <--                                  // add	x8, x0, x9
-	CMP  $4, R3                        // <--                                  // cmp	x3, #4
-	NOP                                // (skipped)                            // mov	x29, sp
-	BCC  LBB1_8                        // <--                                  // b.lo	.LBB1_8
-	AND  $-16, R1, R10                 // <--                                  // and	x10, x1, #0xfffffffffffffff0
-	CMP  R10, R9                       // <--                                  // cmp	x9, x10
-	BGE  LBB1_8                        // <--                                  // b.ge	.LBB1_8
-	ADD  R10, R0, R10                  // <--                                  // add	x10, x0, x10
-	ADD  R3>>2, R0, R11                // <--                                  // add	x11, x0, x3, lsr #2
-	MOVD R4, R9                        // <--                                  // mov	x9, x4
-	MOVD $shuffleTable_1234<>(SB), R12 // <--                                  // adrp	x12, shuffleTable_1234
-	ADD  $0, R12, R12                  // <--                                  // add	x12, x12, :lo12:shuffleTable_1234
-	MOVD $lengthTable_1234<>(SB), R13  // <--                                  // adrp	x13, lengthTable_1234
-	ADD  $0, R13, R13                  // <--                                  // add	x13, x13, :lo12:lengthTable_1234
+	TSTW $3, R1       // <--                                  // tst	w1, #0x3
+	BEQ  LBB1_31      // <--                                  // b.eq	.LBB1_31
+	WORD $0xb940000c  // MOVWU (R0), R12                      // ldr	w12, [x0]
+	AND  $3, R1, R11  // <--                                  // and	x11, x1, #0x3
+	CBZW R12, LBB1_10 // <--                                  // cbz	w12, .LBB1_10
+	CMPW $255, R12    // <--                                  // cmp	w12, #255
+	BHI  LBB1_11      // <--                                  // b.hi	.LBB1_11
+	MOVW $1, R13      // <--                                  // mov	w13, #1
+	MOVW $1, R10      // <--                                  // mov	w10, #1
+	WORD $0x3900010c  // MOVB R12, (R8)                       // strb	w12, [x8]
+	ADD  R13, R8, R8  // <--                                  // add	x8, x8, x13
+	CMP  $1, R11      // <--                                  // cmp	x11, #1
+	BNE  LBB1_14      // <--                                  // b.ne	.LBB1_14
+	JMP  LBB1_30      // <--                                  // b	.LBB1_30
 
 LBB1_6:
-	WORD $0x3840140e              // MOVBU.P 1(R0), R14                   // ldrb	w14, [x0], #1
-	WORD $0x3dc00101              // FMOVQ (R8), F1                       // ldr	q1, [x8]
-	CMP  R11, R0                  // <--                                  // cmp	x0, x11
-	WORD $0x3cee7980              // FMOVQ (R12)(R14<<4), F0              // ldr	q0, [x12, x14, lsl #4]
-	WORD $0x386e69ae              // MOVBU (R13)(R14), R14                // ldrb	w14, [x13, x14]
-	VTBL V0.B16, [V1.B16], V0.B16 // <--                                  // tbl	v0.16b, { v1.16b }, v0.16b
-	ADD  R14, R8, R8              // <--                                  // add	x8, x8, x14
-	WORD $0x3c810520              // FMOVQ.P F0, 16(R9)                   // str	q0, [x9], #16
-	BCS  LBB1_9                   // <--                                  // b.hs	.LBB1_9
-	CMP  R10, R8                  // <--                                  // cmp	x8, x10
-	BCC  LBB1_6                   // <--                                  // b.lo	.LBB1_6
-	JMP  LBB1_9                   // <--                                  // b	.LBB1_9
+	MOVD  $LCPI1_0<>(SB), R9                    // <--                                  // adrp	x9, .LCPI1_0
+	MOVW  $1025, R11                            // <--                                  // mov	w11, #1025
+	WORD  $0x4f000460                           // VMOVI $3, V0.S4                      // movi	v0.4s, #3
+	LSRW  $2, R1, R10                           // <--                                  // lsr	w10, w1, #2
+	WORD  $0x4f000481                           // VMOVI $4, V1.S4                      // movi	v1.4s, #4
+	MOVKW $(16400<<16), R11                     // <--                                  // movk	w11, #16400, lsl #16
+	WORD  $0xfd400122                           // FMOVD (R9), F2                       // ldr	d2, [x9, :lo12:.LCPI1_0]
+	MOVD  R3, R9                                // <--                                  // mov	x9, x3
+	MOVD  $lengthTable_0124<>(SB), R12          // <--                                  // adrp	x12, lengthTable_0124
+	ADD   $0, R12, R12                          // <--                                  // add	x12, x12, :lo12:lengthTable_0124
+	MOVD  $encodingShuffleTable_0124<>(SB), R13 // <--                                  // adrp	x13, encodingShuffleTable_0124
+	ADD   $0, R13, R13                          // <--                                  // add	x13, x13, :lo12:encodingShuffleTable_0124
+	JMP   LBB1_8                                // <--                                  // b	.LBB1_8
+
+LBB1_7:
+	ADD   R15, R8, R8  // <--                                  // add	x8, x8, x15
+	ADD   $16, R0, R0  // <--                                  // add	x0, x0, #16
+	SUBSW $1, R10, R10 // <--                                  // subs	w10, w10, #1
+	WORD  $0x3800152e  // MOVB.P R14, 1(R9)                    // strb	w14, [x9], #1
+	BEQ   LBB1_2       // <--                                  // b.eq	.LBB1_2
 
 LBB1_8:
-	MOVD R4, R9 // <--                                  // mov	x9, x4
+	WORD  $0x3dc00003              // FMOVQ (R0), F3                       // ldr	q3, [x0]
+	WORD  $0x6ea04864              // VCLZ V3.S4, V4.S4                    // clz	v4.4s, v3.4s
+	WORD  $0x6f3d0484              // VUSHR $3, V4.S4, V4.S4               // ushr	v4.4s, v4.4s, #3
+	VSUB  V4.S4, V1.S4, V4.S4      // <--                                  // sub	v4.4s, v1.4s, v4.4s
+	WORD  $0x6ea06c84              // VUMIN V0.S4, V4.S4, V4.S4            // umin	v4.4s, v4.4s, v0.4s
+	VTBL  V2.B8, [V4.B16], V4.B8   // <--                                  // tbl	v4.8b, { v4.16b }, v2.8b
+	FMOVS F4, R14                  // <--                                  // fmov	w14, s4
+	MULW  R11, R14, R14            // <--                                  // mul	w14, w14, w11
+	LSR   $24, R14, R16            // <--                                  // lsr	x16, x14, #24
+	LSRW  $24, R14, R14            // <--                                  // lsr	w14, w14, #24
+	WORD  $0x3870698f              // MOVBU (R12)(R16), R15                // ldrb	w15, [x12, x16]
+	CBZW  R14, LBB1_7              // <--                                  // cbz	w14, .LBB1_7
+	WORD  $0x3cf079a4              // FMOVQ (R13)(R16<<4), F4              // ldr	q4, [x13, x16, lsl #4]
+	VTBL  V4.B16, [V3.B16], V3.B16 // <--                                  // tbl	v3.16b, { v3.16b }, v4.16b
+	WORD  $0x3d800103              // FMOVQ F3, (R8)                       // str	q3, [x8]
+	JMP   LBB1_7                   // <--                                  // b	.LBB1_7
 
-LBB1_9:
-	SUB  R4, R9, R11  // <--                                  // sub	x11, x9, x4
-	CBZ  R8, LBB1_23  // <--                                  // cbz	x8, .LBB1_23
-	LSR  $2, R11, R10 // <--                                  // lsr	x10, x11, #2
-	SUBW R10, R3, R10 // <--                                  // sub	w10, w3, w10
-	CBZW R10, LBB1_23 // <--                                  // cbz	w10, .LBB1_23
-	MOVW ZR, R11      // <--                                  // mov	w11, wzr
-	WORD $0x3840140c  // MOVBU.P 1(R0), R12                   // ldrb	w12, [x0], #1
-	JMP  LBB1_14      // <--                                  // b	.LBB1_14
+LBB1_10:
+	MOVW ZR, R10 // <--                                  // mov	w10, wzr
+	CMP  $1, R11 // <--                                  // cmp	x11, #1
+	BNE  LBB1_14 // <--                                  // b.ne	.LBB1_14
+	JMP  LBB1_30 // <--                                  // b	.LBB1_30
 
-LBB1_12:
-	WORD $0x7940010d // MOVHU (R8), R13                      // ldrh	w13, [x8]
-	MOVW $2, R14     // <--                                  // mov	w14, #2
+LBB1_11:
+	LSRW  $16, R12, R10 // <--                                  // lsr	w10, w12, #16
+	CBNZW R10, LBB1_13  // <--                                  // cbnz	w10, .LBB1_13
+	MOVW  $2, R13       // <--                                  // mov	w13, #2
+	MOVW  $2, R10       // <--                                  // mov	w10, #2
+	WORD  $0x7900010c   // MOVH R12, (R8)                       // strh	w12, [x8]
+	ADD   R13, R8, R8   // <--                                  // add	x8, x8, x13
+	CMP   $1, R11       // <--                                  // cmp	x11, #1
+	BNE   LBB1_14       // <--                                  // b.ne	.LBB1_14
+	JMP   LBB1_30       // <--                                  // b	.LBB1_30
 
 LBB1_13:
-	ADD   R14, R8, R8  // <--                                  // add	x8, x8, x14
-	ADDW  $2, R11, R11 // <--                                  // add	w11, w11, #2
-	SUBSW $1, R10, R10 // <--                                  // subs	w10, w10, #1
-	WORD  $0xb800452d  // MOVW.P R13, 4(R9)                    // str	w13, [x9], #4
-	BEQ   LBB1_22      // <--                                  // b.eq	.LBB1_22
+	MOVW $3, R10     // <--                                  // mov	w10, #3
+	MOVW $4, R13     // <--                                  // mov	w13, #4
+	WORD $0xb900010c // MOVW R12, (R8)                       // str	w12, [x8]
+	ADD  R13, R8, R8 // <--                                  // add	x8, x8, x13
+	CMP  $1, R11     // <--                                  // cmp	x11, #1
+	BEQ  LBB1_30     // <--                                  // b.eq	.LBB1_30
 
 LBB1_14:
-	ANDW $255, R11, R13 // <--                                  // and	w13, w11, #0xff
-	CMPW $8, R13        // <--                                  // cmp	w13, #8
-	BNE  LBB1_16        // <--                                  // b.ne	.LBB1_16
-	MOVW ZR, R11        // <--                                  // mov	w11, wzr
-	WORD $0x3840140c    // MOVBU.P 1(R0), R12                   // ldrb	w12, [x0], #1
+	WORD $0xb940040d   // MOVWU 4(R0), R13                     // ldr	w13, [x0, #4]
+	CBZW R13, LBB1_17  // <--                                  // cbz	w13, .LBB1_17
+	CMPW $256, R13     // <--                                  // cmp	w13, #256
+	BCS  LBB1_18       // <--                                  // b.hs	.LBB1_18
+	MOVW $4, R12       // <--                                  // mov	w12, #4
+	MOVW $1, R14       // <--                                  // mov	w14, #1
+	WORD $0x3900010d   // MOVB R13, (R8)                       // strb	w13, [x8]
+	ADD  R14, R8, R8   // <--                                  // add	x8, x8, x14
+	ORRW R12, R10, R10 // <--                                  // orr	w10, w10, w12
+	CMP  $2, R11       // <--                                  // cmp	x11, #2
+	BNE  LBB1_21       // <--                                  // b.ne	.LBB1_21
+	JMP  LBB1_30       // <--                                  // b	.LBB1_30
 
-LBB1_16:
-	LSRW  R11, R12, R13 // <--                                  // lsr	w13, w12, w11
-	ANDW  $3, R13, R13  // <--                                  // and	w13, w13, #0x3
-	CMPW  $2, R13       // <--                                  // cmp	w13, #2
-	BEQ   LBB1_20       // <--                                  // b.eq	.LBB1_20
-	CMPW  $1, R13       // <--                                  // cmp	w13, #1
-	BEQ   LBB1_12       // <--                                  // b.eq	.LBB1_12
-	CBNZW R13, LBB1_21  // <--                                  // cbnz	w13, .LBB1_21
-	WORD  $0x3940010d   // MOVBU (R8), R13                      // ldrb	w13, [x8]
-	MOVW  $1, R14       // <--                                  // mov	w14, #1
-	JMP   LBB1_13       // <--                                  // b	.LBB1_13
+LBB1_17:
+	MOVW ZR, R12      // <--                                  // mov	w12, wzr
+	ORRW ZR, R10, R10 // <--                                  // orr	w10, w10, wzr
+	CMP  $2, R11      // <--                                  // cmp	x11, #2
+	BNE  LBB1_21      // <--                                  // b.ne	.LBB1_21
+	JMP  LBB1_30      // <--                                  // b	.LBB1_30
+
+LBB1_18:
+	CMPW $(16<<12), R13 // <--                                  // cmp	w13, #16, lsl #12
+	BCS  LBB1_20        // <--                                  // b.hs	.LBB1_20
+	MOVW $8, R12        // <--                                  // mov	w12, #8
+	MOVW $2, R14        // <--                                  // mov	w14, #2
+	WORD $0x7900010d    // MOVH R13, (R8)                       // strh	w13, [x8]
+	ADD  R14, R8, R8    // <--                                  // add	x8, x8, x14
+	ORRW R12, R10, R10  // <--                                  // orr	w10, w10, w12
+	CMP  $2, R11        // <--                                  // cmp	x11, #2
+	BNE  LBB1_21        // <--                                  // b.ne	.LBB1_21
+	JMP  LBB1_30        // <--                                  // b	.LBB1_30
 
 LBB1_20:
-	WORD $0x3940090d       // MOVBU 2(R8), R13                     // ldrb	w13, [x8, #2]
-	WORD $0x7940010e       // MOVHU (R8), R14                      // ldrh	w14, [x8]
-	ORRW R13<<16, R14, R13 // <--                                  // orr	w13, w14, w13, lsl #16
-	MOVW $3, R14           // <--                                  // mov	w14, #3
-	JMP  LBB1_13           // <--                                  // b	.LBB1_13
+	MOVW $12, R12      // <--                                  // mov	w12, #12
+	MOVW $4, R14       // <--                                  // mov	w14, #4
+	WORD $0xb900010d   // MOVW R13, (R8)                       // str	w13, [x8]
+	ADD  R14, R8, R8   // <--                                  // add	x8, x8, x14
+	ORRW R12, R10, R10 // <--                                  // orr	w10, w10, w12
+	CMP  $2, R11       // <--                                  // cmp	x11, #2
+	BEQ  LBB1_30       // <--                                  // b.eq	.LBB1_30
 
 LBB1_21:
-	WORD $0xb940010d // MOVWU (R8), R13                      // ldr	w13, [x8]
-	MOVW $4, R14     // <--                                  // mov	w14, #4
-	JMP  LBB1_13     // <--                                  // b	.LBB1_13
+	WORD $0xb940080c  // MOVWU 8(R0), R12                     // ldr	w12, [x0, #8]
+	CBZW R12, LBB1_24 // <--                                  // cbz	w12, .LBB1_24
+	CMPW $256, R12    // <--                                  // cmp	w12, #256
+	BCS  LBB1_25      // <--                                  // b.hs	.LBB1_25
+	MOVW $16, R11     // <--                                  // mov	w11, #16
+	MOVW $1, R13      // <--                                  // mov	w13, #1
+	WORD $0x3900010c  // MOVB R12, (R8)                       // strb	w12, [x8]
+	JMP  LBB1_28      // <--                                  // b	.LBB1_28
 
-LBB1_22:
-	SUB R4, R9, R11 // <--                                  // sub	x11, x9, x4
+LBB1_24:
+	MOVW ZR, R11 // <--                                  // mov	w11, wzr
+	JMP  LBB1_29 // <--                                  // b	.LBB1_29
 
-LBB1_23:
-	ASR  $2, R11, R9    // <--                                  // asr	x9, x11, #2
-	CMP  $0, R8         // <--                                  // cmp	x8, #0
-	CSEL EQ, ZR, R9, R0 // <--                                  // csel	x0, xzr, x9, eq
+LBB1_25:
+	CMPW $(16<<12), R12 // <--                                  // cmp	w12, #16, lsl #12
+	BCS  LBB1_27        // <--                                  // b.hs	.LBB1_27
+	MOVW $32, R11       // <--                                  // mov	w11, #32
+	MOVW $2, R13        // <--                                  // mov	w13, #2
+	WORD $0x7900010c    // MOVH R12, (R8)                       // strh	w12, [x8]
+	JMP  LBB1_28        // <--                                  // b	.LBB1_28
+
+LBB1_27:
+	MOVW $48, R11    // <--                                  // mov	w11, #48
+	MOVW $4, R13     // <--                                  // mov	w13, #4
+	WORD $0xb900010c // MOVW R12, (R8)                       // str	w12, [x8]
+
+LBB1_28:
+	ADD R13, R8, R8 // <--                                  // add	x8, x8, x13
+
+LBB1_29:
+	ORRW R11, R10, R10 // <--                                  // orr	w10, w10, w11
+
+LBB1_30:
+	WORD $0x3900012a // MOVB R10, (R9)                       // strb	w10, [x9]
+
+LBB1_31:
+	SUB  R3, R8, R0     // <--                                  // sub	x0, x8, x3
 	NOP                 // (skipped)                            // ldp	x29, x30, [sp], #16
-	MOVD R0, ret+40(FP) // <--
+	MOVD R0, ret+32(FP) // <--
 	RET                 // <--                                  // ret
 
-TEXT ·svb_decode_alt(SB), NOSPLIT, $0-48
+TEXT ·svb_decode(SB), NOSPLIT, $0-48
 	MOVD in+0(FP), R0
 	MOVD in_len+8(FP), R1
 	MOVD in_cap+16(FP), R2
@@ -340,17 +417,17 @@ LBB2_3:
 	ADD  R10, R0, R10                  // <--                                  // add	x10, x0, x10
 	ADD  R3>>2, R0, R11                // <--                                  // add	x11, x0, x3, lsr #2
 	MOVD R4, R9                        // <--                                  // mov	x9, x4
-	MOVD $lengthTable_0124<>(SB), R12  // <--                                  // adrp	x12, lengthTable_0124
-	ADD  $0, R12, R12                  // <--                                  // add	x12, x12, :lo12:lengthTable_0124
-	MOVD $shuffleTable_0124<>(SB), R13 // <--                                  // adrp	x13, shuffleTable_0124
-	ADD  $0, R13, R13                  // <--                                  // add	x13, x13, :lo12:shuffleTable_0124
+	MOVD $shuffleTable_1234<>(SB), R12 // <--                                  // adrp	x12, shuffleTable_1234
+	ADD  $0, R12, R12                  // <--                                  // add	x12, x12, :lo12:shuffleTable_1234
+	MOVD $lengthTable_1234<>(SB), R13  // <--                                  // adrp	x13, lengthTable_1234
+	ADD  $0, R13, R13                  // <--                                  // add	x13, x13, :lo12:lengthTable_1234
 
 LBB2_6:
 	WORD $0x3840140e              // MOVBU.P 1(R0), R14                   // ldrb	w14, [x0], #1
 	WORD $0x3dc00101              // FMOVQ (R8), F1                       // ldr	q1, [x8]
 	CMP  R11, R0                  // <--                                  // cmp	x0, x11
-	WORD $0x3cee79a0              // FMOVQ (R13)(R14<<4), F0              // ldr	q0, [x13, x14, lsl #4]
-	WORD $0x386e698e              // MOVBU (R12)(R14), R14                // ldrb	w14, [x12, x14]
+	WORD $0x3cee7980              // FMOVQ (R12)(R14<<4), F0              // ldr	q0, [x12, x14, lsl #4]
+	WORD $0x386e69ae              // MOVBU (R13)(R14), R14                // ldrb	w14, [x13, x14]
 	VTBL V0.B16, [V1.B16], V0.B16 // <--                                  // tbl	v0.16b, { v1.16b }, v0.16b
 	ADD  R14, R8, R8              // <--                                  // add	x8, x8, x14
 	WORD $0x3c810520              // FMOVQ.P F0, 16(R9)                   // str	q0, [x9], #16
@@ -364,22 +441,24 @@ LBB2_8:
 
 LBB2_9:
 	SUB  R4, R9, R11  // <--                                  // sub	x11, x9, x4
-	CBZ  R8, LBB2_22  // <--                                  // cbz	x8, .LBB2_22
+	CBZ  R8, LBB2_23  // <--                                  // cbz	x8, .LBB2_23
 	LSR  $2, R11, R10 // <--                                  // lsr	x10, x11, #2
 	SUBW R10, R3, R10 // <--                                  // sub	w10, w3, w10
-	CBZW R10, LBB2_22 // <--                                  // cbz	w10, .LBB2_22
+	CBZW R10, LBB2_23 // <--                                  // cbz	w10, .LBB2_23
 	MOVW ZR, R11      // <--                                  // mov	w11, wzr
 	WORD $0x3840140c  // MOVBU.P 1(R0), R12                   // ldrb	w12, [x0], #1
 	JMP  LBB2_14      // <--                                  // b	.LBB2_14
 
 LBB2_12:
-	WORD $0x7840250d // MOVHU.P 2(R8), R13                   // ldrh	w13, [x8], #2
+	WORD $0x7940010d // MOVHU (R8), R13                      // ldrh	w13, [x8]
+	MOVW $2, R14     // <--                                  // mov	w14, #2
 
 LBB2_13:
+	ADD   R14, R8, R8  // <--                                  // add	x8, x8, x14
 	ADDW  $2, R11, R11 // <--                                  // add	w11, w11, #2
 	SUBSW $1, R10, R10 // <--                                  // subs	w10, w10, #1
 	WORD  $0xb800452d  // MOVW.P R13, 4(R9)                    // str	w13, [x9], #4
-	BEQ   LBB2_21      // <--                                  // b.eq	.LBB2_21
+	BEQ   LBB2_22      // <--                                  // b.eq	.LBB2_22
 
 LBB2_14:
 	ANDW $255, R11, R13 // <--                                  // and	w13, w11, #0xff
@@ -389,27 +468,431 @@ LBB2_14:
 	WORD $0x3840140c    // MOVBU.P 1(R0), R12                   // ldrb	w12, [x0], #1
 
 LBB2_16:
-	LSRW  R11, R12, R13 // <--                                  // lsr	w13, w12, w11
-	ANDSW $3, R13, R13  // <--                                  // ands	w13, w13, #0x3
-	BEQ   LBB2_13       // <--                                  // b.eq	.LBB2_13
-	CMPW  $2, R13       // <--                                  // cmp	w13, #2
-	BEQ   LBB2_12       // <--                                  // b.eq	.LBB2_12
-	CMPW  $1, R13       // <--                                  // cmp	w13, #1
-	BNE   LBB2_20       // <--                                  // b.ne	.LBB2_20
-	WORD  $0x3840150d   // MOVBU.P 1(R8), R13                   // ldrb	w13, [x8], #1
-	JMP   LBB2_13       // <--                                  // b	.LBB2_13
+	LSRW  R11, R12, R13     // <--                                  // lsr	w13, w12, w11
+	ANDSW $3, R13, R13      // <--                                  // ands	w13, w13, #0x3
+	BEQ   LBB2_20           // <--                                  // b.eq	.LBB2_20
+	CMPW  $1, R13           // <--                                  // cmp	w13, #1
+	BEQ   LBB2_12           // <--                                  // b.eq	.LBB2_12
+	CMPW  $2, R13           // <--                                  // cmp	w13, #2
+	BNE   LBB2_21           // <--                                  // b.ne	.LBB2_21
+	WORD  $0x3940090d       // MOVBU 2(R8), R13                     // ldrb	w13, [x8, #2]
+	WORD  $0x7940010e       // MOVHU (R8), R14                      // ldrh	w14, [x8]
+	ORRW  R13<<16, R14, R13 // <--                                  // orr	w13, w14, w13, lsl #16
+	MOVW  $3, R14           // <--                                  // mov	w14, #3
+	JMP   LBB2_13           // <--                                  // b	.LBB2_13
 
 LBB2_20:
-	WORD $0xb840450d // MOVWU.P 4(R8), R13                   // ldr	w13, [x8], #4
+	WORD $0x3940010d // MOVBU (R8), R13                      // ldrb	w13, [x8]
+	MOVW $1, R14     // <--                                  // mov	w14, #1
 	JMP  LBB2_13     // <--                                  // b	.LBB2_13
 
 LBB2_21:
-	SUB R4, R9, R11 // <--                                  // sub	x11, x9, x4
+	WORD $0xb940010d // MOVWU (R8), R13                      // ldr	w13, [x8]
+	MOVW $4, R14     // <--                                  // mov	w14, #4
+	JMP  LBB2_13     // <--                                  // b	.LBB2_13
 
 LBB2_22:
+	SUB R4, R9, R11 // <--                                  // sub	x11, x9, x4
+
+LBB2_23:
 	ASR  $2, R11, R9    // <--                                  // asr	x9, x11, #2
 	CMP  $0, R8         // <--                                  // cmp	x8, #0
 	CSEL EQ, ZR, R9, R0 // <--                                  // csel	x0, xzr, x9, eq
+	NOP                 // (skipped)                            // ldp	x29, x30, [sp], #16
+	MOVD R0, ret+40(FP) // <--
+	RET                 // <--                                  // ret
+
+TEXT ·svb_decode_alt(SB), NOSPLIT, $0-48
+	MOVD in+0(FP), R0
+	MOVD in_len+8(FP), R1
+	MOVD in_cap+16(FP), R2
+	MOVD count+24(FP), R3
+	MOVD out+32(FP), R4
+	CMP  $1, R3            // <--                                  // cmp	x3, #1
+	BLT  LBB3_2            // <--                                  // b.lt	.LBB3_2
+	ADD  $3, R3, R8        // <--                                  // add	x8, x3, #3
+	LSR  $2, R8, R9        // <--                                  // lsr	x9, x8, #2
+	CMP  R1, R9            // <--                                  // cmp	x9, x1
+	BLS  LBB3_3            // <--                                  // b.ls	.LBB3_3
+
+LBB3_2:
+	MOVD ZR, R0         // <--                                  // mov	x0, xzr
+	MOVD R0, ret+40(FP) // <--
+	RET                 // <--                                  // ret
+
+LBB3_3:
+	NOP                                // (skipped)                            // stp	x29, x30, [sp, #-16]!
+	ADD  R9, R0, R8                    // <--                                  // add	x8, x0, x9
+	CMP  $4, R3                        // <--                                  // cmp	x3, #4
+	NOP                                // (skipped)                            // mov	x29, sp
+	BCC  LBB3_8                        // <--                                  // b.lo	.LBB3_8
+	AND  $-16, R1, R10                 // <--                                  // and	x10, x1, #0xfffffffffffffff0
+	CMP  R10, R9                       // <--                                  // cmp	x9, x10
+	BGE  LBB3_8                        // <--                                  // b.ge	.LBB3_8
+	ADD  R10, R0, R10                  // <--                                  // add	x10, x0, x10
+	ADD  R3>>2, R0, R11                // <--                                  // add	x11, x0, x3, lsr #2
+	MOVD R4, R9                        // <--                                  // mov	x9, x4
+	MOVD $lengthTable_0124<>(SB), R12  // <--                                  // adrp	x12, lengthTable_0124
+	ADD  $0, R12, R12                  // <--                                  // add	x12, x12, :lo12:lengthTable_0124
+	MOVD $shuffleTable_0124<>(SB), R13 // <--                                  // adrp	x13, shuffleTable_0124
+	ADD  $0, R13, R13                  // <--                                  // add	x13, x13, :lo12:shuffleTable_0124
+
+LBB3_6:
+	WORD $0x3840140e              // MOVBU.P 1(R0), R14                   // ldrb	w14, [x0], #1
+	WORD $0x3dc00101              // FMOVQ (R8), F1                       // ldr	q1, [x8]
+	CMP  R11, R0                  // <--                                  // cmp	x0, x11
+	WORD $0x3cee79a0              // FMOVQ (R13)(R14<<4), F0              // ldr	q0, [x13, x14, lsl #4]
+	WORD $0x386e698e              // MOVBU (R12)(R14), R14                // ldrb	w14, [x12, x14]
+	VTBL V0.B16, [V1.B16], V0.B16 // <--                                  // tbl	v0.16b, { v1.16b }, v0.16b
+	ADD  R14, R8, R8              // <--                                  // add	x8, x8, x14
+	WORD $0x3c810520              // FMOVQ.P F0, 16(R9)                   // str	q0, [x9], #16
+	BCS  LBB3_9                   // <--                                  // b.hs	.LBB3_9
+	CMP  R10, R8                  // <--                                  // cmp	x8, x10
+	BCC  LBB3_6                   // <--                                  // b.lo	.LBB3_6
+	JMP  LBB3_9                   // <--                                  // b	.LBB3_9
+
+LBB3_8:
+	MOVD R4, R9 // <--                                  // mov	x9, x4
+
+LBB3_9:
+	SUB  R4, R9, R11  // <--                                  // sub	x11, x9, x4
+	CBZ  R8, LBB3_22  // <--                                  // cbz	x8, .LBB3_22
+	LSR  $2, R11, R10 // <--                                  // lsr	x10, x11, #2
+	SUBW R10, R3, R10 // <--                                  // sub	w10, w3, w10
+	CBZW R10, LBB3_22 // <--                                  // cbz	w10, .LBB3_22
+	MOVW ZR, R11      // <--                                  // mov	w11, wzr
+	WORD $0x3840140c  // MOVBU.P 1(R0), R12                   // ldrb	w12, [x0], #1
+	JMP  LBB3_14      // <--                                  // b	.LBB3_14
+
+LBB3_12:
+	WORD $0x7840250d // MOVHU.P 2(R8), R13                   // ldrh	w13, [x8], #2
+
+LBB3_13:
+	ADDW  $2, R11, R11 // <--                                  // add	w11, w11, #2
+	SUBSW $1, R10, R10 // <--                                  // subs	w10, w10, #1
+	WORD  $0xb800452d  // MOVW.P R13, 4(R9)                    // str	w13, [x9], #4
+	BEQ   LBB3_21      // <--                                  // b.eq	.LBB3_21
+
+LBB3_14:
+	ANDW $255, R11, R13 // <--                                  // and	w13, w11, #0xff
+	CMPW $8, R13        // <--                                  // cmp	w13, #8
+	BNE  LBB3_16        // <--                                  // b.ne	.LBB3_16
+	MOVW ZR, R11        // <--                                  // mov	w11, wzr
+	WORD $0x3840140c    // MOVBU.P 1(R0), R12                   // ldrb	w12, [x0], #1
+
+LBB3_16:
+	LSRW  R11, R12, R13 // <--                                  // lsr	w13, w12, w11
+	ANDSW $3, R13, R13  // <--                                  // ands	w13, w13, #0x3
+	BEQ   LBB3_13       // <--                                  // b.eq	.LBB3_13
+	CMPW  $2, R13       // <--                                  // cmp	w13, #2
+	BEQ   LBB3_12       // <--                                  // b.eq	.LBB3_12
+	CMPW  $1, R13       // <--                                  // cmp	w13, #1
+	BNE   LBB3_20       // <--                                  // b.ne	.LBB3_20
+	WORD  $0x3840150d   // MOVBU.P 1(R8), R13                   // ldrb	w13, [x8], #1
+	JMP   LBB3_13       // <--                                  // b	.LBB3_13
+
+LBB3_20:
+	WORD $0xb840450d // MOVWU.P 4(R8), R13                   // ldr	w13, [x8], #4
+	JMP  LBB3_13     // <--                                  // b	.LBB3_13
+
+LBB3_21:
+	SUB R4, R9, R11 // <--                                  // sub	x11, x9, x4
+
+LBB3_22:
+	ASR  $2, R11, R9    // <--                                  // asr	x9, x11, #2
+	CMP  $0, R8         // <--                                  // cmp	x8, #0
+	CSEL EQ, ZR, R9, R0 // <--                                  // csel	x0, xzr, x9, eq
+	NOP                 // (skipped)                            // ldp	x29, x30, [sp], #16
+	MOVD R0, ret+40(FP) // <--
+	RET                 // <--                                  // ret
+
+LCPI4_0:
+LCPI4_1:
+
+DATA LCPI4_0<>+0x00(SB)/1, $0x0c
+DATA LCPI4_0<>+0x01(SB)/1, $0x08
+DATA LCPI4_0<>+0x02(SB)/1, $0x04
+DATA LCPI4_0<>+0x03(SB)/1, $0x00
+DATA LCPI4_0<>+0x04(SB)/1, $0x0c
+DATA LCPI4_0<>+0x05(SB)/1, $0x08
+DATA LCPI4_0<>+0x06(SB)/1, $0x04
+DATA LCPI4_0<>+0x07(SB)/1, $0x00
+GLOBL LCPI4_0<>(SB), (RODATA|NOPTR), $8
+
+DATA LCPI4_1<>+0x00(SB)/4, $0x40100401
+DATA LCPI4_1<>+0x04(SB)/4, $0x1010101
+GLOBL LCPI4_1<>(SB), (RODATA|NOPTR), $8
+
+TEXT ·svb_delta_encode(SB), NOSPLIT, $0-48
+	MOVD in+0(FP), R0
+	MOVD in_len+8(FP), R1
+	MOVD in_cap+16(FP), R2
+	MOVW prev+24(FP), R3
+	MOVD out+32(FP), R4
+	NOP                    // (skipped)                            // stp	x29, x30, [sp, #-16]!
+	ADDW $3, R1, R8        // <--                                  // add	w8, w1, #3
+	CMPW $4, R1            // <--                                  // cmp	w1, #4
+	LSRW $2, R8, R8        // <--                                  // lsr	w8, w8, #2
+	NOP                    // (skipped)                            // mov	x29, sp
+	ADD  R8, R4, R8        // <--                                  // add	x8, x4, x8
+	BCS  LBB4_2            // <--                                  // b.hs	.LBB4_2
+	MOVW R1, R10           // <--                                  // mov	w10, w1
+	MOVD R4, R9            // <--                                  // mov	x9, x4
+	JMP  LBB4_7            // <--                                  // b	.LBB4_7
+
+LBB4_2:
+	MOVD $LCPI4_0<>(SB), R9                    // <--                                  // adrp	x9, .LCPI4_0
+	MOVD $LCPI4_1<>(SB), R11                   // <--                                  // adrp	x11, .LCPI4_1
+	WORD $0x4f000460                           // VMOVI $3, V0.S4                      // movi	v0.4s, #3
+	LSRW $2, R1, R10                           // <--                                  // lsr	w10, w1, #2
+	VDUP R3, V3.S4                             // <--                                  // dup	v3.4s, w3
+	WORD $0xfd400121                           // FMOVD (R9), F1                       // ldr	d1, [x9, :lo12:.LCPI4_0]
+	MOVD R4, R9                                // <--                                  // mov	x9, x4
+	WORD $0xfd400162                           // FMOVD (R11), F2                      // ldr	d2, [x11, :lo12:.LCPI4_1]
+	MOVD $encodingShuffleTable_1234<>(SB), R11 // <--                                  // adrp	x11, encodingShuffleTable_1234
+	ADD  $0, R11, R11                          // <--                                  // add	x11, x11, :lo12:encodingShuffleTable_1234
+
+LBB4_3:
+	WORD  $0x3cc10404                 // FMOVQ.P 16(R0), F4                   // ldr	q4, [x0], #16
+	SUBSW $1, R10, R10                // <--                                  // subs	w10, w10, #1
+	VEXT  $12, V4.B16, V3.B16, V3.B16 // <--                                  // ext	v3.16b, v3.16b, v4.16b, #12
+	VSUB  V3.S4, V4.S4, V3.S4         // <--                                  // sub	v3.4s, v4.4s, v3.4s
+	WORD  $0x6ea04865                 // VCLZ V3.S4, V5.S4                    // clz	v5.4s, v3.4s
+	WORD  $0x6f3d04a5                 // VUSHR $3, V5.S4, V5.S4               // ushr	v5.4s, v5.4s, #3
+	WORD  $0x6ea52c05                 // VUQSUB V5.S4, V0.S4, V5.S4           // uqsub	v5.4s, v0.4s, v5.4s
+	VTBL  V1.B8, [V5.B16], V5.B8      // <--                                  // tbl	v5.8b, { v5.16b }, v1.8b
+	WORD  $0x0ea29ca5                 // VMUL V2.S2, V5.S2, V5.S2             // mul	v5.2s, v5.2s, v2.2s
+	FMOVS F5, R12                     // <--                                  // fmov	w12, s5
+	VMOV  V5.S[1], R13                // <--                                  // mov	w13, v5.s[1]
+	LSRW  $24, R12, R12               // <--                                  // lsr	w12, w12, #24
+	LSRW  $24, R13, R13               // <--                                  // lsr	w13, w13, #24
+	ADD   R13, R8, R13                // <--                                  // add	x13, x8, x13
+	WORD  $0x3cec5966                 // FMOVQ (R11)(R12.UXTW<<4), F6         // ldr	q6, [x11, w12, uxtw #4]
+	WORD  $0x3800152c                 // MOVB.P R12, 1(R9)                    // strb	w12, [x9], #1
+	VTBL  V6.B16, [V3.B16], V3.B16    // <--                                  // tbl	v3.16b, { v3.16b }, v6.16b
+	WORD  $0x3d800103                 // FMOVQ F3, (R8)                       // str	q3, [x8]
+	ADD   $4, R13, R8                 // <--                                  // add	x8, x13, #4
+	VMOV  V4.B16, V3.B16              // <--                                  // mov	v3.16b, v4.16b
+	BNE   LBB4_3                      // <--                                  // b.ne	.LBB4_3
+	ANDW  $3, R1, R10                 // <--                                  // and	w10, w1, #0x3
+	CMPW  $4, R1                      // <--                                  // cmp	w1, #4
+	BCC   LBB4_7                      // <--                                  // b.lo	.LBB4_7
+	CBZW  R10, LBB4_7                 // <--                                  // cbz	w10, .LBB4_7
+	WORD  $0xb85fc003                 // MOVWU -4(R0), R3                     // ldur	w3, [x0, #-4]
+	JMP   LBB4_8                      // <--                                  // b	.LBB4_8
+
+LBB4_7:
+	CBZW R10, LBB4_20 // <--                                  // cbz	w10, .LBB4_20
+
+LBB4_8:
+	MOVW ZR, R10     // <--                                  // mov	w10, wzr
+	MOVW ZR, R12     // <--                                  // mov	w12, wzr
+	AND  $3, R1, R11 // <--                                  // and	x11, x1, #0x3
+	JMP  LBB4_11     // <--                                  // b	.LBB4_11
+
+LBB4_9:
+	MOVW ZR, R15     // <--                                  // mov	w15, wzr
+	MOVW $1, R16     // <--                                  // mov	w16, #1
+	WORD $0x3900010e // MOVB R14, (R8)                       // strb	w14, [x8]
+
+LBB4_10:
+	LSLW R12, R15, R14 // <--                                  // lsl	w14, w15, w12
+	ADD  R16, R8, R8   // <--                                  // add	x8, x8, x16
+	ADDW $2, R12, R12  // <--                                  // add	w12, w12, #2
+	ORRW R14, R10, R10 // <--                                  // orr	w10, w10, w14
+	SUBS $1, R11, R11  // <--                                  // subs	x11, x11, #1
+	ADD  $4, R0, R0    // <--                                  // add	x0, x0, #4
+	MOVW R13, R3       // <--                                  // mov	w3, w13
+	BEQ  LBB4_19       // <--                                  // b.eq	.LBB4_19
+
+LBB4_11:
+	ANDW $255, R12, R13 // <--                                  // and	w13, w12, #0xff
+	CMPW $8, R13        // <--                                  // cmp	w13, #8
+	BNE  LBB4_13        // <--                                  // b.ne	.LBB4_13
+	WORD $0x3800152a    // MOVB.P R10, 1(R9)                    // strb	w10, [x9], #1
+	MOVW ZR, R12        // <--                                  // mov	w12, wzr
+	MOVW ZR, R10        // <--                                  // mov	w10, wzr
+
+LBB4_13:
+	WORD $0xb940000d    // MOVWU (R0), R13                      // ldr	w13, [x0]
+	SUBW R3, R13, R14   // <--                                  // sub	w14, w13, w3
+	CMPW $256, R14      // <--                                  // cmp	w14, #256
+	BCC  LBB4_9         // <--                                  // b.lo	.LBB4_9
+	CMPW $(16<<12), R14 // <--                                  // cmp	w14, #16, lsl #12
+	BCS  LBB4_16        // <--                                  // b.hs	.LBB4_16
+	MOVW $1, R15        // <--                                  // mov	w15, #1
+	MOVW $2, R16        // <--                                  // mov	w16, #2
+	WORD $0x7900010e    // MOVH R14, (R8)                       // strh	w14, [x8]
+	JMP  LBB4_10        // <--                                  // b	.LBB4_10
+
+LBB4_16:
+	LSRW  $24, R14, R15 // <--                                  // lsr	w15, w14, #24
+	CBNZW R15, LBB4_18  // <--                                  // cbnz	w15, .LBB4_18
+	LSRW  $16, R14, R17 // <--                                  // lsr	w17, w14, #16
+	MOVW  $2, R15       // <--                                  // mov	w15, #2
+	MOVW  $3, R16       // <--                                  // mov	w16, #3
+	WORD  $0x7900010e   // MOVH R14, (R8)                       // strh	w14, [x8]
+	WORD  $0x39000911   // MOVB R17, 2(R8)                      // strb	w17, [x8, #2]
+	JMP   LBB4_10       // <--                                  // b	.LBB4_10
+
+LBB4_18:
+	MOVW $3, R15     // <--                                  // mov	w15, #3
+	MOVW $4, R16     // <--                                  // mov	w16, #4
+	WORD $0xb900010e // MOVW R14, (R8)                       // str	w14, [x8]
+	JMP  LBB4_10     // <--                                  // b	.LBB4_10
+
+LBB4_19:
+	WORD $0x3900012a // MOVB R10, (R9)                       // strb	w10, [x9]
+
+LBB4_20:
+	SUB  R4, R8, R0     // <--                                  // sub	x0, x8, x4
+	NOP                 // (skipped)                            // ldp	x29, x30, [sp], #16
+	MOVD R0, ret+40(FP) // <--
+	RET                 // <--                                  // ret
+
+LCPI5_0:
+
+DATA LCPI5_0<>+0x00(SB)/1, $0x0c
+DATA LCPI5_0<>+0x01(SB)/1, $0x08
+DATA LCPI5_0<>+0x02(SB)/1, $0x04
+DATA LCPI5_0<>+0x03(SB)/1, $0x00
+DATA LCPI5_0<>+0x04(SB)/1, $0x0c
+DATA LCPI5_0<>+0x05(SB)/1, $0x08
+DATA LCPI5_0<>+0x06(SB)/1, $0x04
+DATA LCPI5_0<>+0x07(SB)/1, $0x00
+GLOBL LCPI5_0<>(SB), (RODATA|NOPTR), $8
+
+TEXT ·svb_delta_encode_alt(SB), NOSPLIT, $0-48
+	MOVD in+0(FP), R0
+	MOVD in_len+8(FP), R1
+	MOVD in_cap+16(FP), R2
+	MOVW prev+24(FP), R3
+	MOVD out+32(FP), R4
+	NOP                    // (skipped)                            // stp	x29, x30, [sp, #-16]!
+	ADDW $3, R1, R8        // <--                                  // add	w8, w1, #3
+	CMPW $4, R1            // <--                                  // cmp	w1, #4
+	LSRW $2, R8, R8        // <--                                  // lsr	w8, w8, #2
+	NOP                    // (skipped)                            // mov	x29, sp
+	ADD  R8, R4, R8        // <--                                  // add	x8, x4, x8
+	BCS  LBB5_2            // <--                                  // b.hs	.LBB5_2
+	MOVW R1, R10           // <--                                  // mov	w10, w1
+	MOVD R4, R9            // <--                                  // mov	x9, x4
+	JMP  LBB5_9            // <--                                  // b	.LBB5_9
+
+LBB5_2:
+	MOVD  $LCPI5_0<>(SB), R9                    // <--                                  // adrp	x9, .LCPI5_0
+	MOVW  $1025, R11                            // <--                                  // mov	w11, #1025
+	WORD  $0x4f000460                           // VMOVI $3, V0.S4                      // movi	v0.4s, #3
+	LSRW  $2, R1, R10                           // <--                                  // lsr	w10, w1, #2
+	WORD  $0x4f000481                           // VMOVI $4, V1.S4                      // movi	v1.4s, #4
+	MOVKW $(16400<<16), R11                     // <--                                  // movk	w11, #16400, lsl #16
+	WORD  $0xfd400122                           // FMOVD (R9), F2                       // ldr	d2, [x9, :lo12:.LCPI5_0]
+	MOVD  R4, R9                                // <--                                  // mov	x9, x4
+	MOVD  $lengthTable_0124<>(SB), R12          // <--                                  // adrp	x12, lengthTable_0124
+	ADD   $0, R12, R12                          // <--                                  // add	x12, x12, :lo12:lengthTable_0124
+	MOVD  $encodingShuffleTable_0124<>(SB), R13 // <--                                  // adrp	x13, encodingShuffleTable_0124
+	ADD   $0, R13, R13                          // <--                                  // add	x13, x13, :lo12:encodingShuffleTable_0124
+	VDUP  R3, V3.S4                             // <--                                  // dup	v3.4s, w3
+	JMP   LBB5_4                                // <--                                  // b	.LBB5_4
+
+LBB5_3:
+	ADD   R15, R8, R8  // <--                                  // add	x8, x8, x15
+	ADD   $16, R0, R0  // <--                                  // add	x0, x0, #16
+	SUBSW $1, R10, R10 // <--                                  // subs	w10, w10, #1
+	WORD  $0x3800152e  // MOVB.P R14, 1(R9)                    // strb	w14, [x9], #1
+	BEQ   LBB5_6       // <--                                  // b.eq	.LBB5_6
+
+LBB5_4:
+	VMOV  V3.B16, V4.B16              // <--                                  // mov	v4.16b, v3.16b
+	WORD  $0x3dc00003                 // FMOVQ (R0), F3                       // ldr	q3, [x0]
+	VEXT  $12, V3.B16, V4.B16, V4.B16 // <--                                  // ext	v4.16b, v4.16b, v3.16b, #12
+	VSUB  V4.S4, V3.S4, V4.S4         // <--                                  // sub	v4.4s, v3.4s, v4.4s
+	WORD  $0x6ea04885                 // VCLZ V4.S4, V5.S4                    // clz	v5.4s, v4.4s
+	WORD  $0x6f3d04a5                 // VUSHR $3, V5.S4, V5.S4               // ushr	v5.4s, v5.4s, #3
+	VSUB  V5.S4, V1.S4, V5.S4         // <--                                  // sub	v5.4s, v1.4s, v5.4s
+	WORD  $0x6ea06ca5                 // VUMIN V0.S4, V5.S4, V5.S4            // umin	v5.4s, v5.4s, v0.4s
+	VTBL  V2.B8, [V5.B16], V5.B8      // <--                                  // tbl	v5.8b, { v5.16b }, v2.8b
+	FMOVS F5, R14                     // <--                                  // fmov	w14, s5
+	MULW  R11, R14, R14               // <--                                  // mul	w14, w14, w11
+	LSR   $24, R14, R16               // <--                                  // lsr	x16, x14, #24
+	LSRW  $24, R14, R14               // <--                                  // lsr	w14, w14, #24
+	WORD  $0x3870698f                 // MOVBU (R12)(R16), R15                // ldrb	w15, [x12, x16]
+	CBZW  R14, LBB5_3                 // <--                                  // cbz	w14, .LBB5_3
+	WORD  $0x3cf079a5                 // FMOVQ (R13)(R16<<4), F5              // ldr	q5, [x13, x16, lsl #4]
+	VTBL  V5.B16, [V4.B16], V4.B16    // <--                                  // tbl	v4.16b, { v4.16b }, v5.16b
+	WORD  $0x3d800104                 // FMOVQ F4, (R8)                       // str	q4, [x8]
+	JMP   LBB5_3                      // <--                                  // b	.LBB5_3
+
+LBB5_6:
+	ANDW $3, R1, R10 // <--                                  // and	w10, w1, #0x3
+	CMPW $4, R1      // <--                                  // cmp	w1, #4
+	BCC  LBB5_9      // <--                                  // b.lo	.LBB5_9
+	CBZW R10, LBB5_9 // <--                                  // cbz	w10, .LBB5_9
+	WORD $0xb85fc003 // MOVWU -4(R0), R3                     // ldur	w3, [x0, #-4]
+	JMP  LBB5_10     // <--                                  // b	.LBB5_10
+
+LBB5_9:
+	CBZW R10, LBB5_23 // <--                                  // cbz	w10, .LBB5_23
+
+LBB5_10:
+	MOVW ZR, R10     // <--                                  // mov	w10, wzr
+	MOVW ZR, R12     // <--                                  // mov	w12, wzr
+	AND  $3, R1, R11 // <--                                  // and	x11, x1, #0x3
+	JMP  LBB5_13     // <--                                  // b	.LBB5_13
+
+LBB5_11:
+	MOVW ZR, R15 // <--                                  // mov	w15, wzr
+
+LBB5_12:
+	LSLW R12, R15, R14 // <--                                  // lsl	w14, w15, w12
+	ADDW $2, R12, R12  // <--                                  // add	w12, w12, #2
+	SUBS $1, R11, R11  // <--                                  // subs	x11, x11, #1
+	ORRW R14, R10, R10 // <--                                  // orr	w10, w10, w14
+	ADD  $4, R0, R0    // <--                                  // add	x0, x0, #4
+	MOVW R13, R3       // <--                                  // mov	w3, w13
+	BEQ  LBB5_22       // <--                                  // b.eq	.LBB5_22
+
+LBB5_13:
+	ANDW $255, R12, R13 // <--                                  // and	w13, w12, #0xff
+	CMPW $8, R13        // <--                                  // cmp	w13, #8
+	BNE  LBB5_15        // <--                                  // b.ne	.LBB5_15
+	WORD $0x3800152a    // MOVB.P R10, 1(R9)                    // strb	w10, [x9], #1
+	MOVW ZR, R12        // <--                                  // mov	w12, wzr
+	MOVW ZR, R10        // <--                                  // mov	w10, wzr
+
+LBB5_15:
+	WORD  $0xb940000d  // MOVWU (R0), R13                      // ldr	w13, [x0]
+	SUBSW R3, R13, R14 // <--                                  // subs	w14, w13, w3
+	BEQ   LBB5_11      // <--                                  // b.eq	.LBB5_11
+	CMPW  $255, R14    // <--                                  // cmp	w14, #255
+	BHI   LBB5_18      // <--                                  // b.hi	.LBB5_18
+	MOVW  $1, R16      // <--                                  // mov	w16, #1
+	MOVW  $1, R15      // <--                                  // mov	w15, #1
+	WORD  $0x3900010e  // MOVB R14, (R8)                       // strb	w14, [x8]
+	JMP   LBB5_21      // <--                                  // b	.LBB5_21
+
+LBB5_18:
+	LSRW  $16, R14, R15 // <--                                  // lsr	w15, w14, #16
+	CBNZW R15, LBB5_20  // <--                                  // cbnz	w15, .LBB5_20
+	MOVW  $2, R16       // <--                                  // mov	w16, #2
+	MOVW  $2, R15       // <--                                  // mov	w15, #2
+	WORD  $0x7900010e   // MOVH R14, (R8)                       // strh	w14, [x8]
+	JMP   LBB5_21       // <--                                  // b	.LBB5_21
+
+LBB5_20:
+	MOVW $3, R15     // <--                                  // mov	w15, #3
+	MOVW $4, R16     // <--                                  // mov	w16, #4
+	WORD $0xb900010e // MOVW R14, (R8)                       // str	w14, [x8]
+
+LBB5_21:
+	ADD R16, R8, R8 // <--                                  // add	x8, x8, x16
+	JMP LBB5_12     // <--                                  // b	.LBB5_12
+
+LBB5_22:
+	WORD $0x3900012a // MOVB R10, (R9)                       // strb	w10, [x9]
+
+LBB5_23:
+	SUB  R4, R8, R0     // <--                                  // sub	x0, x8, x4
 	NOP                 // (skipped)                            // ldp	x29, x30, [sp], #16
 	MOVD R0, ret+40(FP) // <--
 	RET                 // <--                                  // ret
@@ -422,26 +905,26 @@ TEXT ·svb_delta_decode(SB), NOSPLIT, $0-56
 	MOVW prev+32(FP), R4
 	MOVD out+40(FP), R5
 	CMP  $1, R3            // <--                                  // cmp	x3, #1
-	BLT  LBB3_2            // <--                                  // b.lt	.LBB3_2
+	BLT  LBB6_2            // <--                                  // b.lt	.LBB6_2
 	ADD  $3, R3, R8        // <--                                  // add	x8, x3, #3
 	LSR  $2, R8, R9        // <--                                  // lsr	x9, x8, #2
 	CMP  R1, R9            // <--                                  // cmp	x9, x1
-	BLS  LBB3_3            // <--                                  // b.ls	.LBB3_3
+	BLS  LBB6_3            // <--                                  // b.ls	.LBB6_3
 
-LBB3_2:
+LBB6_2:
 	MOVD ZR, R0         // <--                                  // mov	x0, xzr
 	MOVD R0, ret+48(FP) // <--
 	RET                 // <--                                  // ret
 
-LBB3_3:
+LBB6_3:
 	NOP                                // (skipped)                            // stp	x29, x30, [sp, #-16]!
 	ADD  R9, R0, R8                    // <--                                  // add	x8, x0, x9
 	CMP  $4, R3                        // <--                                  // cmp	x3, #4
 	NOP                                // (skipped)                            // mov	x29, sp
-	BCC  LBB3_10                       // <--                                  // b.lo	.LBB3_10
+	BCC  LBB6_10                       // <--                                  // b.lo	.LBB6_10
 	AND  $-16, R1, R10                 // <--                                  // and	x10, x1, #0xfffffffffffffff0
 	CMP  R10, R9                       // <--                                  // cmp	x9, x10
-	BGE  LBB3_10                       // <--                                  // b.ge	.LBB3_10
+	BGE  LBB6_10                       // <--                                  // b.ge	.LBB6_10
 	WORD $0x6f00e400                   // VMOVI $0, V0.D2                      // movi	v0.2d, #0000000000000000
 	ADD  R10, R0, R10                  // <--                                  // add	x10, x0, x10
 	ADD  R3>>2, R0, R11                // <--                                  // add	x11, x0, x3, lsr #2
@@ -452,7 +935,7 @@ LBB3_3:
 	ADD  $0, R13, R13                  // <--                                  // add	x13, x13, :lo12:lengthTable_1234
 	VDUP R4, V1.S4                     // <--                                  // dup	v1.4s, w4
 
-LBB3_6:
+LBB6_6:
 	WORD $0x3840140e                 // MOVBU.P 1(R0), R14                   // ldrb	w14, [x0], #1
 	WORD $0x3dc00103                 // FMOVQ (R8), F3                       // ldr	q3, [x8]
 	VDUP V1.S[3], V1.S4              // <--                                  // dup	v1.4s, v1.s[3]
@@ -467,79 +950,79 @@ LBB3_6:
 	VADD V1.S4, V2.S4, V1.S4         // <--                                  // add	v1.4s, v2.4s, v1.4s
 	VADD V3.S4, V1.S4, V1.S4         // <--                                  // add	v1.4s, v1.4s, v3.4s
 	WORD $0x3c810521                 // FMOVQ.P F1, 16(R9)                   // str	q1, [x9], #16
-	BCS  LBB3_8                      // <--                                  // b.hs	.LBB3_8
+	BCS  LBB6_8                      // <--                                  // b.hs	.LBB6_8
 	CMP  R10, R8                     // <--                                  // cmp	x8, x10
-	BCC  LBB3_6                      // <--                                  // b.lo	.LBB3_6
+	BCC  LBB6_6                      // <--                                  // b.lo	.LBB6_6
 
-LBB3_8:
+LBB6_8:
 	SUB  R5, R9, R10    // <--                                  // sub	x10, x9, x5
 	ASR  $2, R10, R10   // <--                                  // asr	x10, x10, #2
 	SUB  R10, R3, R3    // <--                                  // sub	x3, x3, x10
 	CMP  $1, R3         // <--                                  // cmp	x3, #1
 	CCMP GE, R9, R5, $0 // <--                                  // ccmp	x9, x5, #0, ge
-	BLS  LBB3_11        // <--                                  // b.ls	.LBB3_11
+	BLS  LBB6_11        // <--                                  // b.ls	.LBB6_11
 	WORD $0xb85fc124    // MOVWU -4(R9), R4                     // ldur	w4, [x9, #-4]
-	JMP  LBB3_11        // <--                                  // b	.LBB3_11
+	JMP  LBB6_11        // <--                                  // b	.LBB6_11
 
-LBB3_10:
+LBB6_10:
 	MOVD ZR, R10 // <--                                  // mov	x10, xzr
 	MOVD R5, R9  // <--                                  // mov	x9, x5
 
-LBB3_11:
-	CBZ  R8, LBB3_25 // <--                                  // cbz	x8, .LBB3_25
-	CBZW R3, LBB3_25 // <--                                  // cbz	w3, .LBB3_25
+LBB6_11:
+	CBZ  R8, LBB6_25 // <--                                  // cbz	x8, .LBB6_25
+	CBZW R3, LBB6_25 // <--                                  // cbz	w3, .LBB6_25
 	MOVW ZR, R10     // <--                                  // mov	w10, wzr
 	WORD $0x3840140b // MOVBU.P 1(R0), R11                   // ldrb	w11, [x0], #1
-	JMP  LBB3_16     // <--                                  // b	.LBB3_16
+	JMP  LBB6_16     // <--                                  // b	.LBB6_16
 
-LBB3_14:
+LBB6_14:
 	WORD $0x7940010c // MOVHU (R8), R12                      // ldrh	w12, [x8]
 	MOVW $2, R13     // <--                                  // mov	w13, #2
 
-LBB3_15:
+LBB6_15:
 	ADD   R13, R8, R8  // <--                                  // add	x8, x8, x13
 	ADDW  R4, R12, R4  // <--                                  // add	w4, w12, w4
 	ADDW  $2, R10, R10 // <--                                  // add	w10, w10, #2
 	SUBSW $1, R3, R3   // <--                                  // subs	w3, w3, #1
 	WORD  $0xb8004524  // MOVW.P R4, 4(R9)                     // str	w4, [x9], #4
-	BEQ   LBB3_24      // <--                                  // b.eq	.LBB3_24
+	BEQ   LBB6_24      // <--                                  // b.eq	.LBB6_24
 
-LBB3_16:
+LBB6_16:
 	ANDW $255, R10, R12 // <--                                  // and	w12, w10, #0xff
 	CMPW $8, R12        // <--                                  // cmp	w12, #8
-	BNE  LBB3_18        // <--                                  // b.ne	.LBB3_18
+	BNE  LBB6_18        // <--                                  // b.ne	.LBB6_18
 	MOVW ZR, R10        // <--                                  // mov	w10, wzr
 	WORD $0x3840140b    // MOVBU.P 1(R0), R11                   // ldrb	w11, [x0], #1
 
-LBB3_18:
-	LSRW  R10, R11, R12 // <--                                  // lsr	w12, w11, w10
-	ANDW  $3, R12, R12  // <--                                  // and	w12, w12, #0x3
-	CMPW  $2, R12       // <--                                  // cmp	w12, #2
-	BEQ   LBB3_22       // <--                                  // b.eq	.LBB3_22
-	CMPW  $1, R12       // <--                                  // cmp	w12, #1
-	BEQ   LBB3_14       // <--                                  // b.eq	.LBB3_14
-	CBNZW R12, LBB3_23  // <--                                  // cbnz	w12, .LBB3_23
-	WORD  $0x3940010c   // MOVBU (R8), R12                      // ldrb	w12, [x8]
-	MOVW  $1, R13       // <--                                  // mov	w13, #1
-	JMP   LBB3_15       // <--                                  // b	.LBB3_15
+LBB6_18:
+	LSRW  R10, R11, R12     // <--                                  // lsr	w12, w11, w10
+	ANDSW $3, R12, R12      // <--                                  // ands	w12, w12, #0x3
+	BEQ   LBB6_22           // <--                                  // b.eq	.LBB6_22
+	CMPW  $1, R12           // <--                                  // cmp	w12, #1
+	BEQ   LBB6_14           // <--                                  // b.eq	.LBB6_14
+	CMPW  $2, R12           // <--                                  // cmp	w12, #2
+	BNE   LBB6_23           // <--                                  // b.ne	.LBB6_23
+	WORD  $0x3940090c       // MOVBU 2(R8), R12                     // ldrb	w12, [x8, #2]
+	WORD  $0x7940010d       // MOVHU (R8), R13                      // ldrh	w13, [x8]
+	ORRW  R12<<16, R13, R12 // <--                                  // orr	w12, w13, w12, lsl #16
+	MOVW  $3, R13           // <--                                  // mov	w13, #3
+	JMP   LBB6_15           // <--                                  // b	.LBB6_15
 
-LBB3_22:
-	WORD $0x3940090c       // MOVBU 2(R8), R12                     // ldrb	w12, [x8, #2]
-	WORD $0x7940010d       // MOVHU (R8), R13                      // ldrh	w13, [x8]
-	ORRW R12<<16, R13, R12 // <--                                  // orr	w12, w13, w12, lsl #16
-	MOVW $3, R13           // <--                                  // mov	w13, #3
-	JMP  LBB3_15           // <--                                  // b	.LBB3_15
+LBB6_22:
+	WORD $0x3940010c // MOVBU (R8), R12                      // ldrb	w12, [x8]
+	MOVW $1, R13     // <--                                  // mov	w13, #1
+	JMP  LBB6_15     // <--                                  // b	.LBB6_15
 
-LBB3_23:
+LBB6_23:
 	WORD $0xb940010c // MOVWU (R8), R12                      // ldr	w12, [x8]
 	MOVW $4, R13     // <--                                  // mov	w13, #4
-	JMP  LBB3_15     // <--                                  // b	.LBB3_15
+	JMP  LBB6_15     // <--                                  // b	.LBB6_15
 
-LBB3_24:
+LBB6_24:
 	SUB R5, R9, R9  // <--                                  // sub	x9, x9, x5
 	ASR $2, R9, R10 // <--                                  // asr	x10, x9, #2
 
-LBB3_25:
+LBB6_25:
 	CMP  $0, R8          // <--                                  // cmp	x8, #0
 	CSEL EQ, ZR, R10, R0 // <--                                  // csel	x0, xzr, x10, eq
 	NOP                  // (skipped)                            // ldp	x29, x30, [sp], #16
@@ -1059,6 +1542,554 @@ DATA encodingShuffleTable_1234<>+0xfe8(SB)/8, $0xff0f0e0d0c0b0a09
 DATA encodingShuffleTable_1234<>+0xff0(SB)/8, $0x0706050403020100
 DATA encodingShuffleTable_1234<>+0xff8(SB)/8, $0x0f0e0d0c0b0a0908
 GLOBL encodingShuffleTable_1234<>(SB), (RODATA|NOPTR), $4096
+
+DATA lengthTable_0124<>+0x00(SB)/8, $0x0503020104020100
+DATA lengthTable_0124<>+0x08(SB)/8, $0x0806050406040302
+DATA lengthTable_0124<>+0x10(SB)/8, $0x0604030205030201
+DATA lengthTable_0124<>+0x18(SB)/8, $0x0907060507050403
+DATA lengthTable_0124<>+0x20(SB)/8, $0x0705040306040302
+DATA lengthTable_0124<>+0x28(SB)/8, $0x0a08070608060504
+DATA lengthTable_0124<>+0x30(SB)/8, $0x0907060508060504
+DATA lengthTable_0124<>+0x38(SB)/8, $0x0c0a09080a080706
+DATA lengthTable_0124<>+0x40(SB)/8, $0x0604030205030201
+DATA lengthTable_0124<>+0x48(SB)/8, $0x0907060507050403
+DATA lengthTable_0124<>+0x50(SB)/8, $0x0705040306040302
+DATA lengthTable_0124<>+0x58(SB)/8, $0x0a08070608060504
+DATA lengthTable_0124<>+0x60(SB)/8, $0x0806050407050403
+DATA lengthTable_0124<>+0x68(SB)/8, $0x0b09080709070605
+DATA lengthTable_0124<>+0x70(SB)/8, $0x0a08070609070605
+DATA lengthTable_0124<>+0x78(SB)/8, $0x0d0b0a090b090807
+DATA lengthTable_0124<>+0x80(SB)/8, $0x0705040306040302
+DATA lengthTable_0124<>+0x88(SB)/8, $0x0a08070608060504
+DATA lengthTable_0124<>+0x90(SB)/8, $0x0806050407050403
+DATA lengthTable_0124<>+0x98(SB)/8, $0x0b09080709070605
+DATA lengthTable_0124<>+0xa0(SB)/8, $0x0907060508060504
+DATA lengthTable_0124<>+0xa8(SB)/8, $0x0c0a09080a080706
+DATA lengthTable_0124<>+0xb0(SB)/8, $0x0b0908070a080706
+DATA lengthTable_0124<>+0xb8(SB)/8, $0x0e0c0b0a0c0a0908
+DATA lengthTable_0124<>+0xc0(SB)/8, $0x0907060508060504
+DATA lengthTable_0124<>+0xc8(SB)/8, $0x0c0a09080a080706
+DATA lengthTable_0124<>+0xd0(SB)/8, $0x0a08070609070605
+DATA lengthTable_0124<>+0xd8(SB)/8, $0x0d0b0a090b090807
+DATA lengthTable_0124<>+0xe0(SB)/8, $0x0b0908070a080706
+DATA lengthTable_0124<>+0xe8(SB)/8, $0x0e0c0b0a0c0a0908
+DATA lengthTable_0124<>+0xf0(SB)/8, $0x0d0b0a090c0a0908
+DATA lengthTable_0124<>+0xf8(SB)/8, $0x100e0d0c0e0c0b0a
+GLOBL lengthTable_0124<>(SB), (RODATA|NOPTR), $256
+
+DATA encodingShuffleTable_0124<>+0x00(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x08(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x10(SB)/8, $0xffffffffffffff00
+DATA encodingShuffleTable_0124<>+0x18(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x20(SB)/8, $0xffffffffffff0100
+DATA encodingShuffleTable_0124<>+0x28(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x30(SB)/8, $0xffffffff03020100
+DATA encodingShuffleTable_0124<>+0x38(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x40(SB)/8, $0xffffffffffffff04
+DATA encodingShuffleTable_0124<>+0x48(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x50(SB)/8, $0xffffffffffff0400
+DATA encodingShuffleTable_0124<>+0x58(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x60(SB)/8, $0xffffffffff040100
+DATA encodingShuffleTable_0124<>+0x68(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x70(SB)/8, $0xffffff0403020100
+DATA encodingShuffleTable_0124<>+0x78(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x80(SB)/8, $0xffffffffffff0504
+DATA encodingShuffleTable_0124<>+0x88(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x90(SB)/8, $0xffffffffff050400
+DATA encodingShuffleTable_0124<>+0x98(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xa0(SB)/8, $0xffffffff05040100
+DATA encodingShuffleTable_0124<>+0xa8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xb0(SB)/8, $0xffff050403020100
+DATA encodingShuffleTable_0124<>+0xb8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xc0(SB)/8, $0xffffffff07060504
+DATA encodingShuffleTable_0124<>+0xc8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xd0(SB)/8, $0xffffff0706050400
+DATA encodingShuffleTable_0124<>+0xd8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xe0(SB)/8, $0xffff070605040100
+DATA encodingShuffleTable_0124<>+0xe8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xf0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0xf8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x100(SB)/8, $0xffffffffffffff08
+DATA encodingShuffleTable_0124<>+0x108(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x110(SB)/8, $0xffffffffffff0800
+DATA encodingShuffleTable_0124<>+0x118(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x120(SB)/8, $0xffffffffff080100
+DATA encodingShuffleTable_0124<>+0x128(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x130(SB)/8, $0xffffff0803020100
+DATA encodingShuffleTable_0124<>+0x138(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x140(SB)/8, $0xffffffffffff0804
+DATA encodingShuffleTable_0124<>+0x148(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x150(SB)/8, $0xffffffffff080400
+DATA encodingShuffleTable_0124<>+0x158(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x160(SB)/8, $0xffffffff08040100
+DATA encodingShuffleTable_0124<>+0x168(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x170(SB)/8, $0xffff080403020100
+DATA encodingShuffleTable_0124<>+0x178(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x180(SB)/8, $0xffffffffff080504
+DATA encodingShuffleTable_0124<>+0x188(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x190(SB)/8, $0xffffffff08050400
+DATA encodingShuffleTable_0124<>+0x198(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x1a0(SB)/8, $0xffffff0805040100
+DATA encodingShuffleTable_0124<>+0x1a8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x1b0(SB)/8, $0xff08050403020100
+DATA encodingShuffleTable_0124<>+0x1b8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x1c0(SB)/8, $0xffffff0807060504
+DATA encodingShuffleTable_0124<>+0x1c8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x1d0(SB)/8, $0xffff080706050400
+DATA encodingShuffleTable_0124<>+0x1d8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x1e0(SB)/8, $0xff08070605040100
+DATA encodingShuffleTable_0124<>+0x1e8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x1f0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0x1f8(SB)/8, $0xffffffffffffff08
+DATA encodingShuffleTable_0124<>+0x200(SB)/8, $0xffffffffffff0908
+DATA encodingShuffleTable_0124<>+0x208(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x210(SB)/8, $0xffffffffff090800
+DATA encodingShuffleTable_0124<>+0x218(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x220(SB)/8, $0xffffffff09080100
+DATA encodingShuffleTable_0124<>+0x228(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x230(SB)/8, $0xffff090803020100
+DATA encodingShuffleTable_0124<>+0x238(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x240(SB)/8, $0xffffffffff090804
+DATA encodingShuffleTable_0124<>+0x248(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x250(SB)/8, $0xffffffff09080400
+DATA encodingShuffleTable_0124<>+0x258(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x260(SB)/8, $0xffffff0908040100
+DATA encodingShuffleTable_0124<>+0x268(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x270(SB)/8, $0xff09080403020100
+DATA encodingShuffleTable_0124<>+0x278(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x280(SB)/8, $0xffffffff09080504
+DATA encodingShuffleTable_0124<>+0x288(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x290(SB)/8, $0xffffff0908050400
+DATA encodingShuffleTable_0124<>+0x298(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x2a0(SB)/8, $0xffff090805040100
+DATA encodingShuffleTable_0124<>+0x2a8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x2b0(SB)/8, $0x0908050403020100
+DATA encodingShuffleTable_0124<>+0x2b8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x2c0(SB)/8, $0xffff090807060504
+DATA encodingShuffleTable_0124<>+0x2c8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x2d0(SB)/8, $0xff09080706050400
+DATA encodingShuffleTable_0124<>+0x2d8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x2e0(SB)/8, $0x0908070605040100
+DATA encodingShuffleTable_0124<>+0x2e8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x2f0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0x2f8(SB)/8, $0xffffffffffff0908
+DATA encodingShuffleTable_0124<>+0x300(SB)/8, $0xffffffff0b0a0908
+DATA encodingShuffleTable_0124<>+0x308(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x310(SB)/8, $0xffffff0b0a090800
+DATA encodingShuffleTable_0124<>+0x318(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x320(SB)/8, $0xffff0b0a09080100
+DATA encodingShuffleTable_0124<>+0x328(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x330(SB)/8, $0x0b0a090803020100
+DATA encodingShuffleTable_0124<>+0x338(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x340(SB)/8, $0xffffff0b0a090804
+DATA encodingShuffleTable_0124<>+0x348(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x350(SB)/8, $0xffff0b0a09080400
+DATA encodingShuffleTable_0124<>+0x358(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x360(SB)/8, $0xff0b0a0908040100
+DATA encodingShuffleTable_0124<>+0x368(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x370(SB)/8, $0x0a09080403020100
+DATA encodingShuffleTable_0124<>+0x378(SB)/8, $0xffffffffffffff0b
+DATA encodingShuffleTable_0124<>+0x380(SB)/8, $0xffff0b0a09080504
+DATA encodingShuffleTable_0124<>+0x388(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x390(SB)/8, $0xff0b0a0908050400
+DATA encodingShuffleTable_0124<>+0x398(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x3a0(SB)/8, $0x0b0a090805040100
+DATA encodingShuffleTable_0124<>+0x3a8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x3b0(SB)/8, $0x0908050403020100
+DATA encodingShuffleTable_0124<>+0x3b8(SB)/8, $0xffffffffffff0b0a
+DATA encodingShuffleTable_0124<>+0x3c0(SB)/8, $0x0b0a090807060504
+DATA encodingShuffleTable_0124<>+0x3c8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x3d0(SB)/8, $0x0a09080706050400
+DATA encodingShuffleTable_0124<>+0x3d8(SB)/8, $0xffffffffffffff0b
+DATA encodingShuffleTable_0124<>+0x3e0(SB)/8, $0x0908070605040100
+DATA encodingShuffleTable_0124<>+0x3e8(SB)/8, $0xffffffffffff0b0a
+DATA encodingShuffleTable_0124<>+0x3f0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0x3f8(SB)/8, $0xffffffff0b0a0908
+DATA encodingShuffleTable_0124<>+0x400(SB)/8, $0xffffffffffffff0c
+DATA encodingShuffleTable_0124<>+0x408(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x410(SB)/8, $0xffffffffffff0c00
+DATA encodingShuffleTable_0124<>+0x418(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x420(SB)/8, $0xffffffffff0c0100
+DATA encodingShuffleTable_0124<>+0x428(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x430(SB)/8, $0xffffff0c03020100
+DATA encodingShuffleTable_0124<>+0x438(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x440(SB)/8, $0xffffffffffff0c04
+DATA encodingShuffleTable_0124<>+0x448(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x450(SB)/8, $0xffffffffff0c0400
+DATA encodingShuffleTable_0124<>+0x458(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x460(SB)/8, $0xffffffff0c040100
+DATA encodingShuffleTable_0124<>+0x468(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x470(SB)/8, $0xffff0c0403020100
+DATA encodingShuffleTable_0124<>+0x478(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x480(SB)/8, $0xffffffffff0c0504
+DATA encodingShuffleTable_0124<>+0x488(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x490(SB)/8, $0xffffffff0c050400
+DATA encodingShuffleTable_0124<>+0x498(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x4a0(SB)/8, $0xffffff0c05040100
+DATA encodingShuffleTable_0124<>+0x4a8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x4b0(SB)/8, $0xff0c050403020100
+DATA encodingShuffleTable_0124<>+0x4b8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x4c0(SB)/8, $0xffffff0c07060504
+DATA encodingShuffleTable_0124<>+0x4c8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x4d0(SB)/8, $0xffff0c0706050400
+DATA encodingShuffleTable_0124<>+0x4d8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x4e0(SB)/8, $0xff0c070605040100
+DATA encodingShuffleTable_0124<>+0x4e8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x4f0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0x4f8(SB)/8, $0xffffffffffffff0c
+DATA encodingShuffleTable_0124<>+0x500(SB)/8, $0xffffffffffff0c08
+DATA encodingShuffleTable_0124<>+0x508(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x510(SB)/8, $0xffffffffff0c0800
+DATA encodingShuffleTable_0124<>+0x518(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x520(SB)/8, $0xffffffff0c080100
+DATA encodingShuffleTable_0124<>+0x528(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x530(SB)/8, $0xffff0c0803020100
+DATA encodingShuffleTable_0124<>+0x538(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x540(SB)/8, $0xffffffffff0c0804
+DATA encodingShuffleTable_0124<>+0x548(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x550(SB)/8, $0xffffffff0c080400
+DATA encodingShuffleTable_0124<>+0x558(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x560(SB)/8, $0xffffff0c08040100
+DATA encodingShuffleTable_0124<>+0x568(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x570(SB)/8, $0xff0c080403020100
+DATA encodingShuffleTable_0124<>+0x578(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x580(SB)/8, $0xffffffff0c080504
+DATA encodingShuffleTable_0124<>+0x588(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x590(SB)/8, $0xffffff0c08050400
+DATA encodingShuffleTable_0124<>+0x598(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x5a0(SB)/8, $0xffff0c0805040100
+DATA encodingShuffleTable_0124<>+0x5a8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x5b0(SB)/8, $0x0c08050403020100
+DATA encodingShuffleTable_0124<>+0x5b8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x5c0(SB)/8, $0xffff0c0807060504
+DATA encodingShuffleTable_0124<>+0x5c8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x5d0(SB)/8, $0xff0c080706050400
+DATA encodingShuffleTable_0124<>+0x5d8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x5e0(SB)/8, $0x0c08070605040100
+DATA encodingShuffleTable_0124<>+0x5e8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x5f0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0x5f8(SB)/8, $0xffffffffffff0c08
+DATA encodingShuffleTable_0124<>+0x600(SB)/8, $0xffffffffff0c0908
+DATA encodingShuffleTable_0124<>+0x608(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x610(SB)/8, $0xffffffff0c090800
+DATA encodingShuffleTable_0124<>+0x618(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x620(SB)/8, $0xffffff0c09080100
+DATA encodingShuffleTable_0124<>+0x628(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x630(SB)/8, $0xff0c090803020100
+DATA encodingShuffleTable_0124<>+0x638(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x640(SB)/8, $0xffffffff0c090804
+DATA encodingShuffleTable_0124<>+0x648(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x650(SB)/8, $0xffffff0c09080400
+DATA encodingShuffleTable_0124<>+0x658(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x660(SB)/8, $0xffff0c0908040100
+DATA encodingShuffleTable_0124<>+0x668(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x670(SB)/8, $0x0c09080403020100
+DATA encodingShuffleTable_0124<>+0x678(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x680(SB)/8, $0xffffff0c09080504
+DATA encodingShuffleTable_0124<>+0x688(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x690(SB)/8, $0xffff0c0908050400
+DATA encodingShuffleTable_0124<>+0x698(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x6a0(SB)/8, $0xff0c090805040100
+DATA encodingShuffleTable_0124<>+0x6a8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x6b0(SB)/8, $0x0908050403020100
+DATA encodingShuffleTable_0124<>+0x6b8(SB)/8, $0xffffffffffffff0c
+DATA encodingShuffleTable_0124<>+0x6c0(SB)/8, $0xff0c090807060504
+DATA encodingShuffleTable_0124<>+0x6c8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x6d0(SB)/8, $0x0c09080706050400
+DATA encodingShuffleTable_0124<>+0x6d8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x6e0(SB)/8, $0x0908070605040100
+DATA encodingShuffleTable_0124<>+0x6e8(SB)/8, $0xffffffffffffff0c
+DATA encodingShuffleTable_0124<>+0x6f0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0x6f8(SB)/8, $0xffffffffff0c0908
+DATA encodingShuffleTable_0124<>+0x700(SB)/8, $0xffffff0c0b0a0908
+DATA encodingShuffleTable_0124<>+0x708(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x710(SB)/8, $0xffff0c0b0a090800
+DATA encodingShuffleTable_0124<>+0x718(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x720(SB)/8, $0xff0c0b0a09080100
+DATA encodingShuffleTable_0124<>+0x728(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x730(SB)/8, $0x0b0a090803020100
+DATA encodingShuffleTable_0124<>+0x738(SB)/8, $0xffffffffffffff0c
+DATA encodingShuffleTable_0124<>+0x740(SB)/8, $0xffff0c0b0a090804
+DATA encodingShuffleTable_0124<>+0x748(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x750(SB)/8, $0xff0c0b0a09080400
+DATA encodingShuffleTable_0124<>+0x758(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x760(SB)/8, $0x0c0b0a0908040100
+DATA encodingShuffleTable_0124<>+0x768(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x770(SB)/8, $0x0a09080403020100
+DATA encodingShuffleTable_0124<>+0x778(SB)/8, $0xffffffffffff0c0b
+DATA encodingShuffleTable_0124<>+0x780(SB)/8, $0xff0c0b0a09080504
+DATA encodingShuffleTable_0124<>+0x788(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x790(SB)/8, $0x0c0b0a0908050400
+DATA encodingShuffleTable_0124<>+0x798(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x7a0(SB)/8, $0x0b0a090805040100
+DATA encodingShuffleTable_0124<>+0x7a8(SB)/8, $0xffffffffffffff0c
+DATA encodingShuffleTable_0124<>+0x7b0(SB)/8, $0x0908050403020100
+DATA encodingShuffleTable_0124<>+0x7b8(SB)/8, $0xffffffffff0c0b0a
+DATA encodingShuffleTable_0124<>+0x7c0(SB)/8, $0x0b0a090807060504
+DATA encodingShuffleTable_0124<>+0x7c8(SB)/8, $0xffffffffffffff0c
+DATA encodingShuffleTable_0124<>+0x7d0(SB)/8, $0x0a09080706050400
+DATA encodingShuffleTable_0124<>+0x7d8(SB)/8, $0xffffffffffff0c0b
+DATA encodingShuffleTable_0124<>+0x7e0(SB)/8, $0x0908070605040100
+DATA encodingShuffleTable_0124<>+0x7e8(SB)/8, $0xffffffffff0c0b0a
+DATA encodingShuffleTable_0124<>+0x7f0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0x7f8(SB)/8, $0xffffff0c0b0a0908
+DATA encodingShuffleTable_0124<>+0x800(SB)/8, $0xffffffffffff0d0c
+DATA encodingShuffleTable_0124<>+0x808(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x810(SB)/8, $0xffffffffff0d0c00
+DATA encodingShuffleTable_0124<>+0x818(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x820(SB)/8, $0xffffffff0d0c0100
+DATA encodingShuffleTable_0124<>+0x828(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x830(SB)/8, $0xffff0d0c03020100
+DATA encodingShuffleTable_0124<>+0x838(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x840(SB)/8, $0xffffffffff0d0c04
+DATA encodingShuffleTable_0124<>+0x848(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x850(SB)/8, $0xffffffff0d0c0400
+DATA encodingShuffleTable_0124<>+0x858(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x860(SB)/8, $0xffffff0d0c040100
+DATA encodingShuffleTable_0124<>+0x868(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x870(SB)/8, $0xff0d0c0403020100
+DATA encodingShuffleTable_0124<>+0x878(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x880(SB)/8, $0xffffffff0d0c0504
+DATA encodingShuffleTable_0124<>+0x888(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x890(SB)/8, $0xffffff0d0c050400
+DATA encodingShuffleTable_0124<>+0x898(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x8a0(SB)/8, $0xffff0d0c05040100
+DATA encodingShuffleTable_0124<>+0x8a8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x8b0(SB)/8, $0x0d0c050403020100
+DATA encodingShuffleTable_0124<>+0x8b8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x8c0(SB)/8, $0xffff0d0c07060504
+DATA encodingShuffleTable_0124<>+0x8c8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x8d0(SB)/8, $0xff0d0c0706050400
+DATA encodingShuffleTable_0124<>+0x8d8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x8e0(SB)/8, $0x0d0c070605040100
+DATA encodingShuffleTable_0124<>+0x8e8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x8f0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0x8f8(SB)/8, $0xffffffffffff0d0c
+DATA encodingShuffleTable_0124<>+0x900(SB)/8, $0xffffffffff0d0c08
+DATA encodingShuffleTable_0124<>+0x908(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x910(SB)/8, $0xffffffff0d0c0800
+DATA encodingShuffleTable_0124<>+0x918(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x920(SB)/8, $0xffffff0d0c080100
+DATA encodingShuffleTable_0124<>+0x928(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x930(SB)/8, $0xff0d0c0803020100
+DATA encodingShuffleTable_0124<>+0x938(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x940(SB)/8, $0xffffffff0d0c0804
+DATA encodingShuffleTable_0124<>+0x948(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x950(SB)/8, $0xffffff0d0c080400
+DATA encodingShuffleTable_0124<>+0x958(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x960(SB)/8, $0xffff0d0c08040100
+DATA encodingShuffleTable_0124<>+0x968(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x970(SB)/8, $0x0d0c080403020100
+DATA encodingShuffleTable_0124<>+0x978(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x980(SB)/8, $0xffffff0d0c080504
+DATA encodingShuffleTable_0124<>+0x988(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x990(SB)/8, $0xffff0d0c08050400
+DATA encodingShuffleTable_0124<>+0x998(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x9a0(SB)/8, $0xff0d0c0805040100
+DATA encodingShuffleTable_0124<>+0x9a8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x9b0(SB)/8, $0x0c08050403020100
+DATA encodingShuffleTable_0124<>+0x9b8(SB)/8, $0xffffffffffffff0d
+DATA encodingShuffleTable_0124<>+0x9c0(SB)/8, $0xff0d0c0807060504
+DATA encodingShuffleTable_0124<>+0x9c8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x9d0(SB)/8, $0x0d0c080706050400
+DATA encodingShuffleTable_0124<>+0x9d8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0x9e0(SB)/8, $0x0c08070605040100
+DATA encodingShuffleTable_0124<>+0x9e8(SB)/8, $0xffffffffffffff0d
+DATA encodingShuffleTable_0124<>+0x9f0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0x9f8(SB)/8, $0xffffffffff0d0c08
+DATA encodingShuffleTable_0124<>+0xa00(SB)/8, $0xffffffff0d0c0908
+DATA encodingShuffleTable_0124<>+0xa08(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xa10(SB)/8, $0xffffff0d0c090800
+DATA encodingShuffleTable_0124<>+0xa18(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xa20(SB)/8, $0xffff0d0c09080100
+DATA encodingShuffleTable_0124<>+0xa28(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xa30(SB)/8, $0x0d0c090803020100
+DATA encodingShuffleTable_0124<>+0xa38(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xa40(SB)/8, $0xffffff0d0c090804
+DATA encodingShuffleTable_0124<>+0xa48(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xa50(SB)/8, $0xffff0d0c09080400
+DATA encodingShuffleTable_0124<>+0xa58(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xa60(SB)/8, $0xff0d0c0908040100
+DATA encodingShuffleTable_0124<>+0xa68(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xa70(SB)/8, $0x0c09080403020100
+DATA encodingShuffleTable_0124<>+0xa78(SB)/8, $0xffffffffffffff0d
+DATA encodingShuffleTable_0124<>+0xa80(SB)/8, $0xffff0d0c09080504
+DATA encodingShuffleTable_0124<>+0xa88(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xa90(SB)/8, $0xff0d0c0908050400
+DATA encodingShuffleTable_0124<>+0xa98(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xaa0(SB)/8, $0x0d0c090805040100
+DATA encodingShuffleTable_0124<>+0xaa8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xab0(SB)/8, $0x0908050403020100
+DATA encodingShuffleTable_0124<>+0xab8(SB)/8, $0xffffffffffff0d0c
+DATA encodingShuffleTable_0124<>+0xac0(SB)/8, $0x0d0c090807060504
+DATA encodingShuffleTable_0124<>+0xac8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xad0(SB)/8, $0x0c09080706050400
+DATA encodingShuffleTable_0124<>+0xad8(SB)/8, $0xffffffffffffff0d
+DATA encodingShuffleTable_0124<>+0xae0(SB)/8, $0x0908070605040100
+DATA encodingShuffleTable_0124<>+0xae8(SB)/8, $0xffffffffffff0d0c
+DATA encodingShuffleTable_0124<>+0xaf0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0xaf8(SB)/8, $0xffffffff0d0c0908
+DATA encodingShuffleTable_0124<>+0xb00(SB)/8, $0xffff0d0c0b0a0908
+DATA encodingShuffleTable_0124<>+0xb08(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xb10(SB)/8, $0xff0d0c0b0a090800
+DATA encodingShuffleTable_0124<>+0xb18(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xb20(SB)/8, $0x0d0c0b0a09080100
+DATA encodingShuffleTable_0124<>+0xb28(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xb30(SB)/8, $0x0b0a090803020100
+DATA encodingShuffleTable_0124<>+0xb38(SB)/8, $0xffffffffffff0d0c
+DATA encodingShuffleTable_0124<>+0xb40(SB)/8, $0xff0d0c0b0a090804
+DATA encodingShuffleTable_0124<>+0xb48(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xb50(SB)/8, $0x0d0c0b0a09080400
+DATA encodingShuffleTable_0124<>+0xb58(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xb60(SB)/8, $0x0c0b0a0908040100
+DATA encodingShuffleTable_0124<>+0xb68(SB)/8, $0xffffffffffffff0d
+DATA encodingShuffleTable_0124<>+0xb70(SB)/8, $0x0a09080403020100
+DATA encodingShuffleTable_0124<>+0xb78(SB)/8, $0xffffffffff0d0c0b
+DATA encodingShuffleTable_0124<>+0xb80(SB)/8, $0x0d0c0b0a09080504
+DATA encodingShuffleTable_0124<>+0xb88(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xb90(SB)/8, $0x0c0b0a0908050400
+DATA encodingShuffleTable_0124<>+0xb98(SB)/8, $0xffffffffffffff0d
+DATA encodingShuffleTable_0124<>+0xba0(SB)/8, $0x0b0a090805040100
+DATA encodingShuffleTable_0124<>+0xba8(SB)/8, $0xffffffffffff0d0c
+DATA encodingShuffleTable_0124<>+0xbb0(SB)/8, $0x0908050403020100
+DATA encodingShuffleTable_0124<>+0xbb8(SB)/8, $0xffffffff0d0c0b0a
+DATA encodingShuffleTable_0124<>+0xbc0(SB)/8, $0x0b0a090807060504
+DATA encodingShuffleTable_0124<>+0xbc8(SB)/8, $0xffffffffffff0d0c
+DATA encodingShuffleTable_0124<>+0xbd0(SB)/8, $0x0a09080706050400
+DATA encodingShuffleTable_0124<>+0xbd8(SB)/8, $0xffffffffff0d0c0b
+DATA encodingShuffleTable_0124<>+0xbe0(SB)/8, $0x0908070605040100
+DATA encodingShuffleTable_0124<>+0xbe8(SB)/8, $0xffffffff0d0c0b0a
+DATA encodingShuffleTable_0124<>+0xbf0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0xbf8(SB)/8, $0xffff0d0c0b0a0908
+DATA encodingShuffleTable_0124<>+0xc00(SB)/8, $0xffffffff0f0e0d0c
+DATA encodingShuffleTable_0124<>+0xc08(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xc10(SB)/8, $0xffffff0f0e0d0c00
+DATA encodingShuffleTable_0124<>+0xc18(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xc20(SB)/8, $0xffff0f0e0d0c0100
+DATA encodingShuffleTable_0124<>+0xc28(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xc30(SB)/8, $0x0f0e0d0c03020100
+DATA encodingShuffleTable_0124<>+0xc38(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xc40(SB)/8, $0xffffff0f0e0d0c04
+DATA encodingShuffleTable_0124<>+0xc48(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xc50(SB)/8, $0xffff0f0e0d0c0400
+DATA encodingShuffleTable_0124<>+0xc58(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xc60(SB)/8, $0xff0f0e0d0c040100
+DATA encodingShuffleTable_0124<>+0xc68(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xc70(SB)/8, $0x0e0d0c0403020100
+DATA encodingShuffleTable_0124<>+0xc78(SB)/8, $0xffffffffffffff0f
+DATA encodingShuffleTable_0124<>+0xc80(SB)/8, $0xffff0f0e0d0c0504
+DATA encodingShuffleTable_0124<>+0xc88(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xc90(SB)/8, $0xff0f0e0d0c050400
+DATA encodingShuffleTable_0124<>+0xc98(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xca0(SB)/8, $0x0f0e0d0c05040100
+DATA encodingShuffleTable_0124<>+0xca8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xcb0(SB)/8, $0x0d0c050403020100
+DATA encodingShuffleTable_0124<>+0xcb8(SB)/8, $0xffffffffffff0f0e
+DATA encodingShuffleTable_0124<>+0xcc0(SB)/8, $0x0f0e0d0c07060504
+DATA encodingShuffleTable_0124<>+0xcc8(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xcd0(SB)/8, $0x0e0d0c0706050400
+DATA encodingShuffleTable_0124<>+0xcd8(SB)/8, $0xffffffffffffff0f
+DATA encodingShuffleTable_0124<>+0xce0(SB)/8, $0x0d0c070605040100
+DATA encodingShuffleTable_0124<>+0xce8(SB)/8, $0xffffffffffff0f0e
+DATA encodingShuffleTable_0124<>+0xcf0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0xcf8(SB)/8, $0xffffffff0f0e0d0c
+DATA encodingShuffleTable_0124<>+0xd00(SB)/8, $0xffffff0f0e0d0c08
+DATA encodingShuffleTable_0124<>+0xd08(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xd10(SB)/8, $0xffff0f0e0d0c0800
+DATA encodingShuffleTable_0124<>+0xd18(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xd20(SB)/8, $0xff0f0e0d0c080100
+DATA encodingShuffleTable_0124<>+0xd28(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xd30(SB)/8, $0x0e0d0c0803020100
+DATA encodingShuffleTable_0124<>+0xd38(SB)/8, $0xffffffffffffff0f
+DATA encodingShuffleTable_0124<>+0xd40(SB)/8, $0xffff0f0e0d0c0804
+DATA encodingShuffleTable_0124<>+0xd48(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xd50(SB)/8, $0xff0f0e0d0c080400
+DATA encodingShuffleTable_0124<>+0xd58(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xd60(SB)/8, $0x0f0e0d0c08040100
+DATA encodingShuffleTable_0124<>+0xd68(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xd70(SB)/8, $0x0d0c080403020100
+DATA encodingShuffleTable_0124<>+0xd78(SB)/8, $0xffffffffffff0f0e
+DATA encodingShuffleTable_0124<>+0xd80(SB)/8, $0xff0f0e0d0c080504
+DATA encodingShuffleTable_0124<>+0xd88(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xd90(SB)/8, $0x0f0e0d0c08050400
+DATA encodingShuffleTable_0124<>+0xd98(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xda0(SB)/8, $0x0e0d0c0805040100
+DATA encodingShuffleTable_0124<>+0xda8(SB)/8, $0xffffffffffffff0f
+DATA encodingShuffleTable_0124<>+0xdb0(SB)/8, $0x0c08050403020100
+DATA encodingShuffleTable_0124<>+0xdb8(SB)/8, $0xffffffffff0f0e0d
+DATA encodingShuffleTable_0124<>+0xdc0(SB)/8, $0x0e0d0c0807060504
+DATA encodingShuffleTable_0124<>+0xdc8(SB)/8, $0xffffffffffffff0f
+DATA encodingShuffleTable_0124<>+0xdd0(SB)/8, $0x0d0c080706050400
+DATA encodingShuffleTable_0124<>+0xdd8(SB)/8, $0xffffffffffff0f0e
+DATA encodingShuffleTable_0124<>+0xde0(SB)/8, $0x0c08070605040100
+DATA encodingShuffleTable_0124<>+0xde8(SB)/8, $0xffffffffff0f0e0d
+DATA encodingShuffleTable_0124<>+0xdf0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0xdf8(SB)/8, $0xffffff0f0e0d0c08
+DATA encodingShuffleTable_0124<>+0xe00(SB)/8, $0xffff0f0e0d0c0908
+DATA encodingShuffleTable_0124<>+0xe08(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xe10(SB)/8, $0xff0f0e0d0c090800
+DATA encodingShuffleTable_0124<>+0xe18(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xe20(SB)/8, $0x0f0e0d0c09080100
+DATA encodingShuffleTable_0124<>+0xe28(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xe30(SB)/8, $0x0d0c090803020100
+DATA encodingShuffleTable_0124<>+0xe38(SB)/8, $0xffffffffffff0f0e
+DATA encodingShuffleTable_0124<>+0xe40(SB)/8, $0xff0f0e0d0c090804
+DATA encodingShuffleTable_0124<>+0xe48(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xe50(SB)/8, $0x0f0e0d0c09080400
+DATA encodingShuffleTable_0124<>+0xe58(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xe60(SB)/8, $0x0e0d0c0908040100
+DATA encodingShuffleTable_0124<>+0xe68(SB)/8, $0xffffffffffffff0f
+DATA encodingShuffleTable_0124<>+0xe70(SB)/8, $0x0c09080403020100
+DATA encodingShuffleTable_0124<>+0xe78(SB)/8, $0xffffffffff0f0e0d
+DATA encodingShuffleTable_0124<>+0xe80(SB)/8, $0x0f0e0d0c09080504
+DATA encodingShuffleTable_0124<>+0xe88(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xe90(SB)/8, $0x0e0d0c0908050400
+DATA encodingShuffleTable_0124<>+0xe98(SB)/8, $0xffffffffffffff0f
+DATA encodingShuffleTable_0124<>+0xea0(SB)/8, $0x0d0c090805040100
+DATA encodingShuffleTable_0124<>+0xea8(SB)/8, $0xffffffffffff0f0e
+DATA encodingShuffleTable_0124<>+0xeb0(SB)/8, $0x0908050403020100
+DATA encodingShuffleTable_0124<>+0xeb8(SB)/8, $0xffffffff0f0e0d0c
+DATA encodingShuffleTable_0124<>+0xec0(SB)/8, $0x0d0c090807060504
+DATA encodingShuffleTable_0124<>+0xec8(SB)/8, $0xffffffffffff0f0e
+DATA encodingShuffleTable_0124<>+0xed0(SB)/8, $0x0c09080706050400
+DATA encodingShuffleTable_0124<>+0xed8(SB)/8, $0xffffffffff0f0e0d
+DATA encodingShuffleTable_0124<>+0xee0(SB)/8, $0x0908070605040100
+DATA encodingShuffleTable_0124<>+0xee8(SB)/8, $0xffffffff0f0e0d0c
+DATA encodingShuffleTable_0124<>+0xef0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0xef8(SB)/8, $0xffff0f0e0d0c0908
+DATA encodingShuffleTable_0124<>+0xf00(SB)/8, $0x0f0e0d0c0b0a0908
+DATA encodingShuffleTable_0124<>+0xf08(SB)/8, $0xffffffffffffffff
+DATA encodingShuffleTable_0124<>+0xf10(SB)/8, $0x0e0d0c0b0a090800
+DATA encodingShuffleTable_0124<>+0xf18(SB)/8, $0xffffffffffffff0f
+DATA encodingShuffleTable_0124<>+0xf20(SB)/8, $0x0d0c0b0a09080100
+DATA encodingShuffleTable_0124<>+0xf28(SB)/8, $0xffffffffffff0f0e
+DATA encodingShuffleTable_0124<>+0xf30(SB)/8, $0x0b0a090803020100
+DATA encodingShuffleTable_0124<>+0xf38(SB)/8, $0xffffffff0f0e0d0c
+DATA encodingShuffleTable_0124<>+0xf40(SB)/8, $0x0e0d0c0b0a090804
+DATA encodingShuffleTable_0124<>+0xf48(SB)/8, $0xffffffffffffff0f
+DATA encodingShuffleTable_0124<>+0xf50(SB)/8, $0x0d0c0b0a09080400
+DATA encodingShuffleTable_0124<>+0xf58(SB)/8, $0xffffffffffff0f0e
+DATA encodingShuffleTable_0124<>+0xf60(SB)/8, $0x0c0b0a0908040100
+DATA encodingShuffleTable_0124<>+0xf68(SB)/8, $0xffffffffff0f0e0d
+DATA encodingShuffleTable_0124<>+0xf70(SB)/8, $0x0a09080403020100
+DATA encodingShuffleTable_0124<>+0xf78(SB)/8, $0xffffff0f0e0d0c0b
+DATA encodingShuffleTable_0124<>+0xf80(SB)/8, $0x0d0c0b0a09080504
+DATA encodingShuffleTable_0124<>+0xf88(SB)/8, $0xffffffffffff0f0e
+DATA encodingShuffleTable_0124<>+0xf90(SB)/8, $0x0c0b0a0908050400
+DATA encodingShuffleTable_0124<>+0xf98(SB)/8, $0xffffffffff0f0e0d
+DATA encodingShuffleTable_0124<>+0xfa0(SB)/8, $0x0b0a090805040100
+DATA encodingShuffleTable_0124<>+0xfa8(SB)/8, $0xffffffff0f0e0d0c
+DATA encodingShuffleTable_0124<>+0xfb0(SB)/8, $0x0908050403020100
+DATA encodingShuffleTable_0124<>+0xfb8(SB)/8, $0xffff0f0e0d0c0b0a
+DATA encodingShuffleTable_0124<>+0xfc0(SB)/8, $0x0b0a090807060504
+DATA encodingShuffleTable_0124<>+0xfc8(SB)/8, $0xffffffff0f0e0d0c
+DATA encodingShuffleTable_0124<>+0xfd0(SB)/8, $0x0a09080706050400
+DATA encodingShuffleTable_0124<>+0xfd8(SB)/8, $0xffffff0f0e0d0c0b
+DATA encodingShuffleTable_0124<>+0xfe0(SB)/8, $0x0908070605040100
+DATA encodingShuffleTable_0124<>+0xfe8(SB)/8, $0xffff0f0e0d0c0b0a
+DATA encodingShuffleTable_0124<>+0xff0(SB)/8, $0x0706050403020100
+DATA encodingShuffleTable_0124<>+0xff8(SB)/8, $0x0f0e0d0c0b0a0908
+GLOBL encodingShuffleTable_0124<>(SB), (RODATA|NOPTR), $4096
 
 DATA shuffleTable_1234<>+0x00(SB)/8, $0xffffff01ffffff00
 DATA shuffleTable_1234<>+0x08(SB)/8, $0xffffff03ffffff02
@@ -1608,40 +2639,6 @@ DATA lengthTable_1234<>+0xf0(SB)/8, $0x0e0d0c0b0d0c0b0a
 DATA lengthTable_1234<>+0xf8(SB)/8, $0x100f0e0d0f0e0d0c
 GLOBL lengthTable_1234<>(SB), (RODATA|NOPTR), $256
 
-DATA lengthTable_0124<>+0x00(SB)/8, $0x0503020104020100
-DATA lengthTable_0124<>+0x08(SB)/8, $0x0806050406040302
-DATA lengthTable_0124<>+0x10(SB)/8, $0x0604030205030201
-DATA lengthTable_0124<>+0x18(SB)/8, $0x0907060507050403
-DATA lengthTable_0124<>+0x20(SB)/8, $0x0705040306040302
-DATA lengthTable_0124<>+0x28(SB)/8, $0x0a08070608060504
-DATA lengthTable_0124<>+0x30(SB)/8, $0x0907060508060504
-DATA lengthTable_0124<>+0x38(SB)/8, $0x0c0a09080a080706
-DATA lengthTable_0124<>+0x40(SB)/8, $0x0604030205030201
-DATA lengthTable_0124<>+0x48(SB)/8, $0x0907060507050403
-DATA lengthTable_0124<>+0x50(SB)/8, $0x0705040306040302
-DATA lengthTable_0124<>+0x58(SB)/8, $0x0a08070608060504
-DATA lengthTable_0124<>+0x60(SB)/8, $0x0806050407050403
-DATA lengthTable_0124<>+0x68(SB)/8, $0x0b09080709070605
-DATA lengthTable_0124<>+0x70(SB)/8, $0x0a08070609070605
-DATA lengthTable_0124<>+0x78(SB)/8, $0x0d0b0a090b090807
-DATA lengthTable_0124<>+0x80(SB)/8, $0x0705040306040302
-DATA lengthTable_0124<>+0x88(SB)/8, $0x0a08070608060504
-DATA lengthTable_0124<>+0x90(SB)/8, $0x0806050407050403
-DATA lengthTable_0124<>+0x98(SB)/8, $0x0b09080709070605
-DATA lengthTable_0124<>+0xa0(SB)/8, $0x0907060508060504
-DATA lengthTable_0124<>+0xa8(SB)/8, $0x0c0a09080a080706
-DATA lengthTable_0124<>+0xb0(SB)/8, $0x0b0908070a080706
-DATA lengthTable_0124<>+0xb8(SB)/8, $0x0e0c0b0a0c0a0908
-DATA lengthTable_0124<>+0xc0(SB)/8, $0x0907060508060504
-DATA lengthTable_0124<>+0xc8(SB)/8, $0x0c0a09080a080706
-DATA lengthTable_0124<>+0xd0(SB)/8, $0x0a08070609070605
-DATA lengthTable_0124<>+0xd8(SB)/8, $0x0d0b0a090b090807
-DATA lengthTable_0124<>+0xe0(SB)/8, $0x0b0908070a080706
-DATA lengthTable_0124<>+0xe8(SB)/8, $0x0e0c0b0a0c0a0908
-DATA lengthTable_0124<>+0xf0(SB)/8, $0x0d0b0a090c0a0908
-DATA lengthTable_0124<>+0xf8(SB)/8, $0x100e0d0c0e0c0b0a
-GLOBL lengthTable_0124<>(SB), (RODATA|NOPTR), $256
-
 DATA shuffleTable_0124<>+0x00(SB)/8, $0xffffffffffffffff
 DATA shuffleTable_0124<>+0x08(SB)/8, $0xffffffffffffffff
 DATA shuffleTable_0124<>+0x10(SB)/8, $0xffffffffffffff00
@@ -2164,26 +3161,26 @@ TEXT ·svb_delta_decode_alt(SB), NOSPLIT, $0-56
 	MOVW prev+32(FP), R4
 	MOVD out+40(FP), R5
 	CMP  $1, R3            // <--                                  // cmp	x3, #1
-	BLT  LBB4_2            // <--                                  // b.lt	.LBB4_2
+	BLT  LBB7_2            // <--                                  // b.lt	.LBB7_2
 	ADD  $3, R3, R8        // <--                                  // add	x8, x3, #3
 	LSR  $2, R8, R9        // <--                                  // lsr	x9, x8, #2
 	CMP  R1, R9            // <--                                  // cmp	x9, x1
-	BLS  LBB4_3            // <--                                  // b.ls	.LBB4_3
+	BLS  LBB7_3            // <--                                  // b.ls	.LBB7_3
 
-LBB4_2:
+LBB7_2:
 	MOVD ZR, R0         // <--                                  // mov	x0, xzr
 	MOVD R0, ret+48(FP) // <--
 	RET                 // <--                                  // ret
 
-LBB4_3:
+LBB7_3:
 	NOP                                // (skipped)                            // stp	x29, x30, [sp, #-16]!
 	ADD  R9, R0, R8                    // <--                                  // add	x8, x0, x9
 	CMP  $4, R3                        // <--                                  // cmp	x3, #4
 	NOP                                // (skipped)                            // mov	x29, sp
-	BCC  LBB4_10                       // <--                                  // b.lo	.LBB4_10
+	BCC  LBB7_10                       // <--                                  // b.lo	.LBB7_10
 	AND  $-16, R1, R10                 // <--                                  // and	x10, x1, #0xfffffffffffffff0
 	CMP  R10, R9                       // <--                                  // cmp	x9, x10
-	BGE  LBB4_10                       // <--                                  // b.ge	.LBB4_10
+	BGE  LBB7_10                       // <--                                  // b.ge	.LBB7_10
 	WORD $0x6f00e400                   // VMOVI $0, V0.D2                      // movi	v0.2d, #0000000000000000
 	ADD  R10, R0, R10                  // <--                                  // add	x10, x0, x10
 	ADD  R3>>2, R0, R11                // <--                                  // add	x11, x0, x3, lsr #2
@@ -2194,7 +3191,7 @@ LBB4_3:
 	ADD  $0, R13, R13                  // <--                                  // add	x13, x13, :lo12:shuffleTable_0124
 	VDUP R4, V1.S4                     // <--                                  // dup	v1.4s, w4
 
-LBB4_6:
+LBB7_6:
 	WORD $0x3840140e                 // MOVBU.P 1(R0), R14                   // ldrb	w14, [x0], #1
 	WORD $0x3dc00103                 // FMOVQ (R8), F3                       // ldr	q3, [x8]
 	VDUP V1.S[3], V1.S4              // <--                                  // dup	v1.4s, v1.s[3]
@@ -2209,68 +3206,68 @@ LBB4_6:
 	VADD V1.S4, V2.S4, V1.S4         // <--                                  // add	v1.4s, v2.4s, v1.4s
 	VADD V3.S4, V1.S4, V1.S4         // <--                                  // add	v1.4s, v1.4s, v3.4s
 	WORD $0x3c810521                 // FMOVQ.P F1, 16(R9)                   // str	q1, [x9], #16
-	BCS  LBB4_8                      // <--                                  // b.hs	.LBB4_8
+	BCS  LBB7_8                      // <--                                  // b.hs	.LBB7_8
 	CMP  R10, R8                     // <--                                  // cmp	x8, x10
-	BCC  LBB4_6                      // <--                                  // b.lo	.LBB4_6
+	BCC  LBB7_6                      // <--                                  // b.lo	.LBB7_6
 
-LBB4_8:
+LBB7_8:
 	SUB  R5, R9, R10    // <--                                  // sub	x10, x9, x5
 	ASR  $2, R10, R10   // <--                                  // asr	x10, x10, #2
 	SUB  R10, R3, R3    // <--                                  // sub	x3, x3, x10
 	CMP  $1, R3         // <--                                  // cmp	x3, #1
 	CCMP GE, R9, R5, $0 // <--                                  // ccmp	x9, x5, #0, ge
-	BLS  LBB4_11        // <--                                  // b.ls	.LBB4_11
+	BLS  LBB7_11        // <--                                  // b.ls	.LBB7_11
 	WORD $0xb85fc124    // MOVWU -4(R9), R4                     // ldur	w4, [x9, #-4]
-	JMP  LBB4_11        // <--                                  // b	.LBB4_11
+	JMP  LBB7_11        // <--                                  // b	.LBB7_11
 
-LBB4_10:
+LBB7_10:
 	MOVD ZR, R10 // <--                                  // mov	x10, xzr
 	MOVD R5, R9  // <--                                  // mov	x9, x5
 
-LBB4_11:
-	CBZ  R8, LBB4_24 // <--                                  // cbz	x8, .LBB4_24
-	CBZW R3, LBB4_24 // <--                                  // cbz	w3, .LBB4_24
+LBB7_11:
+	CBZ  R8, LBB7_24 // <--                                  // cbz	x8, .LBB7_24
+	CBZW R3, LBB7_24 // <--                                  // cbz	w3, .LBB7_24
 	MOVW ZR, R10     // <--                                  // mov	w10, wzr
 	WORD $0x3840140b // MOVBU.P 1(R0), R11                   // ldrb	w11, [x0], #1
-	JMP  LBB4_16     // <--                                  // b	.LBB4_16
+	JMP  LBB7_16     // <--                                  // b	.LBB7_16
 
-LBB4_14:
+LBB7_14:
 	WORD $0x7840250c // MOVHU.P 2(R8), R12                   // ldrh	w12, [x8], #2
 
-LBB4_15:
+LBB7_15:
 	ADDW  R4, R12, R4  // <--                                  // add	w4, w12, w4
 	ADDW  $2, R10, R10 // <--                                  // add	w10, w10, #2
 	SUBSW $1, R3, R3   // <--                                  // subs	w3, w3, #1
 	WORD  $0xb8004524  // MOVW.P R4, 4(R9)                     // str	w4, [x9], #4
-	BEQ   LBB4_23      // <--                                  // b.eq	.LBB4_23
+	BEQ   LBB7_23      // <--                                  // b.eq	.LBB7_23
 
-LBB4_16:
+LBB7_16:
 	ANDW $255, R10, R12 // <--                                  // and	w12, w10, #0xff
 	CMPW $8, R12        // <--                                  // cmp	w12, #8
-	BNE  LBB4_18        // <--                                  // b.ne	.LBB4_18
+	BNE  LBB7_18        // <--                                  // b.ne	.LBB7_18
 	MOVW ZR, R10        // <--                                  // mov	w10, wzr
 	WORD $0x3840140b    // MOVBU.P 1(R0), R11                   // ldrb	w11, [x0], #1
 
-LBB4_18:
+LBB7_18:
 	LSRW  R10, R11, R12 // <--                                  // lsr	w12, w11, w10
 	ANDSW $3, R12, R12  // <--                                  // ands	w12, w12, #0x3
-	BEQ   LBB4_15       // <--                                  // b.eq	.LBB4_15
+	BEQ   LBB7_15       // <--                                  // b.eq	.LBB7_15
 	CMPW  $2, R12       // <--                                  // cmp	w12, #2
-	BEQ   LBB4_14       // <--                                  // b.eq	.LBB4_14
+	BEQ   LBB7_14       // <--                                  // b.eq	.LBB7_14
 	CMPW  $1, R12       // <--                                  // cmp	w12, #1
-	BNE   LBB4_22       // <--                                  // b.ne	.LBB4_22
+	BNE   LBB7_22       // <--                                  // b.ne	.LBB7_22
 	WORD  $0x3840150c   // MOVBU.P 1(R8), R12                   // ldrb	w12, [x8], #1
-	JMP   LBB4_15       // <--                                  // b	.LBB4_15
+	JMP   LBB7_15       // <--                                  // b	.LBB7_15
 
-LBB4_22:
+LBB7_22:
 	WORD $0xb840450c // MOVWU.P 4(R8), R12                   // ldr	w12, [x8], #4
-	JMP  LBB4_15     // <--                                  // b	.LBB4_15
+	JMP  LBB7_15     // <--                                  // b	.LBB7_15
 
-LBB4_23:
+LBB7_23:
 	SUB R5, R9, R9  // <--                                  // sub	x9, x9, x5
 	ASR $2, R9, R10 // <--                                  // asr	x10, x9, #2
 
-LBB4_24:
+LBB7_24:
 	CMP  $0, R8          // <--                                  // cmp	x8, #0
 	CSEL EQ, ZR, R10, R0 // <--                                  // csel	x0, xzr, x10, eq
 	NOP                  // (skipped)                            // ldp	x29, x30, [sp], #16

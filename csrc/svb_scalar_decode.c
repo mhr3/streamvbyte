@@ -84,33 +84,16 @@ static inline const uint8_t *svb_decode_scalar(uint32_t **outPtrPtr, const uint8
     uint32_t key = *keyPtr++;
     uint32_t *outPtr = *outPtrPtr;
 
-    if (encodeType == stdEncode)
+    for (uint32_t c = 0; c < count; c++)
     {
-        for (uint32_t c = 0; c < count; c++)
+        if (shift == 8)
         {
-            if (shift == 8)
-            {
-                shift = 0;
-                key = *keyPtr++;
-            }
-            uint32_t val = svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3);
-            *outPtr++ = val;
-            shift += 2;
+            shift = 0;
+            key = *keyPtr++;
         }
-    }
-    else
-    {
-        for (uint32_t c = 0; c < count; c++)
-        {
-            if (shift == 8)
-            {
-                shift = 0;
-                key = *keyPtr++;
-            }
-            uint32_t val = svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
-            *outPtr++ = val;
-            shift += 2;
-        }
+        uint32_t val = encodeType == stdEncode ? svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3) : svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
+        *outPtr++ = val;
+        shift += 2;
     }
 
     *outPtrPtr = outPtr;
@@ -130,37 +113,18 @@ static inline const uint8_t *svb_decode_scalar_delta(uint32_t **outPtrPtr, const
     uint32_t key = *keyPtr++;
     uint32_t *outPtr = *outPtrPtr;
 
-    if (encodeType == stdEncode)
+    for (uint32_t c = 0; c < count; c++)
     {
-        for (uint32_t c = 0; c < count; c++)
+        if (shift == 8)
         {
-            if (shift == 8)
-            {
-                shift = 0;
-                key = *keyPtr++;
-            }
-            uint32_t val = svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3);
-            val += prev;
-            *outPtr++ = val;
-            prev = val;
-            shift += 2;
+            shift = 0;
+            key = *keyPtr++;
         }
-    }
-    else
-    {
-        for (uint32_t c = 0; c < count; c++)
-        {
-            if (shift == 8)
-            {
-                shift = 0;
-                key = *keyPtr++;
-            }
-            uint32_t val = svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
-            val += prev;
-            *outPtr++ = val;
-            prev = val;
-            shift += 2;
-        }
+        uint32_t val = encodeType == stdEncode ? svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3) : svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
+        val += prev;
+        *outPtr++ = val;
+        prev = val;
+        shift += 2;
     }
 
     *outPtrPtr = outPtr;

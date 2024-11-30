@@ -37,7 +37,7 @@ static inline uint32x4_t svb_decode_quad_alt(uint8_t key, const uint8_t **dataPt
 
 static inline uint32x4_t svb_prefix_sum(uint32x4_t curr, uint32x4_t prev)
 {
-    uint32x4_t zero = {0, 0, 0, 0};
+    uint32x4_t zero = vdupq_n_u32(0);
     uint32x4_t add = vextq_u32(zero, curr, 3);
 
     prev = vdupq_laneq_u32(prev, 3);

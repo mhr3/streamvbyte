@@ -27,12 +27,15 @@ func (e stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 }
 
 func (e stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
-	// TODO: missing optimized implementation
+	if len(input) == 0 {
+		return nil
+	}
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeDeltaScalar1234(output[:sz], input, prev)
+
+	n := svb_delta_encode(input, prev, &output[0])
 	return output[:n]
 }
 
@@ -52,12 +55,15 @@ func (e stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev 
 */
 
 func (e altEncoding) Encode(input []uint32, output []byte) []byte {
-	// TODO: missing optimized implementation
+	if len(input) == 0 {
+		return nil
+	}
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeScalar0124(output[:sz], input)
+
+	n := svb_encode_alt(input, &output[0])
 	return output[:n]
 }
 
@@ -73,12 +79,15 @@ func (e altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 }
 
 func (e altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
-	// TODO: missing optimized implementation
+	if len(input) == 0 {
+		return nil
+	}
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeDeltaScalar0124(output[:sz], input, prev)
+
+	n := svb_delta_encode_alt(input, prev, &output[0])
 	return output[:n]
 }
 

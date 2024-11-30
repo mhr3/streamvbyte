@@ -8,12 +8,10 @@ static const uint8_t pgatherlo[] = {12, 8, 4, 0, 12, 8, 4, 0}; // apparently onl
 #define sum (1 | 1 << 8 | 1 << 16 | 1 << 24)
 static const uint32_t pAggregators[2] = {concat, sum}; // apparently only used in svb_encode_quad
 
-static inline size_t svb_encode_quad(const uint32_t *__restrict__ in, uint8_t *__restrict__ outData, uint8_t *__restrict__ outCode)
+static inline size_t svb_encode_quad(const uint32x4_t data, uint8_t *__restrict__ outData, uint8_t *__restrict__ outCode)
 {
     const uint8x8_t gatherlo = vld1_u8(pgatherlo);
     const uint32x2_t Aggregators = vld1_u32(pAggregators);
-
-    const uint32x4_t data = vld1q_u32(in);
 
     // lane code is 3 - (saturating sub) (clz(data)/8)
     uint32x4_t clzbytes = vshrq_n_u32(vclzq_u32(data), 3);
@@ -38,4 +36,38 @@ static inline size_t svb_encode_quad(const uint32_t *__restrict__ in, uint8_t *_
 
     *outCode = (uint8_t)code;
     return length;
+}
+
+static inline size_t svb_encode_quad_alt(const uint32x4_t data, uint8_t *__restrict__ outData, uint8_t *__restrict__ outCode)
+{
+    const uint8x8_t gatherlo = vld1_u8(pgatherlo);
+    const uint32x2_t Aggregators = vld1_u32(pAggregators);
+
+    // lane code is min(4 - (clz(data)/8)), 3)
+    uint32x4_t clzbytes = vshrq_n_u32(vclzq_u32(data), 3);      // 0 -> 4, <256 -> 3, <65536 -> 2, <16777216 -> 1, else 0
+    uint32x4_t lanecodes = vsubq_u32(vdupq_n_u32(4), clzbytes); // 4 -> 0, 3 -> 1, 2 -> 2, 1 -> 3, 0 -> 4
+    lanecodes = vminq_u32(lanecodes, vdupq_n_u32(3));
+
+    uint8x8_t lobytes = vqtbl1_u8(vreinterpretq_u8_u32(lanecodes), gatherlo);
+    uint32x2_t mulshift = vreinterpret_u32_u8(lobytes); // [0x(l3 l2 l1 l0), 0x(l3 l2 l1 l0)]
+
+    uint32_t codeAndLength[2];
+    vst1_u32(codeAndLength, vmul_u32(mulshift, Aggregators));
+
+    uint32_t code = codeAndLength[0] >> 24;
+    size_t length = lengthTable_0124[code];
+
+    // shuffle in 8-byte chunks
+    uint8x16_t databytes = vreinterpretq_u8_u32(data);
+    uint8x16_t encodingShuffle = vld1q_u8((uint8_t *)&encodingShuffleTable_0124[code]);
+    if (length != 0)
+        vst1q_u8(outData, vqtbl1q_u8(databytes, encodingShuffle));
+
+    *outCode = (uint8_t)code;
+    return length;
+}
+
+static inline uint32x4_t svb_differences(uint32x4_t curr, uint32x4_t prev)
+{
+    return vsubq_u32(curr, vextq_u32(prev, curr, 3));
 }

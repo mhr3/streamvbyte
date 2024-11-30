@@ -20,13 +20,36 @@ uint64_t svb_encode(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, 
 
     for (uint32_t c = 0; c < count_quads; c++)
     {
-        dataPtr += svb_encode_quad(in, dataPtr, keyPtr);
+        const uint32x4_t data = vld1q_u32(in);
+        dataPtr += svb_encode_quad(data, dataPtr, keyPtr);
         keyPtr++;
         in += 4;
     }
     count -= 4 * count_quads;
 
-    return (uint64_t)(svb_encode_scalar(in, keyPtr, dataPtr, count) - out);
+    return (uint64_t)(svb_encode_scalar(in, keyPtr, dataPtr, count, stdEncode) - out);
+}
+
+// gocc: svb_encode_alt(in []uint32, out *byte) uint64
+uint64_t svb_encode_alt(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint8_t *out)
+{
+    uint8_t *keyPtr = out;
+    uint32_t count = in_len;
+    uint32_t keyLen = (count + 3) / 4;  // 2-bits rounded to full byte
+    uint8_t *dataPtr = keyPtr + keyLen; // variable byte data after all keys
+
+    uint32_t count_quads = count / 4;
+
+    for (uint32_t c = 0; c < count_quads; c++)
+    {
+        const uint32x4_t data = vld1q_u32(in);
+        dataPtr += svb_encode_quad_alt(data, dataPtr, keyPtr);
+        keyPtr++;
+        in += 4;
+    }
+    count -= 4 * count_quads;
+
+    return (uint64_t)(svb_encode_scalar(in, keyPtr, dataPtr, count, altEncode) - out);
 }
 
 // gocc: svb_decode(in []byte, count int, out *uint32) uint64
@@ -87,6 +110,64 @@ uint64_t svb_decode_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_ca
         return 0;
 
     return (uint64_t)(out - outStartPtr);
+}
+
+// gocc: svb_delta_encode(in []uint32, prev uint32, out *byte) uint64
+uint64_t svb_delta_encode(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint32_t prev, uint8_t *out)
+{
+    uint8_t *keyPtr = out;
+    uint32_t count = in_len;
+    uint32_t keyLen = (count + 3) / 4;  // 2-bits rounded to full byte
+    uint8_t *dataPtr = keyPtr + keyLen; // variable byte data after all keys
+
+    uint32_t count_quads = count / 4;
+
+    uint32x4_t previous = vdupq_n_u32(prev);
+
+    for (uint32_t c = 0; c < count_quads; c++)
+    {
+        const uint32x4_t data = vld1q_u32(in);
+        const uint32x4_t diff = svb_differences(data, previous);
+        dataPtr += svb_encode_quad(diff, dataPtr, keyPtr);
+        previous = data;
+        keyPtr++;
+        in += 4;
+    }
+    count -= 4 * count_quads;
+
+    if (count > 0 && count_quads > 0)
+        prev = in[-1];
+
+    return (uint64_t)(svb_encode_scalar_delta(in, keyPtr, dataPtr, count, stdEncode, prev) - out);
+}
+
+// gocc: svb_delta_encode_alt(in []uint32, prev uint32, out *byte) uint64
+uint64_t svb_delta_encode_alt(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint32_t prev, uint8_t *out)
+{
+    uint8_t *keyPtr = out;
+    uint32_t count = in_len;
+    uint32_t keyLen = (count + 3) / 4;  // 2-bits rounded to full byte
+    uint8_t *dataPtr = keyPtr + keyLen; // variable byte data after all keys
+
+    uint32_t count_quads = count / 4;
+
+    uint32x4_t previous = vdupq_n_u32(prev);
+
+    for (uint32_t c = 0; c < count_quads; c++)
+    {
+        const uint32x4_t data = vld1q_u32(in);
+        const uint32x4_t diff = svb_differences(data, previous);
+        dataPtr += svb_encode_quad_alt(diff, dataPtr, keyPtr);
+        previous = data;
+        keyPtr++;
+        in += 4;
+    }
+    count -= 4 * count_quads;
+
+    if (count > 0 && count_quads > 0)
+        prev = in[-1];
+
+    return (uint64_t)(svb_encode_scalar_delta(in, keyPtr, dataPtr, count, altEncode, prev) - out);
 }
 
 // gocc: svb_delta_decode(in []byte, count int, prev uint32, out *uint32) uint64
