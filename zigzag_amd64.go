@@ -1,3 +1,5 @@
+//go:build !noasm && amd64
+
 package streamvbyte
 
 import "golang.org/x/sys/cpu"

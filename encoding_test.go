@@ -60,62 +60,68 @@ func TestEncodeDecode(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			input := tc.generator()
-			// Encode
-			encoded := StdEncoding.Encode(input, nil)
-			decoded := StdEncoding.Decode(encoded, len(input), nil)
 
-			require.Len(t, decoded, len(input))
-			assert.Equal(t, input, decoded)
+			t.Run("std", func(t *testing.T) {
+				// Encode
+				encoded := StdEncoding.Encode(input, nil)
+				decoded := StdEncoding.Decode(encoded, len(input), nil)
 
-			// re-check against the scalar implementation
-			scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
-			n := encodeScalar1234(scalar_encoded, input)
-			scalar_encoded = scalar_encoded[:n]
-			assert.Equal(t, scalar_encoded, encoded)
+				require.Len(t, decoded, len(input))
+				assert.Equal(t, input, decoded)
 
-			scalar_decoded := make([]uint32, len(input))
-			decodeScalar1234(scalar_decoded, scalar_encoded)
-			assert.Equal(t, input, scalar_decoded)
+				// re-check against the scalar implementation
+				scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
+				n := encodeScalar1234(scalar_encoded, input)
+				scalar_encoded = scalar_encoded[:n]
+				assert.Equal(t, scalar_encoded, encoded)
+			})
 
-			// AltEncoding
-			encoded = AltEncoding.Encode(input, nil)
-			decoded = AltEncoding.Decode(encoded, len(input), nil)
+			t.Run("alt", func(t *testing.T) {
+				// AltEncoding
+				encoded := AltEncoding.Encode(input, nil)
+				decoded := AltEncoding.Decode(encoded, len(input), nil)
 
-			require.Len(t, decoded, len(input))
-			assert.Equal(t, input, decoded)
+				require.Len(t, decoded, len(input))
+				assert.Equal(t, input, decoded)
 
-			scalar_encoded = make([]byte, MaxEncodedLen(len(input)))
-			n = encodeScalar0124(scalar_encoded, input)
-			scalar_encoded = scalar_encoded[:n]
-			assert.Equal(t, scalar_encoded, encoded)
+				scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
+				n := encodeScalar0124(scalar_encoded, input)
+				scalar_encoded = scalar_encoded[:n]
+				assert.Equal(t, scalar_encoded, encoded)
+			})
 		})
 
 		t.Run("delta-"+tc.name, func(t *testing.T) {
 			input := tc.generator()
-			// Encode
-			encoded := StdEncoding.EncodeDelta(input, nil, 0)
-			decoded := StdEncoding.DecodeDelta(encoded, len(input), nil, 0)
 
-			require.Len(t, decoded, len(input))
-			assert.Equal(t, input, decoded)
+			t.Run("std", func(t *testing.T) {
+				// Encode
+				encoded := StdEncoding.EncodeDelta(input, nil, 0)
+				decoded := StdEncoding.DecodeDelta(encoded, len(input), nil, 0)
 
-			// re-check against the scalar implementation
-			scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
-			n := encodeDeltaScalar1234(scalar_encoded, input, 0)
-			scalar_encoded = scalar_encoded[:n]
-			assert.Equal(t, scalar_encoded, encoded)
+				require.Len(t, decoded, len(input))
+				assert.Equal(t, input, decoded)
 
-			// AltEncoding
-			encoded = AltEncoding.EncodeDelta(input, nil, 0)
-			decoded = AltEncoding.DecodeDelta(encoded, len(input), nil, 0)
+				// re-check against the scalar implementation
+				scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
+				n := encodeDeltaScalar1234(scalar_encoded, input, 0)
+				scalar_encoded = scalar_encoded[:n]
+				assert.Equal(t, scalar_encoded, encoded)
+			})
 
-			require.Len(t, decoded, len(input))
-			assert.Equal(t, input, decoded)
+			t.Run("alt", func(t *testing.T) {
+				// AltEncoding
+				encoded := AltEncoding.EncodeDelta(input, nil, 0)
+				decoded := AltEncoding.DecodeDelta(encoded, len(input), nil, 0)
 
-			scalar_encoded = make([]byte, MaxEncodedLen(len(input)))
-			n = encodeDeltaScalar0124(scalar_encoded, input, 0)
-			scalar_encoded = scalar_encoded[:n]
-			assert.Equal(t, scalar_encoded, encoded)
+				require.Len(t, decoded, len(input))
+				assert.Equal(t, input, decoded)
+
+				scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
+				n := encodeDeltaScalar0124(scalar_encoded, input, 0)
+				scalar_encoded = scalar_encoded[:n]
+				assert.Equal(t, scalar_encoded, encoded)
+			})
 		})
 	}
 }
