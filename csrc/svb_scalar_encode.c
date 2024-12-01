@@ -69,7 +69,7 @@ static inline uint8_t svb_encode_data_0124(uint32_t val, uint8_t *__restrict__ *
     return code;
 }
 
-static inline uint8_t *svb_encode_scalar(const uint32_t *in,
+static inline uint8_t *svb_scalar_encode(const uint32_t *in,
                                          uint8_t *__restrict__ keyPtr,
                                          uint8_t *__restrict__ dataPtr,
                                          uint32_t count, EncodeType encodeType)
@@ -98,7 +98,7 @@ static inline uint8_t *svb_encode_scalar(const uint32_t *in,
     return dataPtr; // pointer to first unused data byte
 }
 
-static inline uint8_t *svb_encode_scalar_delta(const uint32_t *in,
+static inline uint8_t *svb_scalar_delta_encode(const uint32_t *in,
                                                uint8_t *__restrict__ keyPtr,
                                                uint8_t *__restrict__ dataPtr,
                                                uint32_t count, EncodeType encodeType, uint32_t prev)

@@ -72,7 +72,7 @@ static inline uint32_t svb_decode_data_0124(const uint8_t **dataPtrPtr, uint8_t 
 }
 
 // FIXME: this isn't checking whether dataPtr is within bounds
-static inline const uint8_t *svb_decode_scalar(uint32_t **outPtrPtr, const uint8_t *keyPtr,
+static inline const uint8_t *svb_scalar_decode(uint32_t **outPtrPtr, const uint8_t *keyPtr,
                                                const uint8_t *dataPtr,
                                                uint32_t count, EncodeType encodeType)
 {
@@ -102,7 +102,7 @@ static inline const uint8_t *svb_decode_scalar(uint32_t **outPtrPtr, const uint8
 }
 
 // FIXME: this isn't checking whether dataPtr is within bounds
-static inline const uint8_t *svb_decode_scalar_delta(uint32_t **outPtrPtr, const uint8_t *keyPtr,
+static inline const uint8_t *svb_scalar_delta_decode(uint32_t **outPtrPtr, const uint8_t *keyPtr,
                                                      const uint8_t *dataPtr, uint32_t count, EncodeType encodeType, uint32_t prev)
 {
     // no reads or writes if no data

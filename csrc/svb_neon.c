@@ -27,7 +27,7 @@ uint64_t svb_encode(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, 
     }
     count -= 4 * count_quads;
 
-    return (uint64_t)(svb_encode_scalar(in, keyPtr, dataPtr, count, stdEncode) - out);
+    return (uint64_t)(svb_scalar_encode(in, keyPtr, dataPtr, count, stdEncode) - out);
 }
 
 // gocc: svb_encode_alt(in []uint32, out *byte) uint64
@@ -49,7 +49,7 @@ uint64_t svb_encode_alt(const uint32_t *in, const uint64_t in_len, uint64_t in_c
     }
     count -= 4 * count_quads;
 
-    return (uint64_t)(svb_encode_scalar(in, keyPtr, dataPtr, count, altEncode) - out);
+    return (uint64_t)(svb_scalar_encode(in, keyPtr, dataPtr, count, altEncode) - out);
 }
 
 // gocc: svb_decode(in []byte, count int, out *uint32) uint64
@@ -75,7 +75,7 @@ uint64_t svb_decode(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
     }
     count -= (out - outStartPtr);
 
-    currPtr = svb_decode_scalar(&out, keyPtr, currPtr, count, stdEncode);
+    currPtr = svb_scalar_decode(&out, keyPtr, currPtr, count, stdEncode);
     if (currPtr == NULL)
         return 0;
 
@@ -105,7 +105,7 @@ uint64_t svb_decode_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_ca
     }
     count -= (out - outStartPtr);
 
-    currPtr = svb_decode_scalar(&out, keyPtr, currPtr, count, altEncode);
+    currPtr = svb_scalar_decode(&out, keyPtr, currPtr, count, altEncode);
     if (currPtr == NULL)
         return 0;
 
@@ -138,7 +138,7 @@ uint64_t svb_delta_encode(const uint32_t *in, const uint64_t in_len, uint64_t in
     if (count > 0 && count_quads > 0)
         prev = in[-1];
 
-    return (uint64_t)(svb_encode_scalar_delta(in, keyPtr, dataPtr, count, stdEncode, prev) - out);
+    return (uint64_t)(svb_scalar_delta_encode(in, keyPtr, dataPtr, count, stdEncode, prev) - out);
 }
 
 // gocc: svb_delta_encode_alt(in []uint32, prev uint32, out *byte) uint64
@@ -167,7 +167,7 @@ uint64_t svb_delta_encode_alt(const uint32_t *in, const uint64_t in_len, uint64_
     if (count > 0 && count_quads > 0)
         prev = in[-1];
 
-    return (uint64_t)(svb_encode_scalar_delta(in, keyPtr, dataPtr, count, altEncode, prev) - out);
+    return (uint64_t)(svb_scalar_delta_encode(in, keyPtr, dataPtr, count, altEncode, prev) - out);
 }
 
 // gocc: svb_delta_decode(in []byte, count int, prev uint32, out *uint32) uint64
@@ -199,7 +199,7 @@ uint64_t svb_delta_decode(const uint8_t *in, const uint64_t in_len, uint64_t in_
     if (count > 0 && out > outStartPtr)
         prev = out[-1];
 
-    currPtr = svb_decode_scalar_delta(&out, keyPtr, currPtr, count, stdEncode, prev);
+    currPtr = svb_scalar_delta_decode(&out, keyPtr, currPtr, count, stdEncode, prev);
     if (currPtr == NULL)
         return 0;
 
@@ -235,7 +235,7 @@ uint64_t svb_delta_decode_alt(const uint8_t *in, const uint64_t in_len, uint64_t
     if (count > 0 && out > outStartPtr)
         prev = out[-1];
 
-    currPtr = svb_decode_scalar_delta(&out, keyPtr, currPtr, count, altEncode, prev);
+    currPtr = svb_scalar_delta_decode(&out, keyPtr, currPtr, count, altEncode, prev);
     if (currPtr == NULL)
         return 0;
 
