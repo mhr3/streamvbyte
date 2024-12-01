@@ -24,3 +24,6 @@ func svb_delta_encode_alt(in []uint32, prev uint32, out *byte) uint64
 
 //go:noescape
 func svb_delta_decode(in []byte, count int, prev uint32, out *uint32) uint64
+
+//go:noescape
+func svb_delta_decode_alt(in []byte, count int, prev uint32, out *uint32) uint64

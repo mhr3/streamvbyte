@@ -139,10 +139,19 @@ func (e altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []b
 }
 
 func (e altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
-	// TODO: missing optimized implementation
+	if count <= 0 {
+		return nil
+	}
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeDeltaScalar0124(output, input, prev)
-	return output[:count]
+
+	var n int
+	if hasSSE41 {
+		n = int(svb_delta_decode_alt(input, count, prev, &output[0]))
+	} else {
+		decodeDeltaScalar0124(output, input, prev)
+		n = count
+	}
+	return output[:n]
 }

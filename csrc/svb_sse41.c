@@ -201,3 +201,31 @@ uint64_t svb_delta_decode(const uint8_t *in, const uint64_t in_len, uint64_t in_
 
     return (uint64_t)(out - outStartPtr);
 }
+
+// gocc: svb_delta_decode_alt(in []byte, count int, prev uint32, out *uint32) uint64
+uint64_t svb_delta_decode_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
+                              int64_t count, uint32_t prev, uint32_t *out)
+{
+    if (count <= 0 || in_len < (count + 3) / 4)
+        return 0;
+
+    uint32_t keyLen = ((count + 3) / 4); // 2-bits per key (rounded up)
+    const uint8_t *keyPtr = in;
+    const uint8_t *dataPtr = keyPtr + keyLen; // data starts at end of keys
+    const uint32_t *outStartPtr = out;
+
+    // FIXME: we're not checking whether there's enough "in" bytes left
+    dataPtr = svb_delta_decode_quad_quad_alt(out, keyPtr, dataPtr, count, prev);
+    out += count & ~31U;
+    keyPtr += (count / 4) & ~7U;
+    count &= 31;
+
+    if (count > 0 && out > outStartPtr)
+        prev = out[-1];
+
+    dataPtr = svb_scalar_delta_decode(&out, keyPtr, dataPtr, count, altEncode, prev);
+    if (dataPtr == NULL)
+        return 0;
+
+    return (uint64_t)(out - outStartPtr);
+}
