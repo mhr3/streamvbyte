@@ -2,7 +2,7 @@
 
 package streamvbyte
 
-func (e stdEncoding) Encode(input []uint32, output []byte) []byte {
+func (stdEncoding) Encode(input []uint32, output []byte) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -15,7 +15,7 @@ func (e stdEncoding) Encode(input []uint32, output []byte) []byte {
 	return output[:n]
 }
 
-func (e stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 	if count <= 0 {
 		return nil
 	}
@@ -26,7 +26,7 @@ func (e stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 	return output[:sz]
 }
 
-func (e stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -39,7 +39,7 @@ func (e stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []b
 	return output[:n]
 }
 
-func (e stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
 	if count <= 0 {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (e stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev 
 	!!! AltEncoding below !!!
 */
 
-func (e altEncoding) Encode(input []uint32, output []byte) []byte {
+func (altEncoding) Encode(input []uint32, output []byte) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -67,7 +67,7 @@ func (e altEncoding) Encode(input []uint32, output []byte) []byte {
 	return output[:n]
 }
 
-func (e altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 	if count <= 0 {
 		return nil
 	}
@@ -78,7 +78,7 @@ func (e altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 	return output[:sz]
 }
 
-func (e altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -91,7 +91,7 @@ func (e altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []b
 	return output[:n]
 }
 
-func (e altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
 	if count <= 0 {
 		return nil
 	}

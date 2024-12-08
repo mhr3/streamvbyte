@@ -1,13 +1,22 @@
 package streamvbyte
 
 type Encoding interface {
+	// Encode encodes the input slice of uint32 values.
+	// If the output slice is too small or nil, a new slice will be allocated and returned.
 	Encode(input []uint32, output []byte) []byte
+	// Decode decodes the input slice of bytes.
+	// If the output slice is too small or nil, a new slice will be allocated and returned.
 	Decode(input []byte, count int, output []uint32) []uint32
 
+	// EncodeDelta encodes the input slice of uint32 values.
+	// If the output slice is too small or nil, a new slice will be allocated and returned.
 	EncodeDelta(input []uint32, output []byte, prev uint32) []byte
+	// DecodeDelta decodes the input slice of bytes.
+	// If the output slice is too small or nil, a new slice will be allocated and returned.
 	DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32
 }
 
+// MaxEncodedLen returns the maximum number of bytes required to encode n uint32 values.
 func MaxEncodedLen(n int) int {
 	numControlBytes := (n + 3) / 4
 	maxNumDataBytes := 4 * n
