@@ -126,6 +126,24 @@ func TestEncodeDecode(t *testing.T) {
 	}
 }
 
+func TestLargeDeltas(t *testing.T) {
+	input := []uint32{0, 42, math.MaxUint32, 42, 0, 42, 0, 42, 0, 42, 0, 42}
+	encoded := StdEncoding.EncodeDelta(input, nil, 0)
+	decoded := StdEncoding.DecodeDelta(encoded, len(input), nil, 0)
+
+	require.Len(t, decoded, len(input))
+	assert.Equal(t, input, decoded)
+
+	sInput := []int32{0, 42, -1, 42, 0, 42, 0, 42, 0, 42, 0, 42}
+	inputZz := ZizZag.EncodeDelta(sInput, nil, 0)
+	encoded = StdEncoding.Encode(inputZz, nil)
+	decoded = StdEncoding.Decode(encoded, len(input), nil)
+	outputZz := ZizZag.DecodeDelta(decoded, nil, 0)
+
+	require.Len(t, decoded, len(input))
+	assert.Equal(t, sInput, outputZz)
+}
+
 const (
 	benchSize = 1000000
 	zipfV     = 1.0

@@ -109,6 +109,8 @@ static inline uint8_t *svb_scalar_delta_encode(const uint32_t *in,
     uint8_t shift = 0; // cycles 0, 2, 4, 6, 0, 2, 4, 6, ...
     uint8_t key = 0;
 
+    EncodeFunc encodeFn = encodeType == stdEncode ? svb_encode_data_1234 : svb_encode_data_0124;
+
     for (uint32_t c = 0; c < count; c++)
     {
         if (shift == 8)
@@ -119,7 +121,7 @@ static inline uint8_t *svb_scalar_delta_encode(const uint32_t *in,
         }
         uint32_t val = in[c] - prev;
         prev = in[c];
-        uint8_t code = encodeType == stdEncode ? svb_encode_data_1234(val, &dataPtr) : svb_encode_data_0124(val, &dataPtr);
+        uint8_t code = encodeFn(val, &dataPtr);
         key |= code << shift;
         shift += 2;
     }
