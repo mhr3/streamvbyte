@@ -33,7 +33,6 @@ The library provides two main encoding schemes: `StdEncoding` (uses 1234 scheme)
 package main
 
 import (
-	"fmt"
 	"github.com/mhr3/streamvbyte"
 )
 
@@ -53,7 +52,6 @@ Delta encoding is also supported for compressing sequences of integers with smal
 package main
 
 import (
-	"fmt"
 	"github.com/mhr3/streamvbyte"
 )
 
@@ -61,10 +59,7 @@ func main() {
 	input := []uint32{100, 101, 102, 103, 104}
 
 	encoded := streamvbyte.StdEncoding.EncodeDelta(input, nil, 0)
-	fmt.Println("Encoded Delta:", encoded)
-
 	decoded := streamvbyte.StdEncoding.DecodeDelta(encoded, len(input), nil, 0)
-	fmt.Println("Decoded Delta:", decoded)
 }
 ```
 
@@ -76,7 +71,6 @@ The encoding methods only support slices of `uint32`, but you can use ZigZag enc
 package main
 
 import (
-	"fmt"
 	"github.com/mhr3/streamvbyte"
 )
 
