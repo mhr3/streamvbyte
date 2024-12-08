@@ -5,13 +5,13 @@ package streamvbyte
 
 
 //go:noescape
-func zigzag_encode_avx2(in *int32, out *uint32, sz int64)
+func zigzag_encode_avx2(in *int32, out *uint32, sz int)
 
 //go:noescape
-func zigzag_delta_encode_avx2(in *int32, out *uint32, sz int64, prev int32)
+func zigzag_delta_encode_avx2(in *int32, out *uint32, sz int, prev int32)
 
 //go:noescape
-func zigzag_decode_avx2(in *uint32, out *int32, sz int64)
+func zigzag_decode_avx2(in *uint32, out *int32, sz int)
 
 //go:noescape
-func zigzag_delta_decode_avx2(in *uint32, out *int32, sz int64, prev int32)
+func zigzag_delta_decode_avx2(in *uint32, out *int32, sz int, prev int32)
