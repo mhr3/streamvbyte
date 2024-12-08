@@ -18,14 +18,14 @@ func TestZigZagConvert(t *testing.T) {
 	}
 
 	// Encode
-	encoded := streamvbyte.ZizZag.Encode(input, nil)
-	decoded := streamvbyte.ZizZag.Decode(encoded, nil)
+	encoded := streamvbyte.ZigZag.Encode(input, nil)
+	decoded := streamvbyte.ZigZag.Decode(encoded, nil)
 
 	assert.Equal(t, input, decoded)
 
 	// EncodeDelta
-	encoded = streamvbyte.ZizZag.EncodeDelta(input, nil, 0)
-	decoded = streamvbyte.ZizZag.DecodeDelta(encoded, nil, 0)
+	encoded = streamvbyte.ZigZag.EncodeDelta(input, nil, 0)
+	decoded = streamvbyte.ZigZag.DecodeDelta(encoded, nil, 0)
 
 	assert.Equal(t, input, decoded)
 }
@@ -41,18 +41,18 @@ func BenchmarkZigZag(b *testing.B) {
 	b.Run("Encode", func(b *testing.B) {
 		var output []uint32
 		for i := 0; i < b.N; i++ {
-			output = streamvbyte.ZizZag.Encode(input, output)
+			output = streamvbyte.ZigZag.Encode(input, output)
 		}
 		b.SetBytes(int64(sz) * 4)
 	})
 
 	b.Run("Decode", func(b *testing.B) {
-		encoded := streamvbyte.ZizZag.Encode(input, nil)
+		encoded := streamvbyte.ZigZag.Encode(input, nil)
 		var output []int32
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			output = streamvbyte.ZizZag.Decode(encoded, output)
+			output = streamvbyte.ZigZag.Decode(encoded, output)
 		}
 		b.SetBytes(int64(sz) * 4)
 	})
@@ -70,18 +70,18 @@ func BenchmarkZigZagDelta(b *testing.B) {
 	b.Run("Encode", func(b *testing.B) {
 		var output []uint32
 		for i := 0; i < b.N; i++ {
-			output = streamvbyte.ZizZag.EncodeDelta(input, output, 0)
+			output = streamvbyte.ZigZag.EncodeDelta(input, output, 0)
 		}
 		b.SetBytes(int64(sz) * 4)
 	})
 
 	b.Run("Decode", func(b *testing.B) {
-		encoded := streamvbyte.ZizZag.EncodeDelta(input, nil, 0)
+		encoded := streamvbyte.ZigZag.EncodeDelta(input, nil, 0)
 		var output []int32
 
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			output = streamvbyte.ZizZag.DecodeDelta(encoded, output, 0)
+			output = streamvbyte.ZigZag.DecodeDelta(encoded, output, 0)
 		}
 		b.SetBytes(int64(sz) * 4)
 	})

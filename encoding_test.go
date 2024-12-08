@@ -135,10 +135,10 @@ func TestLargeDeltas(t *testing.T) {
 	assert.Equal(t, input, decoded)
 
 	sInput := []int32{0, 42, -1, 42, 0, 42, 0, 42, 0, 42, 0, 42}
-	inputZz := ZizZag.EncodeDelta(sInput, nil, 0)
+	inputZz := ZigZag.EncodeDelta(sInput, nil, 0)
 	encoded = StdEncoding.Encode(inputZz, nil)
 	decoded = StdEncoding.Decode(encoded, len(input), nil)
-	outputZz := ZizZag.DecodeDelta(decoded, nil, 0)
+	outputZz := ZigZag.DecodeDelta(decoded, nil, 0)
 
 	require.Len(t, decoded, len(input))
 	assert.Equal(t, sInput, outputZz)

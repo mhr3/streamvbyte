@@ -2,7 +2,7 @@ package streamvbyte
 
 type zigZag struct{}
 
-var ZizZag = zigZag{}
+var ZigZag = zigZag{}
 
 // Encode encodes the input slice of int32 values into the output slice of uint32 values.
 // If the output slice is nil, a new slice will be allocated and returned.
