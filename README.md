@@ -113,5 +113,5 @@ The following table shows the benchmark results for different encoding and decod
 | DecodeDelta/alt    | Xeon 8375C | 15166.37           | 2993.66        | 5.06x   |
 | ZigZag/Encode      | Xeon 8375C | 21579.60           | 6440.37        | 3.35x   |
 | ZigZag/Decode      | Xeon 8375C | 15592.41           | 6917.33        | 2.25x   |
-| ZigZagDelta/Encode | Xeon 8375C | 3316.18            | 5472.73        | 0.61x   |
-| ZigZagDelta/Decode | Xeon 8375C | 3463.07            | 5082.88        | 0.68x   |
+| ZigZagDelta/Encode | Xeon 8375C | 6525.11            | 5472.73        | 1.19x   |
+| ZigZagDelta/Decode | Xeon 8375C | 6940.30            | 5082.88        | 1.36x   |
