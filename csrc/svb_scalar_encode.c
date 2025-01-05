@@ -1,3 +1,5 @@
+#include "svb_type.h"
+
 static inline uint8_t svb_encode_data_1234(uint32_t val, uint8_t *__restrict__ *dataPtrPtr)
 {
     uint8_t *dataPtr = *dataPtrPtr;

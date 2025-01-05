@@ -3,7 +3,7 @@ package streamvbyte
 import (
 	"math"
 	"math/rand"
-	"sort"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -165,7 +165,7 @@ func init() {
 	}
 
 	copy(benchUint32DataSorted, benchUint32Data)
-	sort.Slice(benchUint32DataSorted, func(i, j int) bool { return benchUint32DataSorted[i] < benchUint32DataSorted[j] })
+	slices.Sort(benchUint32DataSorted)
 }
 
 func BenchmarkEncode(b *testing.B) {

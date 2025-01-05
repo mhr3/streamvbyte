@@ -2,7 +2,6 @@
 #include <x86intrin.h>
 
 #include "svb_tables_encode.h"
-#include "svb_tables_encode_sse.h"
 #include "svb_tables_decode.h"
 
 static inline uint16_t svb_control_sse41(__m128i lo, __m128i hi)

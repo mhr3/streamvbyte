@@ -8,9 +8,6 @@
 #include "svb_sse41_decode.c"
 #include "svb_sse41_encode.c"
 
-#include "svb_tables_encode_sse.h"
-#include "svb_tables_decode.h"
-
 // gocc: svb_encode(in []uint32, out *byte) uint64
 uint64_t svb_encode(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint8_t *out)
 {
