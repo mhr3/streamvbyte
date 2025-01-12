@@ -2,7 +2,7 @@ package streamvbyte
 
 import "encoding/binary"
 
-func encodeDeltaScalar(encoded []byte, data []uint32, previous uint32, scheme encodingScheme) int {
+func encodeDeltaScalar(encoded []byte, data []uint32, previous uint32, scheme Scheme) int {
 	// index of the control bytes
 	ci := 0
 	// index of the data bytes
@@ -10,7 +10,7 @@ func encodeDeltaScalar(encoded []byte, data []uint32, previous uint32, scheme en
 
 	controlByte := byte(0)
 	switch scheme {
-	case encodingScheme1234:
+	case Scheme1234:
 		for i, v := range data {
 			tmp := v
 			v -= previous
@@ -41,7 +41,7 @@ func encodeDeltaScalar(encoded []byte, data []uint32, previous uint32, scheme en
 				ci++
 			}
 		}
-	case encodingScheme0124:
+	case Scheme0124:
 		for i, v := range data {
 			tmp := v
 			v -= previous
@@ -79,7 +79,7 @@ func encodeDeltaScalar(encoded []byte, data []uint32, previous uint32, scheme en
 	return di
 }
 
-func decodeDeltaScalar(data []uint32, encoded []byte, previous uint32, scheme encodingScheme) {
+func decodeDeltaScalar(data []uint32, encoded []byte, previous uint32, scheme Scheme) {
 	// index of the control bytes
 	ci := 0
 	// index of the data bytes
@@ -87,7 +87,7 @@ func decodeDeltaScalar(data []uint32, encoded []byte, previous uint32, scheme en
 
 	var controlByte byte
 	switch scheme {
-	case encodingScheme1234:
+	case Scheme1234:
 		for i := range data {
 			if i&3 == 0 {
 				controlByte = encoded[ci]
@@ -112,7 +112,7 @@ func decodeDeltaScalar(data []uint32, encoded []byte, previous uint32, scheme en
 			data[i] = previous
 			controlByte >>= 2
 		}
-	case encodingScheme0124:
+	case Scheme0124:
 		for i := range data {
 			if i&3 == 0 {
 				controlByte = encoded[ci]
@@ -139,7 +139,7 @@ func decodeDeltaScalar(data []uint32, encoded []byte, previous uint32, scheme en
 	}
 }
 
-func encodeDeltaScalarZigzag(encoded []byte, data []int32, previous int32, scheme encodingScheme) int {
+func encodeDeltaScalarZigzag(encoded []byte, data []int32, previous int32, scheme Scheme) int {
 	// index of the control bytes
 	ci := 0
 	// index of the data bytes
@@ -147,7 +147,7 @@ func encodeDeltaScalarZigzag(encoded []byte, data []int32, previous int32, schem
 
 	controlByte := byte(0)
 	switch scheme {
-	case encodingScheme1234:
+	case Scheme1234:
 		for i, sv := range data {
 			tmp := sv
 			sv -= previous
@@ -180,7 +180,7 @@ func encodeDeltaScalarZigzag(encoded []byte, data []int32, previous int32, schem
 				ci++
 			}
 		}
-	case encodingScheme0124:
+	case Scheme0124:
 		for i, sv := range data {
 			tmp := sv
 			sv -= previous
@@ -220,7 +220,7 @@ func encodeDeltaScalarZigzag(encoded []byte, data []int32, previous int32, schem
 	return di
 }
 
-func decodeDeltaScalarZigzag(data []int32, encoded []byte, previous int32, scheme encodingScheme) {
+func decodeDeltaScalarZigzag(data []int32, encoded []byte, previous int32, scheme Scheme) {
 	// index of the control bytes
 	ci := 0
 	// index of the data bytes
@@ -228,7 +228,7 @@ func decodeDeltaScalarZigzag(data []int32, encoded []byte, previous int32, schem
 
 	var controlByte byte
 	switch scheme {
-	case encodingScheme1234:
+	case Scheme1234:
 		for i := range data {
 			if i&3 == 0 {
 				controlByte = encoded[ci]
@@ -253,7 +253,7 @@ func decodeDeltaScalarZigzag(data []int32, encoded []byte, previous int32, schem
 			data[i] = previous
 			controlByte >>= 2
 		}
-	case encodingScheme0124:
+	case Scheme0124:
 		for i := range data {
 			if i&3 == 0 {
 				controlByte = encoded[ci]

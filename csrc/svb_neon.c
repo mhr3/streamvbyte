@@ -290,6 +290,43 @@ uint64_t svb_delta_decode(const uint8_t *in, const uint64_t in_len, uint64_t in_
     return (uint64_t)(out - outStartPtr);
 }
 
+// gocc: svb_delta_decode_zz(in []byte, count int, prev int32, out *int32) uint64
+uint64_t svb_delta_decode_zz(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
+                          int64_t count, int32_t prev, int32_t *out)
+{
+    if (count <= 0 || in_len < (count + 3) / 4)
+        return 0;
+
+    const uint8_t *dataStartPtr = &in[(count + 3) / 4];
+    const uint8_t *dataEndPtr = in + in_len;
+    const uint8_t *dataNeonBound = in + (in_len - (in_len % 16));
+    const uint8_t *keyPtr = in;
+    const uint8_t *currPtr = dataStartPtr;
+    const int32_t *outStartPtr = out;
+
+    int32x4_t previous = vdupq_n_s32(prev);
+
+    for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && currPtr < dataNeonBound; keyPtr++)
+    {
+        uint32x4_t data = svb_decode_quad(*keyPtr, &currPtr);
+        int32x4_t zzData = svb_zigzag_decode_neon(data);
+        previous = svb_prefix_sum_s32(zzData, previous);
+        vst1q_s32(out, previous);
+
+        out += 4; // 16-byte shift
+    }
+    count -= (out - outStartPtr);
+
+    if (count > 0 && out > outStartPtr)
+        prev = out[-1];
+
+    currPtr = svb_scalar_delta_decode((uint32_t**)&out, keyPtr, currPtr, count, zzEncode, (uint32_t)prev);
+    if (currPtr == NULL)
+        return 0;
+
+    return (uint64_t)(out - outStartPtr);
+}
+
 // gocc: svb_delta_decode_alt(in []byte, count int, prev uint32, out *uint32) uint64
 uint64_t svb_delta_decode_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
                           int64_t count, uint32_t prev, uint32_t *out)

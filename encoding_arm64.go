@@ -94,10 +94,8 @@ func (zigzagEncoding) DecodeDelta(input []byte, count int, output []int32, prev 
 	if len(output) < count {
 		output = make([]int32, count)
 	}
-	tmp := make([]uint32, count)
-	sz := svb_decode(input, count, &tmp[0])
-	return ZigZag.DecodeDelta(tmp[:sz], output, prev)
-	//return output[:sz]
+	sz := svb_delta_decode_zz(input, count, prev, &output[0])
+	return output[:sz]
 }
 
 /*

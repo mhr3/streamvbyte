@@ -4,12 +4,7 @@ import "encoding/binary"
 
 type encodingScheme byte
 
-const (
-	encodingScheme1234 encodingScheme = iota
-	encodingScheme0124
-)
-
-func encodeScalar(encoded []byte, data []uint32, scheme encodingScheme) int {
+func encodeScalar(encoded []byte, data []uint32, scheme Scheme) int {
 	// index of the control bytes
 	ci := 0
 	// index of the data bytes
@@ -18,7 +13,7 @@ func encodeScalar(encoded []byte, data []uint32, scheme encodingScheme) int {
 	controlByte := byte(0)
 
 	switch scheme {
-	case encodingScheme1234:
+	case Scheme1234:
 		for i, v := range data {
 			controlByte >>= 2
 			switch {
@@ -46,7 +41,7 @@ func encodeScalar(encoded []byte, data []uint32, scheme encodingScheme) int {
 				ci++
 			}
 		}
-	case encodingScheme0124:
+	case Scheme0124:
 		for i, v := range data {
 			controlByte >>= 2
 			switch {
@@ -81,7 +76,7 @@ func encodeScalar(encoded []byte, data []uint32, scheme encodingScheme) int {
 	return di
 }
 
-func decodeScalar(data []uint32, encoded []byte, scheme encodingScheme) {
+func decodeScalar(data []uint32, encoded []byte, scheme Scheme) {
 	// index of the control bytes
 	ci := 0
 	// index of the data bytes
@@ -90,7 +85,7 @@ func decodeScalar(data []uint32, encoded []byte, scheme encodingScheme) {
 	var controlByte byte
 
 	switch scheme {
-	case encodingScheme1234:
+	case Scheme1234:
 		for i := range data {
 			if i&3 == 0 {
 				controlByte = encoded[ci]
@@ -113,7 +108,7 @@ func decodeScalar(data []uint32, encoded []byte, scheme encodingScheme) {
 			}
 			controlByte >>= 2
 		}
-	case encodingScheme0124:
+	case Scheme0124:
 		for i := range data {
 			if i&3 == 0 {
 				controlByte = encoded[ci]
@@ -138,7 +133,7 @@ func decodeScalar(data []uint32, encoded []byte, scheme encodingScheme) {
 	}
 }
 
-func encodeScalarZigzag(encoded []byte, data []int32, scheme encodingScheme) int {
+func encodeScalarZigzag(encoded []byte, data []int32, scheme Scheme) int {
 	// index of the control bytes
 	ci := 0
 	// index of the data bytes
@@ -147,7 +142,7 @@ func encodeScalarZigzag(encoded []byte, data []int32, scheme encodingScheme) int
 	controlByte := byte(0)
 
 	switch scheme {
-	case encodingScheme1234:
+	case Scheme1234:
 		for i, sv := range data {
 			controlByte >>= 2
 			v := zigzag_encode32(sv)
@@ -176,7 +171,7 @@ func encodeScalarZigzag(encoded []byte, data []int32, scheme encodingScheme) int
 				ci++
 			}
 		}
-	case encodingScheme0124:
+	case Scheme0124:
 		for i, sv := range data {
 			controlByte >>= 2
 			v := zigzag_encode32(sv)
@@ -212,7 +207,7 @@ func encodeScalarZigzag(encoded []byte, data []int32, scheme encodingScheme) int
 	return di
 }
 
-func decodeScalarZigzag(data []int32, encoded []byte, scheme encodingScheme) {
+func decodeScalarZigzag(data []int32, encoded []byte, scheme Scheme) {
 	// index of the control bytes
 	ci := 0
 	// index of the data bytes
@@ -221,7 +216,7 @@ func decodeScalarZigzag(data []int32, encoded []byte, scheme encodingScheme) {
 	var controlByte byte
 
 	switch scheme {
-	case encodingScheme1234:
+	case Scheme1234:
 		for i := range data {
 			if i&3 == 0 {
 				controlByte = encoded[ci]
@@ -244,7 +239,7 @@ func decodeScalarZigzag(data []int32, encoded []byte, scheme encodingScheme) {
 			}
 			controlByte >>= 2
 		}
-	case encodingScheme0124:
+	case Scheme0124:
 		for i := range data {
 			if i&3 == 0 {
 				controlByte = encoded[ci]

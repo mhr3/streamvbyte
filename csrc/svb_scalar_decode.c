@@ -140,8 +140,25 @@ static inline const uint8_t *svb_scalar_delta_decode(uint32_t **outPtrPtr, const
             shift = 0;
             key = *keyPtr++;
         }
-        uint32_t val = decodeFn(&dataPtr, (key >> shift) & 0x3);
-        val += prev;
+        uint32_t val;
+        int32_t sVal;
+        switch (encodeType)
+        {
+        case stdEncode:
+            val = svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3);
+            val += prev;
+            break;
+        case zzEncode:
+            val = svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3);
+            sVal = svb_zigzag_decode_32(val);
+            sVal += (int32_t)prev;
+            val = (uint32_t)sVal;
+            break;
+        case altEncode:
+            val = svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
+            val += prev;
+            break;
+        }
         *outPtr++ = val;
         prev = val;
         shift += 2;

@@ -58,3 +58,16 @@ static inline uint32x4_t svb_prefix_sum_u32(uint32x4_t curr, uint32x4_t prev)
     curr = vaddq_u32(curr, add);
     return curr;
 }
+
+static inline int32x4_t svb_prefix_sum_s32(int32x4_t curr, int32x4_t prev)
+{
+    const int32x4_t zero = vdupq_n_s32(0);
+    int32x4_t add = vextq_s32(zero, curr, 3);
+
+    prev = vdupq_laneq_s32(prev, 3);
+    curr = vaddq_s32(curr, add);
+    add = vextq_s32(zero, curr, 2);
+    curr = vaddq_s32(curr, prev);
+    curr = vaddq_s32(curr, add);
+    return curr;
+}

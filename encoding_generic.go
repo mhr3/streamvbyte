@@ -7,7 +7,7 @@ func (e stdEncoding) Encode(input []uint32, output []byte) []byte {
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeScalar(output[:sz], input, encodingScheme1234)
+	n := encodeScalar(output[:sz], input, Scheme1234)
 	return output[:n]
 }
 
@@ -15,7 +15,7 @@ func (e stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeScalar(output, input, encodingScheme1234)
+	decodeScalar(output, input, Scheme1234)
 	return output[:count]
 }
 
@@ -24,7 +24,7 @@ func (e stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []b
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeDeltaScalar(output[:sz], input, prev, encodingScheme1234)
+	n := encodeDeltaScalar(output[:sz], input, prev, Scheme1234)
 	return output[:n]
 }
 
@@ -32,7 +32,7 @@ func (e stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev 
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeDeltaScalar(output, input, prev, encodingScheme1234)
+	decodeDeltaScalar(output, input, prev, Scheme1234)
 	return output[:count]
 }
 
@@ -41,7 +41,7 @@ func (e zigzagEncoding) Encode(input []int32, output []byte) []byte {
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeScalarZigzag(output[:sz], input, encodingScheme1234)
+	n := encodeScalarZigzag(output[:sz], input, Scheme1234)
 	return output[:n]
 }
 
@@ -49,7 +49,7 @@ func (e zigzagEncoding) Decode(input []byte, count int, output []int32) []int32 
 	if len(output) < count {
 		output = make([]int32, count)
 	}
-	decodeScalarZigzag(output, input, encodingScheme1234)
+	decodeScalarZigzag(output, input, Scheme1234)
 	return output[:count]
 }
 
@@ -58,7 +58,7 @@ func (e zigzagEncoding) EncodeDelta(input []int32, output []byte, prev int32) []
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeDeltaScalarZigzag(output[:sz], input, prev, encodingScheme1234)
+	n := encodeDeltaScalarZigzag(output[:sz], input, prev, Scheme1234)
 	return output[:n]
 }
 
@@ -66,7 +66,7 @@ func (e zigzagEncoding) DecodeDelta(input []byte, count int, output []int32, pre
 	if len(output) < count {
 		output = make([]int32, count)
 	}
-	decodeDeltaScalarZigzag(output, input, prev, encodingScheme1234)
+	decodeDeltaScalarZigzag(output, input, prev, Scheme1234)
 	return output[:count]
 }
 
@@ -79,7 +79,7 @@ func (e altEncoding) Encode(input []uint32, output []byte) []byte {
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeScalar(output[:sz], input, encodingScheme0124)
+	n := encodeScalar(output[:sz], input, Scheme0124)
 	return output[:n]
 }
 
@@ -87,7 +87,7 @@ func (e altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeScalar(output, input, encodingScheme0124)
+	decodeScalar(output, input, Scheme0124)
 	return output[:count]
 }
 
@@ -96,7 +96,7 @@ func (e altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []b
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeDeltaScalar(output[:sz], input, prev, encodingScheme0124)
+	n := encodeDeltaScalar(output[:sz], input, prev, Scheme0124)
 	return output[:n]
 }
 
@@ -104,6 +104,6 @@ func (e altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev 
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeDeltaScalar(output, input, prev, encodingScheme0124)
+	decodeDeltaScalar(output, input, prev, Scheme0124)
 	return output[:count]
 }

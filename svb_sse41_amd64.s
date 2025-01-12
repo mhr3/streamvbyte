@@ -1845,25 +1845,23 @@ LBB6_24:
 LBB6_26:
 	WORD $0x8945; BYTE $0xd3     // MOVL R10, R11                        // mov	r11d, r10d
 	WORD $0xd341; BYTE $0xeb     // SHRL CL, R11                         // shr	r11d, cl
-	WORD $0x8944; BYTE $0xdb     // MOVL R11, BX                         // mov	ebx, r11d
-	WORD $0xe380; BYTE $0x03     // ANDL $0x3, BL                        // and	bl, 3
-	WORD $0xfb80; BYTE $0x02     // CMPL BL, $0x2                        // cmp	bl, 2
+	LONG $0x03c3f641             // TESTL $0x3, R11                      // test	r11b, 3
 	JE   LBB6_30                 // <--                                  // je	.LBB6_30
 	LONG $0x03e38341             // ANDL $0x3, R11                       // and	r11d, 3
 	CMPL R11, $0x1               // <--                                  // cmp	r11d, 1
 	JE   LBB6_31                 // <--                                  // je	.LBB6_31
-	WORD $0x8545; BYTE $0xdb     // TESTL R11, R11                       // test	r11d, r11d
+	CMPL R11, $0x2               // <--                                  // cmp	r11d, 2
 	JNE  LBB6_22                 // <--                                  // jne	.LBB6_22
-	LONG $0x1ab60f44             // MOVZX 0(DX), R11                     // movzx	r11d, byte ptr [rdx]
-	LONG $0x000001bb; BYTE $0x00 // MOVL $0x1, BX                        // mov	ebx, 1
-	JMP  LBB6_23                 // <--                                  // jmp	.LBB6_23
-
-LBB6_30:
 	WORD $0xb70f; BYTE $0x1a     // MOVZX 0(DX), BX                      // movzx	ebx, word ptr [rdx]
 	LONG $0x5ab60f44; BYTE $0x02 // MOVZX 0x2(DX), R11                   // movzx	r11d, byte ptr [rdx + 2]
 	LONG $0x10e3c141             // SHLL $0x10, R11                      // shl	r11d, 16
 	WORD $0x0941; BYTE $0xdb     // ORL BX, R11                          // or	r11d, ebx
 	LONG $0x000003bb; BYTE $0x00 // MOVL $0x3, BX                        // mov	ebx, 3
+	JMP  LBB6_23                 // <--                                  // jmp	.LBB6_23
+
+LBB6_30:
+	LONG $0x1ab60f44             // MOVZX 0(DX), R11                     // movzx	r11d, byte ptr [rdx]
+	LONG $0x000001bb; BYTE $0x00 // MOVL $0x1, BX                        // mov	ebx, 1
 	JMP  LBB6_23                 // <--                                  // jmp	.LBB6_23
 
 LBB6_31:
@@ -4117,8 +4115,8 @@ LBB7_19:
 	JMP  LBB7_24             // <--                                  // jmp	.LBB7_24
 
 LBB7_22:
-	LONG $0x1ab70f44 // MOVZX 0(DX), R11                     // movzx	r11d, word ptr [rdx]
-	ADDQ $0x2, DX    // <--                                  // add	rdx, 2
+	LONG $0x1ab60f44 // MOVZX 0(DX), R11                     // movzx	r11d, byte ptr [rdx]
+	INCQ DX          // <--                                  // inc	rdx
 
 LBB7_23:
 	WORD $0x0145; BYTE $0xd8 // ADDL R11, R8                         // add	r8d, r11d
@@ -4142,12 +4140,12 @@ LBB7_26:
 	LONG $0x03e38341         // ANDL $0x3, R11                       // and	r11d, 3
 	WORD $0xc3f6; BYTE $0x03 // TESTL $0x3, BL                       // test	bl, 3
 	JE   LBB7_23             // <--                                  // je	.LBB7_23
-	CMPL R11, $0x2           // <--                                  // cmp	r11d, 2
-	JE   LBB7_22             // <--                                  // je	.LBB7_22
 	CMPL R11, $0x1           // <--                                  // cmp	r11d, 1
+	JE   LBB7_22             // <--                                  // je	.LBB7_22
+	CMPL R11, $0x2           // <--                                  // cmp	r11d, 2
 	JNE  LBB7_30             // <--                                  // jne	.LBB7_30
-	LONG $0x1ab60f44         // MOVZX 0(DX), R11                     // movzx	r11d, byte ptr [rdx]
-	INCQ DX                  // <--                                  // inc	rdx
+	LONG $0x1ab70f44         // MOVZX 0(DX), R11                     // movzx	r11d, word ptr [rdx]
+	ADDQ $0x2, DX            // <--                                  // add	rdx, 2
 	JMP  LBB7_23             // <--                                  // jmp	.LBB7_23
 
 LBB7_30:

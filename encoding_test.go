@@ -63,15 +63,15 @@ func TestEncodeDecode(t *testing.T) {
 
 			t.Run("std", func(t *testing.T) {
 				// Encode
-				encoded := StdEncoding.Encode(input, nil)
-				decoded := StdEncoding.Decode(encoded, len(input), nil)
+				encoded := Encode(input, nil)
+				decoded := Decode[uint32](encoded, len(input), nil)
 
 				require.Len(t, decoded, len(input))
 				assert.Equal(t, input, decoded)
 
 				// re-check against the scalar implementation
 				scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
-				n := encodeScalar(scalar_encoded, input, encodingScheme1234)
+				n := encodeScalar(scalar_encoded, input, Scheme1234)
 				scalar_encoded = scalar_encoded[:n]
 				assert.Equal(t, scalar_encoded, encoded)
 			})
@@ -83,8 +83,8 @@ func TestEncodeDecode(t *testing.T) {
 				}
 
 				// Encode
-				encoded := ZigZagEncoding.Encode(inputSigned, nil)
-				decoded := ZigZagEncoding.Decode(encoded, len(input), nil)
+				encoded := Encode(inputSigned, nil)
+				decoded := Decode[int32](encoded, len(input), nil)
 
 				require.Len(t, decoded, len(input))
 				assert.Equal(t, inputSigned, decoded)
@@ -92,21 +92,21 @@ func TestEncodeDecode(t *testing.T) {
 				// re-check against the scalar implementation
 				scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
 				input = ZigZag.Encode(inputSigned, nil)
-				n := encodeScalar(scalar_encoded, input, encodingScheme1234)
+				n := encodeScalar(scalar_encoded, input, Scheme1234)
 				scalar_encoded = scalar_encoded[:n]
 				assert.Equal(t, scalar_encoded, encoded)
 			})
 
 			t.Run("alt", func(t *testing.T) {
 				// AltEncoding
-				encoded := AltEncoding.Encode(input, nil)
-				decoded := AltEncoding.Decode(encoded, len(input), nil)
+				encoded := Encode(input, &EncodeOptions{Scheme: Scheme0124})
+				decoded := Decode(encoded, len(input), &DecodeOptions[uint32]{Scheme: Scheme0124})
 
 				require.Len(t, decoded, len(input))
 				assert.Equal(t, input, decoded)
 
 				scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
-				n := encodeScalar(scalar_encoded, input, encodingScheme0124)
+				n := encodeScalar(scalar_encoded, input, Scheme0124)
 				scalar_encoded = scalar_encoded[:n]
 				assert.Equal(t, scalar_encoded, encoded)
 			})
@@ -117,15 +117,15 @@ func TestEncodeDecode(t *testing.T) {
 
 			t.Run("std", func(t *testing.T) {
 				// Encode
-				encoded := StdEncoding.EncodeDelta(input, nil, 0)
-				decoded := StdEncoding.DecodeDelta(encoded, len(input), nil, 0)
+				encoded := EncodeDelta(input, nil)
+				decoded := DecodeDelta[uint32](encoded, len(input), nil)
 
 				require.Len(t, decoded, len(input))
 				assert.Equal(t, input, decoded)
 
 				// re-check against the scalar implementation
 				scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
-				n := encodeDeltaScalar(scalar_encoded, input, 0, encodingScheme1234)
+				n := encodeDeltaScalar(scalar_encoded, input, 0, Scheme1234)
 				scalar_encoded = scalar_encoded[:n]
 				assert.Equal(t, scalar_encoded, encoded)
 			})
@@ -137,8 +137,8 @@ func TestEncodeDecode(t *testing.T) {
 				}
 
 				// Encode
-				encoded := ZigZagEncoding.EncodeDelta(inputSigned, nil, 0)
-				decoded := ZigZagEncoding.DecodeDelta(encoded, len(input), nil, 0)
+				encoded := EncodeDelta(inputSigned, nil)
+				decoded := DecodeDelta[int32](encoded, len(input), nil)
 
 				require.Len(t, decoded, len(input))
 				assert.Equal(t, inputSigned, decoded)
@@ -146,21 +146,21 @@ func TestEncodeDecode(t *testing.T) {
 				// re-check against the scalar implementation
 				scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
 				input = ZigZag.EncodeDelta(inputSigned, nil, 0)
-				n := encodeScalar(scalar_encoded, input, encodingScheme1234)
+				n := encodeScalar(scalar_encoded, input, Scheme1234)
 				scalar_encoded = scalar_encoded[:n]
 				assert.Equal(t, scalar_encoded, encoded)
 			})
 
 			t.Run("alt", func(t *testing.T) {
 				// AltEncoding
-				encoded := AltEncoding.EncodeDelta(input, nil, 0)
-				decoded := AltEncoding.DecodeDelta(encoded, len(input), nil, 0)
+				encoded := EncodeDelta(input, &EncodeOptions{Scheme: Scheme0124})
+				decoded := DecodeDelta(encoded, len(input), &DecodeOptions[uint32]{Scheme: Scheme0124})
 
 				require.Len(t, decoded, len(input))
 				assert.Equal(t, input, decoded)
 
 				scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
-				n := encodeDeltaScalar(scalar_encoded, input, 0, encodingScheme0124)
+				n := encodeDeltaScalar(scalar_encoded, input, 0, Scheme0124)
 				scalar_encoded = scalar_encoded[:n]
 				assert.Equal(t, scalar_encoded, encoded)
 			})
@@ -170,20 +170,18 @@ func TestEncodeDecode(t *testing.T) {
 
 func TestLargeDeltas(t *testing.T) {
 	input := []uint32{0, 42, math.MaxUint32, 42, 0, 42, 0, 42, 0, 42, 0, 42}
-	encoded := StdEncoding.EncodeDelta(input, nil, 0)
-	decoded := StdEncoding.DecodeDelta(encoded, len(input), nil, 0)
+	encoded := EncodeDelta(input, nil)
+	decoded := DecodeDelta[uint32](encoded, len(input), nil)
 
 	require.Len(t, decoded, len(input))
 	assert.Equal(t, input, decoded)
 
 	sInput := []int32{0, 42, -1, 42, 0, 42, 0, 42, 0, 42, 0, 42}
-	inputZz := ZigZag.EncodeDelta(sInput, nil, 0)
-	encoded = StdEncoding.Encode(inputZz, nil)
-	decoded = StdEncoding.Decode(encoded, len(input), nil)
-	outputZz := ZigZag.DecodeDelta(decoded, nil, 0)
+	encoded = Encode(sInput, nil)
+	sDecoded := Decode[int32](encoded, len(input), nil)
 
 	require.Len(t, decoded, len(input))
-	assert.Equal(t, sInput, outputZz)
+	assert.Equal(t, sInput, sDecoded)
 }
 
 const (
@@ -243,7 +241,7 @@ func BenchmarkEncode(b *testing.B) {
 	b.Run("alt", func(b *testing.B) {
 		b.SetBytes(int64(4 * benchSize))
 		for i := 0; i < b.N; i++ {
-			encoded = AltEncoding.Encode(benchUint32Data, encoded)
+			encoded = Encode(benchUint32Data, &EncodeOptions{Output: encoded, Scheme: Scheme0124})
 			_ = encoded
 		}
 	})
@@ -288,7 +286,7 @@ func BenchmarkEncodeDelta(b *testing.B) {
 }
 
 func BenchmarkDecode(b *testing.B) {
-	encoded := StdEncoding.Encode(benchUint32Data, nil)
+	encoded := Encode(benchUint32Data, nil)
 
 	var decoded []uint32
 
@@ -328,6 +326,15 @@ func BenchmarkDecodeDelta(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			decoded = DecodeDelta(encoded, len(benchUint32DataSorted), &DecodeOptions[uint32]{Output: decoded})
 			_ = decoded
+		}
+	})
+
+	b.Run("zigzag", func(b *testing.B) {
+		var decodedInt32 []int32
+		b.SetBytes(int64(4 * benchSize))
+		for i := 0; i < b.N; i++ {
+			decodedInt32 = DecodeDelta(encoded, len(benchUint32DataSorted), &DecodeOptions[int32]{Output: decodedInt32})
+			_ = decodedInt32
 		}
 	})
 
