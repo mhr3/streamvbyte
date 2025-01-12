@@ -4,6 +4,7 @@
 typedef enum
 {
     stdEncode,
+    zzEncode,
     altEncode
 } EncodeType;
 

@@ -21,7 +21,7 @@ func (stdEncoding) Encode(input []uint32, output []byte) []byte {
 	if hasSSE41 {
 		n = int(svb_encode(input, &output[0]))
 	} else {
-		n = encodeScalar1234(output[:sz], input)
+		n = encodeScalar(output[:sz], input, encodingScheme1234)
 	}
 	return output[:n]
 }
@@ -38,7 +38,7 @@ func (stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 	if hasSSE41 {
 		n = int(svb_decode(input, count, &output[0]))
 	} else {
-		decodeScalar1234(output, input)
+		decodeScalar(output, input, encodingScheme1234)
 		n = count
 	}
 	return output[:n]
@@ -57,7 +57,7 @@ func (stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byt
 	if hasSSE41 {
 		n = int(svb_delta_encode(input, prev, &output[0]))
 	} else {
-		n = encodeDeltaScalar1234(output[:sz], input, prev)
+		n = encodeDeltaScalar(output[:sz], input, prev, encodingScheme1234)
 	}
 	return output[:n]
 }
@@ -74,10 +74,44 @@ func (stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev ui
 	if hasSSE41 {
 		n = int(svb_delta_decode(input, count, prev, &output[0]))
 	} else {
-		decodeDeltaScalar1234(output, input, prev)
+		decodeDeltaScalar(output, input, prev, encodingScheme1234)
 		n = count
 	}
 	return output[:n]
+}
+
+func (e zigzagEncoding) Encode(input []int32, output []byte) []byte {
+	sz := MaxEncodedLen(len(input))
+	if cap(output) < sz {
+		output = make([]byte, sz)
+	}
+	n := encodeScalarZigzag(output[:sz], input, encodingScheme1234)
+	return output[:n]
+}
+
+func (e zigzagEncoding) Decode(input []byte, count int, output []int32) []int32 {
+	if len(output) < count {
+		output = make([]int32, count)
+	}
+	decodeScalarZigzag(output, input, encodingScheme1234)
+	return output[:count]
+}
+
+func (e zigzagEncoding) EncodeDelta(input []int32, output []byte, prev int32) []byte {
+	sz := MaxEncodedLen(len(input))
+	if cap(output) < sz {
+		output = make([]byte, sz)
+	}
+	n := encodeDeltaScalarZigzag(output[:sz], input, prev, encodingScheme1234)
+	return output[:n]
+}
+
+func (e zigzagEncoding) DecodeDelta(input []byte, count int, output []int32, prev int32) []int32 {
+	if len(output) < count {
+		output = make([]int32, count)
+	}
+	decodeDeltaScalarZigzag(output, input, prev, encodingScheme1234)
+	return output[:count]
 }
 
 /*
@@ -97,7 +131,7 @@ func (altEncoding) Encode(input []uint32, output []byte) []byte {
 	if hasSSE41 {
 		n = int(svb_encode_alt(input, &output[0]))
 	} else {
-		n = encodeScalar0124(output[:sz], input)
+		n = encodeScalar(output[:sz], input, encodingScheme0124)
 	}
 	return output[:n]
 }
@@ -114,7 +148,7 @@ func (altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 	if hasSSE41 {
 		n = int(svb_decode_alt(input, count, &output[0]))
 	} else {
-		decodeScalar0124(output, input)
+		decodeScalar(output, input, encodingScheme0124)
 		n = count
 	}
 	return output[:n]
@@ -133,7 +167,7 @@ func (altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byt
 	if hasSSE41 {
 		n = int(svb_delta_encode_alt(input, prev, &output[0]))
 	} else {
-		n = encodeDeltaScalar0124(output[:sz], input, prev)
+		n = encodeDeltaScalar(output[:sz], input, prev, encodingScheme0124)
 	}
 	return output[:n]
 }
@@ -150,7 +184,7 @@ func (altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev ui
 	if hasSSE41 {
 		n = int(svb_delta_decode_alt(input, count, prev, &output[0]))
 	} else {
-		decodeDeltaScalar0124(output, input, prev)
+		decodeDeltaScalar(output, input, prev, encodingScheme0124)
 		n = count
 	}
 	return output[:n]

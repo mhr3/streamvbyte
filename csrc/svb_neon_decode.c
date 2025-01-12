@@ -35,9 +35,20 @@ static inline uint32x4_t svb_decode_quad_alt(uint8_t key, const uint8_t **dataPt
     return vreinterpretq_u32_u8(vqtbl1q_u8(compressed, decodingShuffle));
 }
 
-static inline uint32x4_t svb_prefix_sum(uint32x4_t curr, uint32x4_t prev)
+static inline int32x4_t svb_zigzag_decode_neon(const uint32x4_t data)
 {
-    uint32x4_t zero = vdupq_n_u32(0);
+    // NEON for: (val >> 1) ^ (0 - (val & 1));
+    uint32x4_t half = vshrq_n_u32(data, 1);
+    uint32x4_t mask = vandq_u32(data, vdupq_n_u32(1));
+    int32x4_t neg_mask = vnegq_s32(vreinterpretq_s32_u32(mask));
+
+    // XOR to complete zigzag
+    return veorq_s32(vreinterpretq_s32_u32(half), neg_mask);
+}
+
+static inline uint32x4_t svb_prefix_sum_u32(uint32x4_t curr, uint32x4_t prev)
+{
+    const uint32x4_t zero = vdupq_n_u32(0);
     uint32x4_t add = vextq_u32(zero, curr, 3);
 
     prev = vdupq_laneq_u32(prev, 3);

@@ -71,6 +71,11 @@ static inline uint32_t svb_decode_data_0124(const uint8_t **dataPtrPtr, uint8_t 
     return val;
 }
 
+static inline int32_t svb_zigzag_decode_32(uint32_t val)
+{
+    return (val >> 1) ^ (0 - (val & 1));
+}
+
 // FIXME: this isn't checking whether dataPtr is within bounds
 static inline const uint8_t *svb_scalar_decode(uint32_t **outPtrPtr, const uint8_t *keyPtr,
                                                const uint8_t *dataPtr,
@@ -91,7 +96,20 @@ static inline const uint8_t *svb_scalar_decode(uint32_t **outPtrPtr, const uint8
             shift = 0;
             key = *keyPtr++;
         }
-        uint32_t val = encodeType == stdEncode ? svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3) : svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
+        uint32_t val;
+        switch (encodeType)
+        {
+        case stdEncode:
+            val = svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3);
+            break;
+        case zzEncode:
+            val = svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3);
+            val = (uint32_t)svb_zigzag_decode_32(val);
+            break;
+        case altEncode:
+            val = svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
+            break;
+        }
         *outPtr++ = val;
         shift += 2;
     }
