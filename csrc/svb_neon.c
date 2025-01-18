@@ -34,7 +34,7 @@ uint64_t svb_encode_u32(const uint32_t *in, const uint64_t in_len, uint64_t in_c
 // gocc: svb_encode_s32(in []int32, out *byte, scheme byte) int64
 uint64_t svb_encode_s32(const int32_t *in, const uint64_t in_len, uint64_t in_cap, uint8_t *out, char scheme)
 {
-    const EncodeType encodeType = scheme != 0 ? altEncode : stdEncode;
+    const EncodeType encodeType = scheme != 0 ? zzAltEncode : zzEncode;
     uint8_t *keyPtr = out;
     uint32_t count = in_len;
     uint32_t keyLen = (count + 3) / 4;  // 2-bits rounded to full byte
@@ -46,13 +46,13 @@ uint64_t svb_encode_s32(const int32_t *in, const uint64_t in_len, uint64_t in_ca
     {
         const int32x4_t data = vld1q_s32(in);
         const uint32x4_t zzData = svb_zigzag_encode_neon(data);
-        dataPtr += encodeType == stdEncode ? svb_encode_quad(zzData, dataPtr, keyPtr) : svb_encode_quad_alt(zzData, dataPtr, keyPtr);
+        dataPtr += encodeType == zzEncode ? svb_encode_quad(zzData, dataPtr, keyPtr) : svb_encode_quad_alt(zzData, dataPtr, keyPtr);
         keyPtr++;
         in += 4;
     }
     count -= 4 * count_quads;
 
-    return (uint64_t)(svb_scalar_encode((const uint32_t*)in, keyPtr, dataPtr, count, encodeType+1) - out);
+    return (uint64_t)(svb_scalar_encode((const uint32_t*)in, keyPtr, dataPtr, count, encodeType) - out);
 }
 
 // gocc: svb_decode_u32(in []byte, count int, out *uint32, scheme byte) uint64
@@ -93,7 +93,7 @@ uint64_t svb_decode_s32(const uint8_t *in, const uint64_t in_len, uint64_t in_ca
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
 
-    const EncodeType encodeType = scheme != 0 ? altEncode : stdEncode;
+    const EncodeType encodeType = scheme != 0 ? zzAltEncode : zzEncode;
     const uint8_t *dataStartPtr = &in[(count + 3) / 4];
     const uint8_t *dataEndPtr = in + in_len;
     const uint8_t *dataNeonBound = in + (in_len - (in_len % 16));
@@ -103,7 +103,7 @@ uint64_t svb_decode_s32(const uint8_t *in, const uint64_t in_len, uint64_t in_ca
 
     for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && currPtr < dataNeonBound; keyPtr++)
     {
-        uint32x4_t data = encodeType == stdEncode ? svb_decode_quad(*keyPtr, &currPtr) : svb_decode_quad_alt(*keyPtr, &currPtr);
+        uint32x4_t data = encodeType == zzEncode ? svb_decode_quad(*keyPtr, &currPtr) : svb_decode_quad_alt(*keyPtr, &currPtr);
         int32x4_t zzData = svb_zigzag_decode_neon(data);
         vst1q_s32(out, zzData);
 
@@ -111,7 +111,7 @@ uint64_t svb_decode_s32(const uint8_t *in, const uint64_t in_len, uint64_t in_ca
     }
     count -= (out - outStartPtr);
 
-    currPtr = svb_scalar_decode((uint32_t**)&out, keyPtr, currPtr, count, encodeType+1);
+    currPtr = svb_scalar_decode((uint32_t**)&out, keyPtr, currPtr, count, encodeType);
     if (currPtr == NULL)
         return 0;
 
@@ -151,7 +151,7 @@ uint64_t svb_delta_encode_u32(const uint32_t *in, const uint64_t in_len, uint64_
 // gocc: svb_delta_encode_s32(in []int32, prev int32, out *byte, scheme byte) uint64
 uint64_t svb_delta_encode_s32(const int32_t *in, const uint64_t in_len, uint64_t in_cap, int32_t prev, uint8_t *out, char scheme)
 {
-    const EncodeType encodeType = scheme != 0 ? altEncode : stdEncode;
+    const EncodeType encodeType = scheme != 0 ? zzAltEncode : zzEncode;
     uint8_t *keyPtr = out;
     uint32_t count = in_len;
     uint32_t keyLen = (count + 3) / 4;  // 2-bits rounded to full byte
@@ -166,7 +166,7 @@ uint64_t svb_delta_encode_s32(const int32_t *in, const uint64_t in_len, uint64_t
         const int32x4_t data = vld1q_s32(in);
         const int32x4_t diff = svb_differences_s32(data, previous);
         const uint32x4_t zzData = svb_zigzag_encode_neon(diff);
-        dataPtr += encodeType == stdEncode ? svb_encode_quad(zzData, dataPtr, keyPtr) : svb_encode_quad_alt(zzData, dataPtr, keyPtr);
+        dataPtr += encodeType == zzEncode ? svb_encode_quad(zzData, dataPtr, keyPtr) : svb_encode_quad_alt(zzData, dataPtr, keyPtr);
         previous = data;
         keyPtr++;
         in += 4;
@@ -176,7 +176,7 @@ uint64_t svb_delta_encode_s32(const int32_t *in, const uint64_t in_len, uint64_t
     if (count > 0 && count_quads > 0)
         prev = in[-1];
 
-    return (uint64_t)(svb_scalar_delta_encode((const uint32_t*)in, keyPtr, dataPtr, count, encodeType+1, prev) - out);
+    return (uint64_t)(svb_scalar_delta_encode((const uint32_t*)in, keyPtr, dataPtr, count, encodeType, prev) - out);
 }
 
 // gocc: svb_delta_decode_u32(in []byte, count int, prev uint32, out *uint32, scheme byte) uint64
@@ -223,7 +223,7 @@ uint64_t svb_delta_decode_s32(const uint8_t *in, const uint64_t in_len, uint64_t
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
 
-    const EncodeType encodeType = scheme != 0 ? altEncode : stdEncode;
+    const EncodeType encodeType = scheme != 0 ? zzAltEncode : zzEncode;
     const uint8_t *dataStartPtr = &in[(count + 3) / 4];
     const uint8_t *dataEndPtr = in + in_len;
     const uint8_t *dataNeonBound = in + (in_len - (in_len % 16));
@@ -235,7 +235,7 @@ uint64_t svb_delta_decode_s32(const uint8_t *in, const uint64_t in_len, uint64_t
 
     for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && currPtr < dataNeonBound; keyPtr++)
     {
-        uint32x4_t data = encodeType == stdEncode ? svb_decode_quad(*keyPtr, &currPtr) : svb_decode_quad_alt(*keyPtr, &currPtr);
+        uint32x4_t data = encodeType == zzEncode ? svb_decode_quad(*keyPtr, &currPtr) : svb_decode_quad_alt(*keyPtr, &currPtr);
         int32x4_t zzData = svb_zigzag_decode_neon(data);
         previous = svb_prefix_sum_s32(zzData, previous);
         vst1q_s32(out, previous);
@@ -247,7 +247,7 @@ uint64_t svb_delta_decode_s32(const uint8_t *in, const uint64_t in_len, uint64_t
     if (count > 0 && out > outStartPtr)
         prev = out[-1];
 
-    currPtr = svb_scalar_delta_decode((uint32_t**)&out, keyPtr, currPtr, count, encodeType+1, (uint32_t)prev);
+    currPtr = svb_scalar_delta_decode((uint32_t**)&out, keyPtr, currPtr, count, encodeType, (uint32_t)prev);
     if (currPtr == NULL)
         return 0;
 

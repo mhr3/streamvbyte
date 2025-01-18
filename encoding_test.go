@@ -307,6 +307,17 @@ func BenchmarkDecode(b *testing.B) {
 			})
 		}
 	})
+
+	b.Run("zigzag-two-step", func(b *testing.B) {
+		b.SetBytes(int64(4 * benchSize))
+		var zzData []uint32
+		var decoded []int32
+		for i := 0; i < b.N; i++ {
+			zzData = DecodeUint32(encoded, len(benchUint32Data), &DecodeOptionsNew[uint32]{Buffer: zzData})
+			decoded = ZigZag.Decode(zzData, decoded)
+			_ = decoded
+		}
+	})
 }
 
 func BenchmarkDecodeDelta(b *testing.B) {
