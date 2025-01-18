@@ -2,8 +2,6 @@ package streamvbyte
 
 import "encoding/binary"
 
-type encodingScheme byte
-
 func encodeScalar(encoded []byte, data []uint32, scheme Scheme) int {
 	// index of the control bytes
 	ci := 0

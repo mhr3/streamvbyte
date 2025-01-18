@@ -2,108 +2,74 @@
 
 package streamvbyte
 
-func (e stdEncoding) Encode(input []uint32, output []byte) []byte {
+func (uintEncoding) Encode(input []uint32, output []byte, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeScalar(output[:sz], input, Scheme1234)
+	n := encodeScalar(output[:sz], input, scheme)
 	return output[:n]
 }
 
-func (e stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (uintEncoding) Decode(input []byte, count int, output []uint32, scheme Scheme) []uint32 {
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeScalar(output, input, Scheme1234)
+	decodeScalar(output, input, scheme)
 	return output[:count]
 }
 
-func (e stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (uintEncoding) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeDeltaScalar(output[:sz], input, prev, Scheme1234)
+	n := encodeDeltaScalar(output[:sz], input, prev, scheme)
 	return output[:n]
 }
 
-func (e stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (uintEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32, scheme Scheme) []uint32 {
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeDeltaScalar(output, input, prev, Scheme1234)
-	return output[:count]
-}
-
-func (e zigzagEncoding) Encode(input []int32, output []byte) []byte {
-	sz := MaxEncodedLen(len(input))
-	if cap(output) < sz {
-		output = make([]byte, sz)
-	}
-	n := encodeScalarZigzag(output[:sz], input, Scheme1234)
-	return output[:n]
-}
-
-func (e zigzagEncoding) Decode(input []byte, count int, output []int32) []int32 {
-	if len(output) < count {
-		output = make([]int32, count)
-	}
-	decodeScalarZigzag(output, input, Scheme1234)
-	return output[:count]
-}
-
-func (e zigzagEncoding) EncodeDelta(input []int32, output []byte, prev int32) []byte {
-	sz := MaxEncodedLen(len(input))
-	if cap(output) < sz {
-		output = make([]byte, sz)
-	}
-	n := encodeDeltaScalarZigzag(output[:sz], input, prev, Scheme1234)
-	return output[:n]
-}
-
-func (e zigzagEncoding) DecodeDelta(input []byte, count int, output []int32, prev int32) []int32 {
-	if len(output) < count {
-		output = make([]int32, count)
-	}
-	decodeDeltaScalarZigzag(output, input, prev, Scheme1234)
+	decodeDeltaScalar(output, input, prev, scheme)
 	return output[:count]
 }
 
 /*
-	!!! AltEncoding below !!!
+	!!! Int32Encoding below !!!
 */
 
-func (e altEncoding) Encode(input []uint32, output []byte) []byte {
+func (intEncoding) Encode(input []int32, output []byte, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeScalar(output[:sz], input, Scheme0124)
+	n := encodeScalarZigzag(output[:sz], input, scheme)
 	return output[:n]
 }
 
-func (e altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (intEncoding) Decode(input []byte, count int, output []int32, scheme Scheme) []int32 {
 	if len(output) < count {
-		output = make([]uint32, count)
+		output = make([]int32, count)
 	}
-	decodeScalar(output, input, Scheme0124)
+	decodeScalarZigzag(output, input, scheme)
 	return output[:count]
 }
 
-func (e altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (intEncoding) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeDeltaScalar(output[:sz], input, prev, Scheme0124)
+	n := encodeDeltaScalarZigzag(output[:sz], input, prev, scheme)
 	return output[:n]
 }
 
-func (e altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (intEncoding) DecodeDelta(input []byte, count int, output []int32, prev int32, scheme Scheme) []int32 {
 	if len(output) < count {
-		output = make([]uint32, count)
+		output = make([]int32, count)
 	}
-	decodeDeltaScalar(output, input, prev, Scheme0124)
+	decodeDeltaScalarZigzag(output, input, prev, scheme)
 	return output[:count]
 }

@@ -8,7 +8,7 @@ import (
 
 var hasSSE41 = cpu.X86.HasSSE41
 
-func (stdEncoding) Encode(input []uint32, output []byte) []byte {
+func (uintEncoding) Encode(input []uint32, output []byte, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -19,14 +19,19 @@ func (stdEncoding) Encode(input []uint32, output []byte) []byte {
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_encode(input, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_encode_u32_std(input, &output[0]))
+		case Scheme0124:
+			n = int(svb_encode_u32_alt(input, &output[0]))
+		}
 	} else {
 		n = encodeScalar(output[:sz], input, Scheme1234)
 	}
 	return output[:n]
 }
 
-func (stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (uintEncoding) Decode(input []byte, count int, output []uint32, scheme Scheme) []uint32 {
 	if count <= 0 {
 		return nil
 	}
@@ -36,7 +41,12 @@ func (stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_decode(input, count, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_decode_u32_std(input, count, &output[0]))
+		case Scheme0124:
+			n = int(svb_decode_u32_alt(input, count, &output[0]))
+		}
 	} else {
 		decodeScalar(output, input, Scheme1234)
 		n = count
@@ -44,7 +54,7 @@ func (stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 	return output[:n]
 }
 
-func (stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (uintEncoding) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -55,14 +65,19 @@ func (stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byt
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_delta_encode(input, prev, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_delta_encode_u32_std(input, prev, &output[0]))
+		case Scheme0124:
+			n = int(svb_delta_encode_u32_alt(input, prev, &output[0]))
+		}
 	} else {
 		n = encodeDeltaScalar(output[:sz], input, prev, Scheme1234)
 	}
 	return output[:n]
 }
 
-func (stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (uintEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32, scheme Scheme) []uint32 {
 	if count <= 0 {
 		return nil
 	}
@@ -72,7 +87,12 @@ func (stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev ui
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_delta_decode(input, count, prev, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_delta_decode_u32_std(input, count, prev, &output[0]))
+		case Scheme0124:
+			n = int(svb_delta_decode_u32_alt(input, count, prev, &output[0]))
+		}
 	} else {
 		decodeDeltaScalar(output, input, prev, Scheme1234)
 		n = count
@@ -80,112 +100,40 @@ func (stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev ui
 	return output[:n]
 }
 
-func (e zigzagEncoding) Encode(input []int32, output []byte) []byte {
-	sz := MaxEncodedLen(len(input))
-	if cap(output) < sz {
-		output = make([]byte, sz)
-	}
-	n := encodeScalarZigzag(output[:sz], input, Scheme1234)
-	return output[:n]
-}
-
-func (e zigzagEncoding) Decode(input []byte, count int, output []int32) []int32 {
-	if len(output) < count {
-		output = make([]int32, count)
-	}
-	decodeScalarZigzag(output, input, Scheme1234)
-	return output[:count]
-}
-
-func (e zigzagEncoding) EncodeDelta(input []int32, output []byte, prev int32) []byte {
-	sz := MaxEncodedLen(len(input))
-	if cap(output) < sz {
-		output = make([]byte, sz)
-	}
-	n := encodeDeltaScalarZigzag(output[:sz], input, prev, Scheme1234)
-	return output[:n]
-}
-
-func (e zigzagEncoding) DecodeDelta(input []byte, count int, output []int32, prev int32) []int32 {
-	if len(output) < count {
-		output = make([]int32, count)
-	}
-	decodeDeltaScalarZigzag(output, input, prev, Scheme1234)
-	return output[:count]
-}
-
 /*
-	!!! AltEncoding below !!!
+	!!! Int32Encoding below !!!
 */
 
-func (altEncoding) Encode(input []uint32, output []byte) []byte {
-	if len(input) == 0 {
-		return nil
-	}
+func (intEncoding) Encode(input []int32, output []byte, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-
-	var n int
-	if hasSSE41 {
-		n = int(svb_encode_alt(input, &output[0]))
-	} else {
-		n = encodeScalar(output[:sz], input, Scheme0124)
-	}
+	n := encodeScalarZigzag(output[:sz], input, scheme)
 	return output[:n]
 }
 
-func (altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
-	if count <= 0 {
-		return nil
-	}
+func (intEncoding) Decode(input []byte, count int, output []int32, scheme Scheme) []int32 {
 	if len(output) < count {
-		output = make([]uint32, count)
+		output = make([]int32, count)
 	}
-
-	var n int
-	if hasSSE41 {
-		n = int(svb_decode_alt(input, count, &output[0]))
-	} else {
-		decodeScalar(output, input, Scheme0124)
-		n = count
-	}
-	return output[:n]
+	decodeScalarZigzag(output, input, scheme)
+	return output[:count]
 }
 
-func (altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
-	if len(input) == 0 {
-		return nil
-	}
+func (intEncoding) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-
-	var n int
-	if hasSSE41 {
-		n = int(svb_delta_encode_alt(input, prev, &output[0]))
-	} else {
-		n = encodeDeltaScalar(output[:sz], input, prev, Scheme0124)
-	}
+	n := encodeDeltaScalarZigzag(output[:sz], input, prev, scheme)
 	return output[:n]
 }
 
-func (altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
-	if count <= 0 {
-		return nil
-	}
+func (intEncoding) DecodeDelta(input []byte, count int, output []int32, prev int32, scheme Scheme) []int32 {
 	if len(output) < count {
-		output = make([]uint32, count)
+		output = make([]int32, count)
 	}
-
-	var n int
-	if hasSSE41 {
-		n = int(svb_delta_decode_alt(input, count, prev, &output[0]))
-	} else {
-		decodeDeltaScalar(output, input, prev, Scheme0124)
-		n = count
-	}
-	return output[:n]
+	decodeDeltaScalarZigzag(output, input, prev, scheme)
+	return output[:count]
 }

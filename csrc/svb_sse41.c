@@ -8,8 +8,8 @@
 #include "svb_sse41_decode.c"
 #include "svb_sse41_encode.c"
 
-// gocc: svb_encode(in []uint32, out *byte) uint64
-uint64_t svb_encode(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint8_t *out)
+// gocc: svb_encode_u32_std(in []uint32, out *byte) uint64
+uint64_t svb_encode_u32_std(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint8_t *out)
 {
     uint32_t count = in_len;
     uint32_t keyLen = (count + 3) / 4; // 2-bits rounded to full byte
@@ -35,8 +35,8 @@ uint64_t svb_encode(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, 
     return (uint64_t)(svb_scalar_encode(in, keyPtr, dataPtr, count, stdEncode) - out);
 }
 
-// gocc: svb_encode_alt(in []uint32, out *byte) uint64
-uint64_t svb_encode_alt(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint8_t *out)
+// gocc: svb_encode_u32_alt(in []uint32, out *byte) uint64
+uint64_t svb_encode_u32_alt(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint8_t *out)
 {
     uint8_t *keyPtr = out;
     uint32_t count = in_len;
@@ -57,8 +57,8 @@ uint64_t svb_encode_alt(const uint32_t *in, const uint64_t in_len, uint64_t in_c
     return (uint64_t)(svb_scalar_encode(in, keyPtr, dataPtr, count, altEncode) - out);
 }
 
-// gocc: svb_decode(in []byte, count int, out *uint32) uint64
-uint64_t svb_decode(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
+// gocc: svb_decode_u32_std(in []byte, count int, out *uint32) uint64
+uint64_t svb_decode_u32_std(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
                     int64_t count, uint32_t *out)
 {
     if (count <= 0 || in_len < (count + 3) / 4)
@@ -82,8 +82,8 @@ uint64_t svb_decode(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
     return (uint64_t)(out - outStartPtr);
 }
 
-// gocc: svb_decode_alt(in []byte, count int, out *uint32) uint64
-uint64_t svb_decode_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
+// gocc: svb_decode_u32_alt(in []byte, count int, out *uint32) uint64
+uint64_t svb_decode_u32_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
                         int64_t count, uint32_t *out)
 {
     if (count <= 0 || in_len < (count + 3) / 4)
@@ -107,8 +107,8 @@ uint64_t svb_decode_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_ca
     return (uint64_t)(out - outStartPtr);
 }
 
-// gocc: svb_delta_encode(in []uint32, prev uint32, out *byte) uint64
-uint64_t svb_delta_encode(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint32_t prev, uint8_t *out)
+// gocc: svb_delta_encode_u32_std(in []uint32, prev uint32, out *byte) uint64
+uint64_t svb_delta_encode_u32_std(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint32_t prev, uint8_t *out)
 {
     uint32_t count = in_len;
     uint32_t keyLen = (count + 3) / 4; // 2-bits rounded to full byte
@@ -143,8 +143,8 @@ uint64_t svb_delta_encode(const uint32_t *in, const uint64_t in_len, uint64_t in
     return (uint64_t)(svb_scalar_delta_encode(in, keyPtr, dataPtr, count, stdEncode, prev) - out);
 }
 
-// gocc: svb_delta_encode_alt(in []uint32, prev uint32, out *byte) uint64
-uint64_t svb_delta_encode_alt(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint32_t prev, uint8_t *out)
+// gocc: svb_delta_encode_u32_alt(in []uint32, prev uint32, out *byte) uint64
+uint64_t svb_delta_encode_u32_alt(const uint32_t *in, const uint64_t in_len, uint64_t in_cap, uint32_t prev, uint8_t *out)
 {
     uint8_t *keyPtr = out;
     uint32_t count = in_len;
@@ -171,8 +171,8 @@ uint64_t svb_delta_encode_alt(const uint32_t *in, const uint64_t in_len, uint64_
     return (uint64_t)(svb_scalar_delta_encode(in, keyPtr, dataPtr, count, altEncode, prev) - out);
 }
 
-// gocc: svb_delta_decode(in []byte, count int, prev uint32, out *uint32) uint64
-uint64_t svb_delta_decode(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
+// gocc: svb_delta_decode_u32_std(in []byte, count int, prev uint32, out *uint32) uint64
+uint64_t svb_delta_decode_u32_std(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
                           int64_t count, uint32_t prev, uint32_t *out)
 {
     if (count <= 0 || in_len < (count + 3) / 4)
@@ -199,8 +199,8 @@ uint64_t svb_delta_decode(const uint8_t *in, const uint64_t in_len, uint64_t in_
     return (uint64_t)(out - outStartPtr);
 }
 
-// gocc: svb_delta_decode_alt(in []byte, count int, prev uint32, out *uint32) uint64
-uint64_t svb_delta_decode_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
+// gocc: svb_delta_decode_u32_alt(in []byte, count int, prev uint32, out *uint32) uint64
+uint64_t svb_delta_decode_u32_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
                               int64_t count, uint32_t prev, uint32_t *out)
 {
     if (count <= 0 || in_len < (count + 3) / 4)

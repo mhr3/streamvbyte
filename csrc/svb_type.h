@@ -5,7 +5,8 @@ typedef enum
 {
     stdEncode,
     zzEncode,
-    altEncode
+    altEncode,
+    zzAltEncode
 } EncodeType;
 
 typedef uint32_t (*DecodeFunc)(const uint8_t **, uint8_t);

@@ -108,6 +108,9 @@ static inline uint8_t *svb_scalar_encode(const uint32_t *in,
         case altEncode:
             code = svb_encode_data_0124(val, &dataPtr);
             break;
+        case zzAltEncode:
+            code = svb_encode_data_0124(svb_zigzag_encode_32(val), &dataPtr);
+            break;
         }
         key |= code << shift;
         shift += 2;
@@ -148,6 +151,9 @@ static inline uint8_t *svb_scalar_delta_encode(const uint32_t *in,
             break;
         case altEncode:
             code = svb_encode_data_0124(in[c] - prev, &dataPtr);
+            break;
+        case zzAltEncode:
+            code = svb_encode_data_0124(svb_zigzag_encode_32((int32_t)in[c] - (int32_t)prev), &dataPtr);
             break;
         }
         key |= code << shift;

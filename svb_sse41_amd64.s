@@ -16,7 +16,7 @@ DATA LCPI0_1<>+0x00(SB)/8, $0x7f007f007f007f00
 DATA LCPI0_1<>+0x08(SB)/8, $0x7f007f007f007f00
 GLOBL LCPI0_1<>(SB), (RODATA|NOPTR), $16
 
-TEXT ·svb_encode(SB), NOSPLIT, $0-40
+TEXT ·svb_encode_u32_std(SB), NOSPLIT, $0-40
 	MOVQ in+0(FP), DI
 	MOVQ in_len+8(FP), SI
 	MOVQ in_cap+16(FP), DX
@@ -61,7 +61,7 @@ LBB0_62:
 	WORD $0x8941; BYTE $0xde                   // MOVL BX, R14                         // mov	r14d, ebx
 	LONG $0x04eec141                           // SHRL $0x4, R14                       // shr	r14d, 4
 	LONG $0x380f4266; WORD $0x2400; BYTE $0x08 // PSHUFB 0(AX)(R9*1), X4               // pshufb	xmm4, xmmword ptr [rax + r9]
-	LONG $0xf0e68141; WORD $0x0003; BYTE $0x00 // ANDL $svb_encode_alt+16(SB), R14     // and	r14d, 1008
+	LONG $0xf0e68141; WORD $0x0003; BYTE $0x00 // ANDL $svb_encode_u32_alt+16(SB), R14 // and	r14d, 1008
 	LONG $0x380f4366; WORD $0x1c00; BYTE $0x0e // PSHUFB 0(R14)(R9*1), X3              // pshufb	xmm3, xmmword ptr [r14 + r9]
 	LONG $0x7f0f41f3; BYTE $0x23               // MOVDQU X4, 0(R11)                    // movdqu	xmmword ptr [r11], xmm4
 	WORD $0xb60f; BYTE $0xc3                   // MOVZX BL, AX                         // movzx	eax, bl
@@ -386,7 +386,7 @@ DATA LCPI1_4<>+0x00(SB)/8, $0x0101010110400104
 DATA LCPI1_4<>+0x08(SB)/8, $0x0000000000000000
 GLOBL LCPI1_4<>(SB), (RODATA|NOPTR), $16
 
-TEXT ·svb_encode_alt(SB), NOSPLIT, $0-40
+TEXT ·svb_encode_u32_alt(SB), NOSPLIT, $0-40
 	MOVQ in+0(FP), DI
 	MOVQ in_len+8(FP), SI
 	MOVQ in_cap+16(FP), DX
@@ -564,7 +564,7 @@ LBB1_31:
 	MOVQ AX, ret+32(FP) // <--
 	RET                 // <--                                  // ret
 
-TEXT ·svb_decode(SB), NOSPLIT, $0-48
+TEXT ·svb_decode_u32_std(SB), NOSPLIT, $0-48
 	MOVQ in+0(FP), DI
 	MOVQ in_len+8(FP), SI
 	MOVQ in_cap+16(FP), DX
@@ -834,7 +834,7 @@ LBB2_25:
 	MOVQ AX, ret+40(FP) // <--
 	RET                 // <--                                  // ret
 
-TEXT ·svb_decode_alt(SB), 0, $24-48
+TEXT ·svb_decode_u32_alt(SB), 0, $24-48
 	MOVQ in+0(FP), DI
 	MOVQ in_len+8(FP), SI
 	MOVQ in_cap+16(FP), DX
@@ -1104,7 +1104,7 @@ DATA LCPI4_1<>+0x00(SB)/8, $0x7f007f007f007f00
 DATA LCPI4_1<>+0x08(SB)/8, $0x7f007f007f007f00
 GLOBL LCPI4_1<>(SB), (RODATA|NOPTR), $16
 
-TEXT ·svb_delta_encode(SB), NOSPLIT, $0-48
+TEXT ·svb_delta_encode_u32_std(SB), NOSPLIT, $0-48
 	MOVQ    in+0(FP), DI
 	MOVQ    in_len+8(FP), SI
 	MOVQ    in_cap+16(FP), DX
@@ -1156,7 +1156,7 @@ LBB4_19:
 	WORD $0xe0c1; BYTE $0x04                   // SHLL $0x4, AX                        // shl	eax, 4
 	WORD $0x8941; BYTE $0xde                   // MOVL BX, R14                         // mov	r14d, ebx
 	LONG $0x04eec141                           // SHRL $0x4, R14                       // shr	r14d, 4
-	LONG $0xf0e68141; WORD $0x0003; BYTE $0x00 // ANDL $svb_encode_alt+16(SB), R14     // and	r14d, 1008
+	LONG $0xf0e68141; WORD $0x0003; BYTE $0x00 // ANDL $svb_encode_u32_alt+16(SB), R14 // and	r14d, 1008
 	LONG $0x380f4266; WORD $0x1c00; BYTE $0x10 // PSHUFB 0(AX)(R10*1), X3              // pshufb	xmm3, xmmword ptr [rax + r10]
 	LONG $0x380f4366; WORD $0x2400; BYTE $0x16 // PSHUFB 0(R14)(R10*1), X4             // pshufb	xmm4, xmmword ptr [r14 + r10]
 	LONG $0x1a7f0ff3                           // MOVDQU X3, 0(DX)                     // movdqu	xmmword ptr [rdx], xmm3
@@ -1264,7 +1264,7 @@ DATA LCPI5_4<>+0x00(SB)/8, $0x0101010110400104
 DATA LCPI5_4<>+0x08(SB)/8, $0x0000000000000000
 GLOBL LCPI5_4<>(SB), (RODATA|NOPTR), $16
 
-TEXT ·svb_delta_encode_alt(SB), NOSPLIT, $0-48
+TEXT ·svb_delta_encode_u32_alt(SB), NOSPLIT, $0-48
 	MOVQ    in+0(FP), DI
 	MOVQ    in_len+8(FP), SI
 	MOVQ    in_cap+16(FP), DX
@@ -1338,7 +1338,7 @@ LBB5_4:
 	MOVQ AX, ret+40(FP) // <--
 	RET                 // <--                                  // ret
 
-TEXT ·svb_delta_decode(SB), 0, $24-56
+TEXT ·svb_delta_decode_u32_std(SB), 0, $24-56
 	MOVQ    in+0(FP), DI
 	MOVQ    in_len+8(FP), SI
 	MOVQ    in_cap+16(FP), DX
@@ -3624,7 +3624,7 @@ DATA shuffleTable_0124<>+0xff0(SB)/8, $0x0706050403020100
 DATA shuffleTable_0124<>+0xff8(SB)/8, $0x0f0e0d0c0b0a0908
 GLOBL shuffleTable_0124<>(SB), (RODATA|NOPTR), $4096
 
-TEXT ·svb_delta_decode_alt(SB), 0, $24-56
+TEXT ·svb_delta_decode_u32_alt(SB), 0, $24-56
 	MOVQ    in+0(FP), DI
 	MOVQ    in_len+8(FP), SI
 	MOVQ    in_cap+16(FP), DX
