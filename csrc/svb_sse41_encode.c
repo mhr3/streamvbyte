@@ -21,7 +21,7 @@ static inline uint16_t svb_control_sse41(__m128i lo, __m128i hi)
     return keys;
 }
 
-static inline size_t svb_encode_two_quads(__m128i r0, __m128i r1, uint8_t *__restrict__ dataPtr, uint16_t *__restrict__ outCode)
+static inline size_t svb_encode_u256_sse4(__m128i r0, __m128i r1, uint8_t *__restrict__ dataPtr, uint16_t *__restrict__ outCode)
 {
     uint8_t l0, l1;
     uint16_t keys = svb_control_sse41(r0, r1);
@@ -67,7 +67,19 @@ static inline size_t svb_encode_quad_alt(const __m128i data, uint8_t *__restrict
     return length;
 }
 
-static __m128i svb_differences(__m128i curr, __m128i prev)
+static inline __m128i svb_zigzag_encode_sse4(__m128i val)
+{
+    // SSE4 for: (val + val) ^ (uint32_t)((int32_t)val >> 31)
+    __m128i doubled = _mm_slli_epi32(val, 1);
+
+    // arithmetic right shift by 31 bits to get the sign extended
+    __m128i sign = _mm_srai_epi32(val, 31);
+
+    // XOR
+    return _mm_xor_si128(doubled, sign);
+}
+
+static inline __m128i svb_differences(__m128i curr, __m128i prev)
 {
     return _mm_sub_epi32(curr, _mm_alignr_epi8(curr, prev, 12));
 }

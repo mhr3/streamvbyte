@@ -109,7 +109,18 @@ func (intEncoding) Encode(input []int32, output []byte, scheme Scheme) []byte {
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeScalarZigzag(output[:sz], input, scheme)
+
+	var n int
+	if hasSSE41 {
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_encode_s32_std(input, &output[0]))
+		case Scheme0124:
+			n = int(svb_encode_s32_alt(input, &output[0]))
+		}
+	} else {
+		n = encodeScalarZigzag(output[:sz], input, Scheme1234)
+	}
 	return output[:n]
 }
 

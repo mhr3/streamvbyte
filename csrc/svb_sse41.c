@@ -24,7 +24,7 @@ uint64_t svb_encode_u32_std(const uint32_t *in, const uint64_t in_len, uint64_t 
         r0 = _mm_loadu_si128((const __m128i *)&in[0]);
         r1 = _mm_loadu_si128((const __m128i *)&in[4]);
 
-        dataPtr += svb_encode_two_quads(r0, r1, dataPtr, &keys);
+        dataPtr += svb_encode_u256_sse4(r0, r1, dataPtr, &keys);
 
         *((uint16_t *)keyPtr) = keys;
         keyPtr += 2;
@@ -55,6 +55,58 @@ uint64_t svb_encode_u32_alt(const uint32_t *in, const uint64_t in_len, uint64_t 
     count -= 4 * count_quads;
 
     return (uint64_t)(svb_scalar_encode(in, keyPtr, dataPtr, count, altEncode) - out);
+}
+
+// gocc: svb_encode_s32_std(in []int32, out *byte) uint64
+uint64_t svb_encode_s32_std(const int32_t *in, const uint64_t in_len, uint64_t in_cap, uint8_t *out)
+{
+    uint32_t count = in_len;
+    uint32_t keyLen = (count + 3) / 4; // 2-bits rounded to full byte
+    uint8_t *restrict keyPtr = out;
+    uint8_t *restrict dataPtr = keyPtr + keyLen; // variable byte data after all keys
+
+    for (const int32_t *end = &in [(count & ~7U)]; in < end; in += 8)
+    {
+        __m128i r0, r1;
+        uint16_t keys;
+
+        r0 = _mm_loadu_si128((const __m128i *)&in[0]);
+        r1 = _mm_loadu_si128((const __m128i *)&in[4]);
+        r0 = svb_zigzag_encode_sse4(r0);
+        r1 = svb_zigzag_encode_sse4(r1);
+
+        dataPtr += svb_encode_u256_sse4(r0, r1, dataPtr, &keys);
+
+        *((uint16_t *)keyPtr) = keys;
+        keyPtr += 2;
+    }
+    // do remaining
+    count %= 8;
+
+    return (uint64_t)(svb_scalar_encode(in, keyPtr, dataPtr, count, zzEncode) - out);
+}
+
+// gocc: svb_encode_s32_alt(in []int32, out *byte) uint64
+uint64_t svb_encode_s32_alt(const int32_t *in, const uint64_t in_len, uint64_t in_cap, uint8_t *out)
+{
+    uint8_t *keyPtr = out;
+    uint32_t count = in_len;
+    uint32_t keyLen = (count + 3) / 4;  // 2-bits rounded to full byte
+    uint8_t *dataPtr = keyPtr + keyLen; // variable byte data after all keys
+
+    uint32_t count_quads = count / 4;
+
+    for (uint32_t c = 0; c < count_quads; c++)
+    {
+        __m128i data = _mm_loadu_si128((const __m128i *)in);
+        data = svb_zigzag_encode_sse4(data);
+        dataPtr += svb_encode_quad_alt(data, dataPtr, keyPtr);
+        keyPtr++;
+        in += 4;
+    }
+    count -= 4 * count_quads;
+
+    return (uint64_t)(svb_scalar_encode(in, keyPtr, dataPtr, count, zzAltEncode) - out);
 }
 
 // gocc: svb_decode_u32_std(in []byte, count int, out *uint32) uint64
@@ -129,7 +181,7 @@ uint64_t svb_delta_encode_u32_std(const uint32_t *in, const uint64_t in_len, uin
         deltas1 = svb_differences(data1, Prev);
         Prev = data1;
 
-        dataPtr += svb_encode_two_quads(deltas0, deltas1, dataPtr, &keys);
+        dataPtr += svb_encode_u256_sse4(deltas0, deltas1, dataPtr, &keys);
 
         *((uint16_t *)keyPtr) = keys;
         keyPtr += 2;

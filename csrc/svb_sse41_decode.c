@@ -446,3 +446,14 @@ static const uint8_t *svb_delta_decode_quad_quad_alt(uint32_t *out,
 
     return dataPtr;
 }
+
+static inline __m128i svb_zigzag_decode_32_sse4(__m128i val)
+{
+    // SSE4 for: (val >> 1) ^ (0 - (val & 1));
+    __m128i shifted = _mm_srli_epi32(val, 1);  // val >> 1
+    __m128i ones    = _mm_set1_epi32(1);
+    __m128i masked  = _mm_and_si128(val, ones);
+    __m128i negated = _mm_sub_epi32(_mm_setzero_si128(), masked);
+
+    return _mm_xor_si128(shifted, negated);
+}
