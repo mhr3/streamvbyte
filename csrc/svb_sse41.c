@@ -16,7 +16,7 @@ uint64_t svb_encode_u32_std(const uint32_t *in, const uint64_t in_len, uint64_t 
     uint8_t *restrict keyPtr = out;
     uint8_t *restrict dataPtr = keyPtr + keyLen; // variable byte data after all keys
 
-    for (const uint32_t *end = &in [(count & ~7U)]; in != end; in += 8)
+    for (const uint32_t *end = &in [(count & ~7U)]; in < end; in += 8)
     {
         __m128i r0, r1;
         uint16_t keys;
@@ -117,7 +117,7 @@ uint64_t svb_delta_encode_u32_std(const uint32_t *in, const uint64_t in_len, uin
 
     __m128i Prev = _mm_set1_epi32((int32_t)prev);
 
-    for (const uint32_t *end = &in [(count & ~7U)]; in != end; in += 8)
+    for (const uint32_t *end = &in [(count & ~7U)]; in < end; in += 8)
     {
         __m128i data0, deltas0, data1, deltas1;
         uint16_t keys;

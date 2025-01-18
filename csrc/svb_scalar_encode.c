@@ -139,7 +139,6 @@ static inline uint8_t *svb_scalar_delta_encode(const uint32_t *in,
             *keyPtr++ = key;
             key = 0;
         }
-        prev = in[c];
         uint8_t code;
         switch (encodeType)
         {
@@ -156,6 +155,7 @@ static inline uint8_t *svb_scalar_delta_encode(const uint32_t *in,
             code = svb_encode_data_0124(svb_zigzag_encode_32((int32_t)in[c] - (int32_t)prev), &dataPtr);
             break;
         }
+        prev = in[c];
         key |= code << shift;
         shift += 2;
     }
