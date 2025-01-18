@@ -204,19 +204,27 @@ func init() {
 func BenchmarkEncode(b *testing.B) {
 	var encoded []byte
 
-	b.Run("std", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			encoded = EncodeUint32(benchUint32Data, &EncodeOptionsNew[uint32]{Buffer: encoded})
-			_ = encoded
+	b.Run("uint32", func(b *testing.B) {
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			b.Run(scheme.String(), func(b *testing.B) {
+				b.SetBytes(int64(4 * benchSize))
+				for i := 0; i < b.N; i++ {
+					encoded = EncodeUint32(benchUint32Data, &EncodeOptionsNew[uint32]{Buffer: encoded, Scheme: scheme})
+					_ = encoded
+				}
+			})
 		}
 	})
 
-	b.Run("zigzag", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			encoded = EncodeInt32(benchInt32Data, &EncodeOptionsNew[int32]{Buffer: encoded})
-			_ = encoded
+	b.Run("int32", func(b *testing.B) {
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			b.Run(scheme.String(), func(b *testing.B) {
+				b.SetBytes(int64(4 * benchSize))
+				for i := 0; i < b.N; i++ {
+					encoded = EncodeInt32(benchInt32Data, &EncodeOptionsNew[int32]{Buffer: encoded, Scheme: scheme})
+					_ = encoded
+				}
+			})
 		}
 	})
 
@@ -229,32 +237,32 @@ func BenchmarkEncode(b *testing.B) {
 			_ = encoded
 		}
 	})
-
-	b.Run("alt", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			encoded = EncodeUint32(benchUint32Data, &EncodeOptionsNew[uint32]{Buffer: encoded, Scheme: Scheme0124})
-			_ = encoded
-		}
-	})
 }
 
 func BenchmarkEncodeDelta(b *testing.B) {
 	var encoded []byte
 
-	b.Run("std", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			encoded = DeltaEncodeUint32(benchUint32DataSorted, &EncodeOptionsNew[uint32]{Buffer: encoded})
-			_ = encoded
+	b.Run("uint32", func(b *testing.B) {
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			b.Run(scheme.String(), func(b *testing.B) {
+				b.SetBytes(int64(4 * benchSize))
+				for i := 0; i < b.N; i++ {
+					encoded = DeltaEncodeUint32(benchUint32Data, &EncodeOptionsNew[uint32]{Buffer: encoded, Scheme: scheme})
+					_ = encoded
+				}
+			})
 		}
 	})
 
-	b.Run("zigzag", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			encoded = DeltaEncodeInt32(benchInt32Data, &EncodeOptionsNew[int32]{Buffer: encoded})
-			_ = encoded
+	b.Run("int32", func(b *testing.B) {
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			b.Run(scheme.String(), func(b *testing.B) {
+				b.SetBytes(int64(4 * benchSize))
+				for i := 0; i < b.N; i++ {
+					encoded = DeltaEncodeInt32(benchInt32Data, &EncodeOptionsNew[int32]{Buffer: encoded, Scheme: scheme})
+					_ = encoded
+				}
+			})
 		}
 	})
 
@@ -267,43 +275,36 @@ func BenchmarkEncodeDelta(b *testing.B) {
 			_ = encoded
 		}
 	})
-
-	b.Run("alt", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			encoded = DeltaEncodeUint32(benchUint32DataSorted, &EncodeOptionsNew[uint32]{Buffer: encoded, Scheme: Scheme0124})
-			_ = encoded
-		}
-	})
 }
 
 func BenchmarkDecode(b *testing.B) {
 	encoded := EncodeUint32(benchUint32Data, nil)
 
-	var decoded []uint32
+	b.Run("uint32", func(b *testing.B) {
+		var decoded []uint32
 
-	b.Run("std", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			decoded = DecodeUint32(encoded, len(benchUint32Data), &DecodeOptionsNew[uint32]{Buffer: decoded})
-			_ = decoded
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			b.Run(scheme.String(), func(b *testing.B) {
+				b.SetBytes(int64(4 * benchSize))
+				for i := 0; i < b.N; i++ {
+					decoded = DecodeUint32(encoded, len(benchUint32Data), &DecodeOptionsNew[uint32]{Buffer: decoded, Scheme: scheme})
+					_ = decoded
+				}
+			})
 		}
 	})
 
-	b.Run("zigzag", func(b *testing.B) {
+	b.Run("int32", func(b *testing.B) {
 		var decodedInt32 []int32
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			decodedInt32 = DecodeInt32(encoded, len(benchUint32Data), &DecodeOptionsNew[int32]{Buffer: decodedInt32})
-			_ = decodedInt32
-		}
-	})
 
-	b.Run("alt", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			decoded = DecodeUint32(encoded, len(benchUint32Data), &DecodeOptionsNew[uint32]{Buffer: decoded, Scheme: Scheme0124})
-			_ = decoded
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			b.Run(scheme.String(), func(b *testing.B) {
+				b.SetBytes(int64(4 * benchSize))
+				for i := 0; i < b.N; i++ {
+					decodedInt32 = DecodeInt32(encoded, len(benchUint32Data), &DecodeOptionsNew[int32]{Buffer: decodedInt32, Scheme: scheme})
+					_ = decodedInt32
+				}
+			})
 		}
 	})
 }
@@ -311,30 +312,31 @@ func BenchmarkDecode(b *testing.B) {
 func BenchmarkDecodeDelta(b *testing.B) {
 	encoded := DeltaEncodeUint32(benchUint32DataSorted, nil)
 
-	var decoded []uint32
+	b.Run("uint32", func(b *testing.B) {
+		var decoded []uint32
 
-	b.Run("std", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			decoded = DeltaDecodeUint32(encoded, len(benchUint32DataSorted), &DecodeOptionsNew[uint32]{Buffer: decoded})
-			_ = decoded
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			b.Run(scheme.String(), func(b *testing.B) {
+				b.SetBytes(int64(4 * benchSize))
+				for i := 0; i < b.N; i++ {
+					decoded = DeltaDecodeUint32(encoded, len(benchUint32Data), &DecodeOptionsNew[uint32]{Buffer: decoded, Scheme: scheme})
+					_ = decoded
+				}
+			})
 		}
 	})
 
-	b.Run("zigzag", func(b *testing.B) {
+	b.Run("int32", func(b *testing.B) {
 		var decodedInt32 []int32
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			decodedInt32 = DeltaDecodeInt32(encoded, len(benchUint32DataSorted), &DecodeOptionsNew[int32]{Buffer: decodedInt32})
-			_ = decodedInt32
-		}
-	})
 
-	b.Run("alt", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		for i := 0; i < b.N; i++ {
-			decoded = DeltaDecodeUint32(encoded, len(benchUint32DataSorted), &DecodeOptionsNew[uint32]{Buffer: decoded, Scheme: Scheme0124})
-			_ = decoded
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			b.Run(scheme.String(), func(b *testing.B) {
+				b.SetBytes(int64(4 * benchSize))
+				for i := 0; i < b.N; i++ {
+					decodedInt32 = DeltaDecodeInt32(encoded, len(benchUint32Data), &DecodeOptionsNew[int32]{Buffer: decodedInt32, Scheme: scheme})
+					_ = decodedInt32
+				}
+			})
 		}
 	})
 }
