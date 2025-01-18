@@ -457,3 +457,189 @@ static inline __m128i svb_zigzag_decode_32_sse4(__m128i val)
 
     return _mm_xor_si128(shifted, negated);
 }
+
+static inline const uint8_t *svb_decode_quad_quad_zz(uint32_t *out,
+                                                  const uint8_t *__restrict__ keyPtr,
+                                                  const uint8_t *__restrict__ dataPtr,
+                                                  uint64_t count)
+{
+    uint64_t keybytes = count / 4; // number of key bytes
+    __m128i data;
+
+    if (keybytes >= 8)
+    {
+        int64_t offset = -(int64_t)keybytes / 8 + 1;
+
+        const uint64_t *keyPtr64 = (const uint64_t *)keyPtr - offset;
+        uint64_t nextkeys;
+        __builtin_memcpy(&nextkeys, keyPtr64 + offset, sizeof(nextkeys));
+        for (; offset != 0; ++offset)
+        {
+            uint64_t keys = nextkeys;
+            __builtin_memcpy(&nextkeys, keyPtr64 + offset + 1, sizeof(nextkeys));
+
+            data = svb_decode_quad((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out, data);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 4, data);
+
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 8, data);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 12, data);
+
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 16, data);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 20, data);
+
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 24, data);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 28, data);
+
+            out += 32;
+        }
+        {
+            uint64_t keys = nextkeys;
+
+            data = svb_decode_quad((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out, data);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 4, data);
+
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 8, data);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 12, data);
+
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 16, data);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 20, data);
+
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 24, data);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 28, data);
+
+            out += 32;
+        }
+    }
+    return dataPtr;
+}
+
+static inline const uint8_t *svb_decode_quad_quad_zz_alt(uint32_t *out,
+                                                      const uint8_t *__restrict__ keyPtr,
+                                                      const uint8_t *__restrict__ dataPtr,
+                                                      uint64_t count)
+{
+    uint64_t keybytes = count / 4; // number of key bytes
+    __m128i data;
+    if (keybytes >= 8)
+    {
+        int64_t offset = -(int64_t)keybytes / 8 + 1;
+
+        const uint64_t *keyPtr64 = (const uint64_t *)keyPtr - offset;
+        uint64_t nextkeys;
+        __builtin_memcpy(&nextkeys, keyPtr64 + offset, sizeof(nextkeys));
+        for (; offset != 0; ++offset)
+        {
+            uint64_t keys = nextkeys;
+            __builtin_memcpy(&nextkeys, keyPtr64 + offset + 1, sizeof(nextkeys));
+
+            data = svb_decode_quad_alt((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out, data);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 4, data);
+
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 8, data);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 12, data);
+
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 16, data);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 20, data);
+
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 24, data);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 28, data);
+
+            out += 32;
+        }
+        {
+            uint64_t keys = nextkeys;
+
+            data = svb_decode_quad_alt((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out, data);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 4, data);
+
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 8, data);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 12, data);
+
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 16, data);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 20, data);
+
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0xFF), &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 24, data);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_32_sse4(data);
+            svb_write_sse41(out + 28, data);
+
+            out += 32;
+        }
+    }
+
+    return dataPtr;
+}

@@ -128,8 +128,20 @@ func (intEncoding) Decode(input []byte, count int, output []int32, scheme Scheme
 	if len(output) < count {
 		output = make([]int32, count)
 	}
-	decodeScalarZigzag(output, input, scheme)
-	return output[:count]
+
+	var n int
+	if hasSSE41 {
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_decode_s32_std(input, count, &output[0]))
+		case Scheme0124:
+			n = int(svb_decode_s32_alt(input, count, &output[0]))
+		}
+	} else {
+		decodeScalarZigzag(output, input, scheme)
+		n = count
+	}
+	return output[:n]
 }
 
 func (intEncoding) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
@@ -137,7 +149,18 @@ func (intEncoding) EncodeDelta(input []int32, output []byte, prev int32, scheme 
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeDeltaScalarZigzag(output[:sz], input, prev, scheme)
+
+	var n int
+	if hasSSE41 {
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_delta_encode_s32_std(input, prev, &output[0]))
+		case Scheme0124:
+			n = int(svb_delta_encode_s32_alt(input, prev, &output[0]))
+		}
+	} else {
+		n = encodeDeltaScalarZigzag(output[:sz], input, prev, Scheme1234)
+	}
 	return output[:n]
 }
 
