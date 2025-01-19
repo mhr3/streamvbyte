@@ -408,28 +408,8 @@ func FuzzEncodeDecode(f *testing.F) {
 			scalar_encoded = scalar_encoded[:n]
 			assert.Equal(t, scalar_encoded, encoded)
 		}
-	})
-}
 
-func FuzzDeltaEncodeDecode(f *testing.F) {
-	byteSliceFromUint32 := func(input []uint32) []byte {
-		output := make([]byte, len(input)*4)
-		for i, v := range input {
-			binary.LittleEndian.PutUint32(output[i*4:], v)
-		}
-		return output
-	}
-
-	f.Add([]byte("0"))
-	f.Add(byteSliceFromUint32([]uint32{0}))
-	f.Add(byteSliceFromUint32([]uint32{0x03020100}))
-	f.Add(byteSliceFromUint32([]uint32{0, 1, 15, 128, 256, math.MaxInt16, math.MaxUint16 - 1, math.MaxUint16, 16777216, math.MaxInt32, math.MaxUint32}))
-
-	f.Fuzz(func(t *testing.T, inputByteSlc []byte) {
-		input := make([]uint32, len(inputByteSlc)/4)
-		for i := 0; i < len(input); i++ {
-			input[i] = binary.LittleEndian.Uint32(inputByteSlc[i*4:])
-		}
+		// DELTA ENCODING
 
 		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
 			encoded := DeltaEncodeUint32(input, &EncodeOptionsNew[uint32]{Scheme: scheme})
@@ -447,8 +427,6 @@ func FuzzDeltaEncodeDecode(f *testing.F) {
 			scalar_encoded = scalar_encoded[:n]
 			assert.Equal(t, scalar_encoded, encoded)
 		}
-
-		inputSigned := convertSliceTo[int32](input)
 
 		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
 			encoded := DeltaEncodeInt32(inputSigned, &EncodeOptionsNew[int32]{Scheme: scheme})
