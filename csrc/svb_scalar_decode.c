@@ -135,8 +135,6 @@ static inline const uint8_t *svb_scalar_delta_decode(uint32_t **outPtrPtr, const
     uint32_t key = *keyPtr++;
     uint32_t *outPtr = *outPtrPtr;
 
-    DecodeFunc decodeFn = encodeType == stdEncode ? svb_decode_data_1234 : svb_decode_data_0124;
-
     for (uint32_t c = 0; c < count; c++)
     {
         if (shift == 8)

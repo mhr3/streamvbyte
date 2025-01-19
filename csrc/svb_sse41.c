@@ -116,16 +116,20 @@ uint64_t svb_decode_u32_std(const uint8_t *in, const uint64_t in_len, uint64_t i
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
 
-    const uint8_t *keyPtr = in;               // full list of keys is next
-    uint32_t keyLen = ((count + 3) / 4);      // 2-bits per key (rounded up)
-    const uint8_t *dataPtr = keyPtr + keyLen; // data starts at end of keys
+    const uint8_t *dataPtr = &in[(count + 3) / 4];
+    const uint8_t *dataEndPtr = in + in_len;
+    const uint8_t *dataBound = in + (in_len - (in_len % 16));
+    const uint8_t *keyPtr = in;
     const uint32_t *outStartPtr = out;
 
-    // FIXME: we're not checking whether there's enough "in" bytes left
-    dataPtr = svb_decode_quad_quad(out, keyPtr, dataPtr, count);
-    out += count & ~31U;
-    keyPtr += (count / 4) & ~7U;
-    count &= 31;
+    for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && dataPtr < dataBound; keyPtr++)
+    {
+        __m128i data = svb_decode_quad(*keyPtr, &dataPtr);
+        svb_write_sse41(out, data);
+
+        out += 4; // 16-byte shift
+    }
+    count -= (out - outStartPtr);
 
     dataPtr = svb_scalar_decode(&out, keyPtr, dataPtr, count, stdEncode);
     if (dataPtr == NULL)
@@ -141,16 +145,20 @@ uint64_t svb_decode_u32_alt(const uint8_t *in, const uint64_t in_len, uint64_t i
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
 
-    const uint8_t *keyPtr = in;               // full list of keys is next
-    uint32_t keyLen = ((count + 3) / 4);      // 2-bits per key (rounded up)
-    const uint8_t *dataPtr = keyPtr + keyLen; // data starts at end of keys
+    const uint8_t *dataPtr = &in[(count + 3) / 4];
+    const uint8_t *dataEndPtr = in + in_len;
+    const uint8_t *dataBound = in + (in_len - (in_len % 16));
+    const uint8_t *keyPtr = in;
     const uint32_t *outStartPtr = out;
 
-    // FIXME: we're not checking whether there's enough "in" bytes left
-    dataPtr = svb_decode_quad_quad_alt(out, keyPtr, dataPtr, count);
-    out += count & ~31U;
-    keyPtr += (count / 4) & ~7U;
-    count &= 31;
+    for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && dataPtr < dataBound; keyPtr++)
+    {
+        __m128i data = svb_decode_quad_alt(*keyPtr, &dataPtr);
+        svb_write_sse41(out, data);
+
+        out += 4; // 16-byte shift
+    }
+    count -= (out - outStartPtr);
 
     dataPtr = svb_scalar_decode(&out, keyPtr, dataPtr, count, altEncode);
     if (dataPtr == NULL)
@@ -166,23 +174,27 @@ uint64_t svb_decode_s32_std(const uint8_t *in, const uint64_t in_len, uint64_t i
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
 
-    const uint8_t *keyPtr = in;               // full list of keys is next
-    uint32_t keyLen = ((count + 3) / 4);      // 2-bits per key (rounded up)
-    const uint8_t *dataPtr = keyPtr + keyLen; // data starts at end of keys
+    const uint8_t *dataPtr = &in[(count + 3) / 4];
+    const uint8_t *dataEndPtr = in + in_len;
+    const uint8_t *dataBound = in + (in_len - (in_len % 16));
+    const uint8_t *keyPtr = in;
     const int32_t *outStartPtr = out;
 
-    // FIXME: we're not checking whether there's enough "in" bytes left
-    dataPtr = svb_decode_quad_quad_zz((uint32_t*)out, keyPtr, dataPtr, count);
-    out += count & ~31U;
-    keyPtr += (count / 4) & ~7U;
-    count &= 31;
+    for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && dataPtr < dataBound; keyPtr++)
+    {
+        __m128i data = svb_decode_quad(*keyPtr, &dataPtr);
+        data = svb_zigzag_decode_32_sse4(data);
+        svb_write_sse41((uint32_t*)out, data);
 
-    uint32_t *outPtr = (uint32_t *)out;
-    dataPtr = svb_scalar_decode(&outPtr, keyPtr, dataPtr, count, zzEncode);
+        out += 4; // 16-byte shift
+    }
+    count -= (out - outStartPtr);
+
+    dataPtr = svb_scalar_decode((uint32_t**)&out, keyPtr, dataPtr, count, zzEncode);
     if (dataPtr == NULL)
         return 0;
 
-    return (uint64_t)((int32_t*)outPtr - outStartPtr);
+    return (uint64_t)(out - outStartPtr);
 }
 
 // gocc: svb_decode_s32_alt(in []byte, count int, out *int32) uint64
@@ -192,23 +204,27 @@ uint64_t svb_decode_s32_alt(const uint8_t *in, const uint64_t in_len, uint64_t i
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
 
-    const uint8_t *keyPtr = in;               // full list of keys is next
-    uint32_t keyLen = ((count + 3) / 4);      // 2-bits per key (rounded up)
-    const uint8_t *dataPtr = keyPtr + keyLen; // data starts at end of keys
+    const uint8_t *dataPtr = &in[(count + 3) / 4];
+    const uint8_t *dataEndPtr = in + in_len;
+    const uint8_t *dataBound = in + (in_len - (in_len % 16));
+    const uint8_t *keyPtr = in;
     const int32_t *outStartPtr = out;
 
-    // FIXME: we're not checking whether there's enough "in" bytes left
-    dataPtr = svb_decode_quad_quad_zz_alt((uint32_t*)out, keyPtr, dataPtr, count);
-    out += count & ~31U;
-    keyPtr += (count / 4) & ~7U;
-    count &= 31;
+    for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && dataPtr < dataBound; keyPtr++)
+    {
+        __m128i data = svb_decode_quad_alt(*keyPtr, &dataPtr);
+        data = svb_zigzag_decode_32_sse4(data);
+        svb_write_sse41((uint32_t*)out, data);
 
-    uint32_t *outPtr = (uint32_t *)out;
-    dataPtr = svb_scalar_decode(&outPtr, keyPtr, dataPtr, count, zzAltEncode);
+        out += 4; // 16-byte shift
+    }
+    count -= (out - outStartPtr);
+
+    dataPtr = svb_scalar_decode((uint32_t**)&out, keyPtr, dataPtr, count, zzAltEncode);
     if (dataPtr == NULL)
         return 0;
 
-    return (uint64_t)((int32_t*)outPtr - outStartPtr);
+    return (uint64_t)(out - outStartPtr);
 }
 
 // gocc: svb_delta_encode_u32_std(in []uint32, prev uint32, out *byte) uint64
