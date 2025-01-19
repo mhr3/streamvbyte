@@ -105,6 +105,9 @@ func (uintEncoding) DecodeDelta(input []byte, count int, output []uint32, prev u
 */
 
 func (intEncoding) Encode(input []int32, output []byte, scheme Scheme) []byte {
+	if len(input) == 0 {
+		return nil
+	}
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
@@ -125,6 +128,9 @@ func (intEncoding) Encode(input []int32, output []byte, scheme Scheme) []byte {
 }
 
 func (intEncoding) Decode(input []byte, count int, output []int32, scheme Scheme) []int32 {
+	if count <= 0 {
+		return nil
+	}
 	if len(output) < count {
 		output = make([]int32, count)
 	}
@@ -145,6 +151,9 @@ func (intEncoding) Decode(input []byte, count int, output []int32, scheme Scheme
 }
 
 func (intEncoding) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
+	if len(input) == 0 {
+		return nil
+	}
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
@@ -165,6 +174,9 @@ func (intEncoding) EncodeDelta(input []int32, output []byte, prev int32, scheme 
 }
 
 func (intEncoding) DecodeDelta(input []byte, count int, output []int32, prev int32, scheme Scheme) []int32 {
+	if count <= 0 {
+		return nil
+	}
 	if len(output) < count {
 		output = make([]int32, count)
 	}
