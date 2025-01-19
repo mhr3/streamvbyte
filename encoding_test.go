@@ -1,6 +1,7 @@
 package streamvbyte
 
 import (
+	"encoding/binary"
 	"math"
 	"math/rand"
 	"slices"
@@ -348,6 +349,122 @@ func BenchmarkDecodeDelta(b *testing.B) {
 					_ = decodedInt32
 				}
 			})
+		}
+	})
+}
+
+func FuzzEncodeDecode(f *testing.F) {
+	byteSliceFromUint32 := func(input []uint32) []byte {
+		output := make([]byte, len(input)*4)
+		for i, v := range input {
+			binary.LittleEndian.PutUint32(output[i*4:], v)
+		}
+		return output
+	}
+
+	f.Add([]byte("0"))
+	f.Add(byteSliceFromUint32([]uint32{0}))
+	f.Add(byteSliceFromUint32([]uint32{0x03020100}))
+	f.Add(byteSliceFromUint32([]uint32{0, 1, 15, 128, 256, math.MaxInt16, math.MaxUint16 - 1, math.MaxUint16, 16777216, math.MaxInt32, math.MaxUint32}))
+
+	f.Fuzz(func(t *testing.T, inputByteSlc []byte) {
+		input := make([]uint32, len(inputByteSlc)/4)
+		for i := 0; i < len(input); i++ {
+			input[i] = binary.LittleEndian.Uint32(inputByteSlc[i*4:])
+		}
+
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			encoded := EncodeUint32(input, &EncodeOptionsNew[uint32]{Scheme: scheme})
+			decoded := DecodeUint32(encoded, len(input), &DecodeOptionsNew[uint32]{Scheme: scheme})
+
+			require.Len(t, decoded, len(input))
+			if len(input) == 0 && len(encoded) == 0 {
+				continue
+			}
+			assert.Equal(t, input, decoded)
+
+			// re-check against the scalar implementation
+			scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
+			n := encodeScalar(scalar_encoded, input, scheme)
+			scalar_encoded = scalar_encoded[:n]
+			assert.Equal(t, scalar_encoded, encoded)
+		}
+
+		inputSigned := convertSliceTo[int32](input)
+
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			encoded := EncodeInt32(inputSigned, &EncodeOptionsNew[int32]{Scheme: scheme})
+			decoded := DecodeInt32(encoded, len(input), &DecodeOptionsNew[int32]{Scheme: scheme})
+
+			require.Len(t, decoded, len(input))
+			if len(input) == 0 && len(encoded) == 0 {
+				continue
+			}
+			assert.Equal(t, inputSigned, decoded)
+
+			// re-check against the scalar implementation
+			scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
+			n := encodeScalarZigzag(scalar_encoded, inputSigned, scheme)
+			scalar_encoded = scalar_encoded[:n]
+			assert.Equal(t, scalar_encoded, encoded)
+		}
+	})
+}
+
+func FuzzDeltaEncodeDecode(f *testing.F) {
+	byteSliceFromUint32 := func(input []uint32) []byte {
+		output := make([]byte, len(input)*4)
+		for i, v := range input {
+			binary.LittleEndian.PutUint32(output[i*4:], v)
+		}
+		return output
+	}
+
+	f.Add([]byte("0"))
+	f.Add(byteSliceFromUint32([]uint32{0}))
+	f.Add(byteSliceFromUint32([]uint32{0x03020100}))
+	f.Add(byteSliceFromUint32([]uint32{0, 1, 15, 128, 256, math.MaxInt16, math.MaxUint16 - 1, math.MaxUint16, 16777216, math.MaxInt32, math.MaxUint32}))
+
+	f.Fuzz(func(t *testing.T, inputByteSlc []byte) {
+		input := make([]uint32, len(inputByteSlc)/4)
+		for i := 0; i < len(input); i++ {
+			input[i] = binary.LittleEndian.Uint32(inputByteSlc[i*4:])
+		}
+
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			encoded := DeltaEncodeUint32(input, &EncodeOptionsNew[uint32]{Scheme: scheme})
+			decoded := DeltaDecodeUint32(encoded, len(input), &DecodeOptionsNew[uint32]{Scheme: scheme})
+
+			require.Len(t, decoded, len(input))
+			if len(input) == 0 && len(encoded) == 0 {
+				continue
+			}
+			assert.Equal(t, input, decoded)
+
+			// re-check against the scalar implementation
+			scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
+			n := encodeDeltaScalar(scalar_encoded, input, 0, scheme)
+			scalar_encoded = scalar_encoded[:n]
+			assert.Equal(t, scalar_encoded, encoded)
+		}
+
+		inputSigned := convertSliceTo[int32](input)
+
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			encoded := DeltaEncodeInt32(inputSigned, &EncodeOptionsNew[int32]{Scheme: scheme})
+			decoded := DeltaDecodeInt32(encoded, len(input), &DecodeOptionsNew[int32]{Scheme: scheme})
+
+			require.Len(t, decoded, len(input))
+			if len(input) == 0 && len(encoded) == 0 {
+				continue
+			}
+			assert.Equal(t, inputSigned, decoded)
+
+			// re-check against the scalar implementation
+			scalar_encoded := make([]byte, MaxEncodedLen(len(input)))
+			n := encodeDeltaScalarZigzag(scalar_encoded, inputSigned, 0, scheme)
+			scalar_encoded = scalar_encoded[:n]
+			assert.Equal(t, scalar_encoded, encoded)
 		}
 	})
 }
