@@ -1,8 +1,24 @@
 package streamvbyte
 
+import "unsafe"
+
 type zigZag struct{}
 
 var ZigZag = zigZag{}
+
+func zigzag_encode32(val int32) uint32 {
+	return uint32(val+val) ^ (uint32)(val>>31)
+}
+
+func zigzag_decode32(val uint32) int32 {
+	return int32((val >> 1) ^ (0 - (val & 1)))
+}
+
+func convertSliceTo[T, U uint32 | int32](input []U) []T {
+	sd := unsafe.SliceData(input)
+
+	return unsafe.Slice((*T)(unsafe.Pointer(sd)), len(input))
+}
 
 // Encode encodes the input slice of int32 values into the output slice of uint32 values.
 // If the output slice is nil, a new slice will be allocated and returned.

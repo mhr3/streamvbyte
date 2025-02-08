@@ -2,7 +2,7 @@
 
 package streamvbyte
 
-func (stdEncoding) Encode(input []uint32, output []byte) []byte {
+func (uintEncodingWrapper) Encode(input []uint32, output []byte, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -11,22 +11,22 @@ func (stdEncoding) Encode(input []uint32, output []byte) []byte {
 		output = make([]byte, sz)
 	}
 
-	n := svb_encode(input, &output[0])
+	n := svb_encode_u32(input, &output[0], byte(scheme))
 	return output[:n]
 }
 
-func (stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (uintEncodingWrapper) Decode(input []byte, count int, output []uint32, scheme Scheme) []uint32 {
 	if count <= 0 {
 		return nil
 	}
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	sz := svb_decode(input, count, &output[0])
+	sz := svb_decode_u32(input, count, &output[0], byte(scheme))
 	return output[:sz]
 }
 
-func (stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (uintEncodingWrapper) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -35,26 +35,26 @@ func (stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byt
 		output = make([]byte, sz)
 	}
 
-	n := svb_delta_encode(input, prev, &output[0])
+	n := svb_delta_encode_u32(input, prev, &output[0], byte(scheme))
 	return output[:n]
 }
 
-func (stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (uintEncodingWrapper) DecodeDelta(input []byte, count int, output []uint32, prev uint32, scheme Scheme) []uint32 {
 	if count <= 0 {
 		return nil
 	}
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	sz := svb_delta_decode(input, count, prev, &output[0])
+	sz := svb_delta_decode_u32(input, count, prev, &output[0], byte(scheme))
 	return output[:sz]
 }
 
 /*
-	!!! AltEncoding below !!!
+	!!! Int32Encoding below !!!
 */
 
-func (altEncoding) Encode(input []uint32, output []byte) []byte {
+func (intEncodingWrapper) Encode(input []int32, output []byte, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -63,22 +63,22 @@ func (altEncoding) Encode(input []uint32, output []byte) []byte {
 		output = make([]byte, sz)
 	}
 
-	n := svb_encode_alt(input, &output[0])
+	n := svb_encode_s32(input, &output[0], byte(scheme))
 	return output[:n]
 }
 
-func (altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (intEncodingWrapper) Decode(input []byte, count int, output []int32, scheme Scheme) []int32 {
 	if count <= 0 {
 		return nil
 	}
 	if len(output) < count {
-		output = make([]uint32, count)
+		output = make([]int32, count)
 	}
-	sz := svb_decode_alt(input, count, &output[0])
+	sz := svb_decode_s32(input, count, &output[0], byte(scheme))
 	return output[:sz]
 }
 
-func (altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (intEncodingWrapper) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -87,17 +87,17 @@ func (altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byt
 		output = make([]byte, sz)
 	}
 
-	n := svb_delta_encode_alt(input, prev, &output[0])
+	n := svb_delta_encode_s32(input, prev, &output[0], byte(scheme))
 	return output[:n]
 }
 
-func (altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (intEncodingWrapper) DecodeDelta(input []byte, count int, output []int32, prev int32, scheme Scheme) []int32 {
 	if count <= 0 {
 		return nil
 	}
 	if len(output) < count {
-		output = make([]uint32, count)
+		output = make([]int32, count)
 	}
-	sz := svb_delta_decode_alt(input, count, prev, &output[0])
+	sz := svb_delta_decode_s32(input, count, prev, &output[0], byte(scheme))
 	return output[:sz]
 }

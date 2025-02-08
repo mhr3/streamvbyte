@@ -67,7 +67,22 @@ static inline size_t svb_encode_quad_alt(const uint32x4_t data, uint8_t *__restr
     return length;
 }
 
-static inline uint32x4_t svb_differences(uint32x4_t curr, uint32x4_t prev)
+static inline uint32x4_t svb_zigzag_encode_neon(const int32x4_t data)
+{
+    // NEON for: (val + val) ^ (uint32_t)((int32_t)val >> 31)
+    int32x4_t doubled = vshlq_n_s32(data, 1);
+    int32x4_t sign = vshrq_n_s32(vreinterpretq_s32_u32(data), 31);
+
+    // XOR to complete zigzag
+    return veorq_s32(doubled, sign);
+}
+
+static inline uint32x4_t svb_differences_u32(uint32x4_t curr, uint32x4_t prev)
 {
     return vsubq_u32(curr, vextq_u32(prev, curr, 3));
+}
+
+static inline int32x4_t svb_differences_s32(int32x4_t curr, int32x4_t prev)
+{
+    return vsubq_s32(curr, vextq_s32(prev, curr, 3));
 }

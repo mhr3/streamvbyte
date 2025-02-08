@@ -71,6 +71,11 @@ static inline uint8_t svb_encode_data_0124(uint32_t val, uint8_t *__restrict__ *
     return code;
 }
 
+static inline uint32_t svb_zigzag_encode_32(uint32_t val)
+{
+    return (val + val) ^ (uint32_t)((int32_t)val >> 31);
+}
+
 static inline uint8_t *svb_scalar_encode(const uint32_t *in,
                                          uint8_t *__restrict__ keyPtr,
                                          uint8_t *__restrict__ dataPtr,
@@ -91,7 +96,22 @@ static inline uint8_t *svb_scalar_encode(const uint32_t *in,
             key = 0;
         }
         uint32_t val = in[c];
-        uint8_t code = encodeType == stdEncode ? svb_encode_data_1234(val, &dataPtr) : svb_encode_data_0124(val, &dataPtr);
+        uint8_t code;
+        switch (encodeType)
+        {
+        case stdEncode:
+            code = svb_encode_data_1234(val, &dataPtr);
+            break;
+        case zzEncode:
+            code = svb_encode_data_1234(svb_zigzag_encode_32(val), &dataPtr);
+            break;
+        case altEncode:
+            code = svb_encode_data_0124(val, &dataPtr);
+            break;
+        case zzAltEncode:
+            code = svb_encode_data_0124(svb_zigzag_encode_32(val), &dataPtr);
+            break;
+        }
         key |= code << shift;
         shift += 2;
     }
@@ -111,8 +131,6 @@ static inline uint8_t *svb_scalar_delta_encode(const uint32_t *in,
     uint8_t shift = 0; // cycles 0, 2, 4, 6, 0, 2, 4, 6, ...
     uint8_t key = 0;
 
-    EncodeFunc encodeFn = encodeType == stdEncode ? svb_encode_data_1234 : svb_encode_data_0124;
-
     for (uint32_t c = 0; c < count; c++)
     {
         if (shift == 8)
@@ -121,9 +139,23 @@ static inline uint8_t *svb_scalar_delta_encode(const uint32_t *in,
             *keyPtr++ = key;
             key = 0;
         }
-        uint32_t val = in[c] - prev;
+        uint8_t code;
+        switch (encodeType)
+        {
+        case stdEncode:
+            code = svb_encode_data_1234(in[c] - prev, &dataPtr);
+            break;
+        case zzEncode:
+            code = svb_encode_data_1234(svb_zigzag_encode_32((int32_t)in[c] - (int32_t)prev), &dataPtr);
+            break;
+        case altEncode:
+            code = svb_encode_data_0124(in[c] - prev, &dataPtr);
+            break;
+        case zzAltEncode:
+            code = svb_encode_data_0124(svb_zigzag_encode_32((int32_t)in[c] - (int32_t)prev), &dataPtr);
+            break;
+        }
         prev = in[c];
-        uint8_t code = encodeFn(val, &dataPtr);
         key |= code << shift;
         shift += 2;
     }

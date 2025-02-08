@@ -1,19 +1,41 @@
 package streamvbyte
 
-type Encoding interface {
-	// Encode encodes the input slice of uint32 values.
-	// If the output slice is too small or nil, a new slice will be allocated and returned.
-	Encode(input []uint32, output []byte) []byte
-	// Decode decodes the input slice of bytes.
-	// If the output slice is too small or nil, a new slice will be allocated and returned.
-	Decode(input []byte, count int, output []uint32) []uint32
+type Scheme byte
 
-	// EncodeDelta encodes the input slice of uint32 values.
-	// If the output slice is too small or nil, a new slice will be allocated and returned.
-	EncodeDelta(input []uint32, output []byte, prev uint32) []byte
-	// DecodeDelta decodes the input slice of bytes.
-	// If the output slice is too small or nil, a new slice will be allocated and returned.
-	DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32
+const (
+	// Scheme1234 is the standard streamvbyte encoding, which encodes the data using 1, 2, 3 or 4 bytes
+	// (plus 2 control bits for each number).
+	Scheme1234 Scheme = 0
+
+	// Scheme0124 optimizes for data containing lots of zeros, encoding the data using 0, 1, 2 or 4 bytes.
+	// This means zeroes are only represented in the control bits, and do not add to the data bytes.
+	// As an example, a slice of 1000 zeroes would be encoded in 1250 bytes with standard encoding, but only
+	// 250 bytes with this scheme. However, this optimization comes at the cost of using 4 bytes
+	// even for numbers that would fit into 3 bytes.
+	Scheme0124 Scheme = 1
+)
+
+type EncodeOptions[T uint32 | int32] struct {
+	Scheme  Scheme
+	Buffer  []byte
+	Initial T // Initial value for delta encoding
+}
+
+type DecodeOptions[T uint32 | int32] struct {
+	Scheme  Scheme
+	Buffer  []T
+	Initial T // Initial value for delta decoding
+}
+
+func (s Scheme) String() string {
+	switch s {
+	case Scheme1234:
+		return "std"
+	case Scheme0124:
+		return "alt"
+	default:
+		return "unknown"
+	}
 }
 
 // MaxEncodedLen returns the maximum number of bytes required to encode n uint32 values.
@@ -23,20 +45,66 @@ func MaxEncodedLen(n int) int {
 	return numControlBytes + maxNumDataBytes
 }
 
-type stdEncoding struct{}
-type altEncoding struct{}
+func EncodeInt32(input []int32, opts *EncodeOptions[int32]) []byte {
+	if opts == nil {
+		opts = &EncodeOptions[int32]{}
+	}
 
-var (
-	// StdEncoding is the standard streamvbyte encoding, which encodes the data with the 1234 scheme.
-	// This means every uint32 value is encoded with 1, 2, 3 or 4 bytes (plus 2 control bits).
-	StdEncoding = stdEncoding{}
+	return intEncoding.Encode(input, opts.Buffer, opts.Scheme)
+}
 
-	// AltEncoding optimizes for data containing lots of zeros, and encodes the data with the 0124 scheme.
-	// This means zeroes are only represented in the control bits, but don't add to the data bytes.
-	// As an example a slice of 2000 zeroes would be encoded in 2500 bytes with standard encoding, but only
-	// 500 bytes with the alternative encoding.
-	AltEncoding = altEncoding{}
+func DecodeInt32(input []byte, count int, opts *DecodeOptions[int32]) []int32 {
+	if opts == nil {
+		opts = &DecodeOptions[int32]{}
+	}
 
-	_ Encoding = StdEncoding
-	_ Encoding = AltEncoding
-)
+	return intEncoding.Decode(input, count, opts.Buffer, opts.Scheme)
+}
+
+func DeltaEncodeInt32(input []int32, opts *EncodeOptions[int32]) []byte {
+	if opts == nil {
+		opts = &EncodeOptions[int32]{}
+	}
+
+	return intEncoding.EncodeDelta(input, opts.Buffer, opts.Initial, opts.Scheme)
+}
+
+func DeltaDecodeInt32(input []byte, count int, opts *DecodeOptions[int32]) []int32 {
+	if opts == nil {
+		opts = &DecodeOptions[int32]{}
+	}
+
+	return intEncoding.DecodeDelta(input, count, opts.Buffer, opts.Initial, opts.Scheme)
+}
+
+func EncodeUint32(input []uint32, opts *EncodeOptions[uint32]) []byte {
+	if opts == nil {
+		opts = &EncodeOptions[uint32]{}
+	}
+
+	return uintEncoding.Encode(input, opts.Buffer, opts.Scheme)
+}
+
+func DecodeUint32(input []byte, count int, opts *DecodeOptions[uint32]) []uint32 {
+	if opts == nil {
+		opts = &DecodeOptions[uint32]{}
+	}
+
+	return uintEncoding.Decode(input, count, opts.Buffer, opts.Scheme)
+}
+
+func DeltaEncodeUint32(input []uint32, opts *EncodeOptions[uint32]) []byte {
+	if opts == nil {
+		opts = &EncodeOptions[uint32]{}
+	}
+
+	return uintEncoding.EncodeDelta(input, opts.Buffer, opts.Initial, opts.Scheme)
+}
+
+func DeltaDecodeUint32(input []byte, count int, opts *DecodeOptions[uint32]) []uint32 {
+	if opts == nil {
+		opts = &DecodeOptions[uint32]{}
+	}
+
+	return uintEncoding.DecodeDelta(input, count, opts.Buffer, opts.Initial, opts.Scheme)
+}

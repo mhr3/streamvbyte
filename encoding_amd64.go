@@ -8,7 +8,7 @@ import (
 
 var hasSSE41 = cpu.X86.HasSSE41
 
-func (stdEncoding) Encode(input []uint32, output []byte) []byte {
+func (uintEncodingWrapper) Encode(input []uint32, output []byte, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -19,14 +19,19 @@ func (stdEncoding) Encode(input []uint32, output []byte) []byte {
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_encode(input, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_encode_u32_std(input, &output[0]))
+		case Scheme0124:
+			n = int(svb_encode_u32_alt(input, &output[0]))
+		}
 	} else {
-		n = encodeScalar1234(output[:sz], input)
+		n = encodeScalar(output[:sz], input, Scheme1234)
 	}
 	return output[:n]
 }
 
-func (stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (uintEncodingWrapper) Decode(input []byte, count int, output []uint32, scheme Scheme) []uint32 {
 	if count <= 0 {
 		return nil
 	}
@@ -36,15 +41,20 @@ func (stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_decode(input, count, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_decode_u32_std(input, count, &output[0]))
+		case Scheme0124:
+			n = int(svb_decode_u32_alt(input, count, &output[0]))
+		}
 	} else {
-		decodeScalar1234(output, input)
+		decodeScalar(output, input, Scheme1234)
 		n = count
 	}
 	return output[:n]
 }
 
-func (stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (uintEncodingWrapper) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -55,14 +65,19 @@ func (stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byt
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_delta_encode(input, prev, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_delta_encode_u32_std(input, prev, &output[0]))
+		case Scheme0124:
+			n = int(svb_delta_encode_u32_alt(input, prev, &output[0]))
+		}
 	} else {
-		n = encodeDeltaScalar1234(output[:sz], input, prev)
+		n = encodeDeltaScalar(output[:sz], input, prev, Scheme1234)
 	}
 	return output[:n]
 }
 
-func (stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (uintEncodingWrapper) DecodeDelta(input []byte, count int, output []uint32, prev uint32, scheme Scheme) []uint32 {
 	if count <= 0 {
 		return nil
 	}
@@ -72,19 +87,24 @@ func (stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev ui
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_delta_decode(input, count, prev, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_delta_decode_u32_std(input, count, prev, &output[0]))
+		case Scheme0124:
+			n = int(svb_delta_decode_u32_alt(input, count, prev, &output[0]))
+		}
 	} else {
-		decodeDeltaScalar1234(output, input, prev)
+		decodeDeltaScalar(output, input, prev, Scheme1234)
 		n = count
 	}
 	return output[:n]
 }
 
 /*
-	!!! AltEncoding below !!!
+	!!! Int32Encoding below !!!
 */
 
-func (altEncoding) Encode(input []uint32, output []byte) []byte {
+func (intEncodingWrapper) Encode(input []int32, output []byte, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -95,32 +115,42 @@ func (altEncoding) Encode(input []uint32, output []byte) []byte {
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_encode_alt(input, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_encode_s32_std(input, &output[0]))
+		case Scheme0124:
+			n = int(svb_encode_s32_alt(input, &output[0]))
+		}
 	} else {
-		n = encodeScalar0124(output[:sz], input)
+		n = encodeScalarZigzag(output[:sz], input, Scheme1234)
 	}
 	return output[:n]
 }
 
-func (altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (intEncodingWrapper) Decode(input []byte, count int, output []int32, scheme Scheme) []int32 {
 	if count <= 0 {
 		return nil
 	}
 	if len(output) < count {
-		output = make([]uint32, count)
+		output = make([]int32, count)
 	}
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_decode_alt(input, count, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_decode_s32_std(input, count, &output[0]))
+		case Scheme0124:
+			n = int(svb_decode_s32_alt(input, count, &output[0]))
+		}
 	} else {
-		decodeScalar0124(output, input)
+		decodeScalarZigzag(output, input, scheme)
 		n = count
 	}
 	return output[:n]
 }
 
-func (altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (intEncodingWrapper) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -131,26 +161,36 @@ func (altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byt
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_delta_encode_alt(input, prev, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_delta_encode_s32_std(input, prev, &output[0]))
+		case Scheme0124:
+			n = int(svb_delta_encode_s32_alt(input, prev, &output[0]))
+		}
 	} else {
-		n = encodeDeltaScalar0124(output[:sz], input, prev)
+		n = encodeDeltaScalarZigzag(output[:sz], input, prev, Scheme1234)
 	}
 	return output[:n]
 }
 
-func (altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (intEncodingWrapper) DecodeDelta(input []byte, count int, output []int32, prev int32, scheme Scheme) []int32 {
 	if count <= 0 {
 		return nil
 	}
 	if len(output) < count {
-		output = make([]uint32, count)
+		output = make([]int32, count)
 	}
 
 	var n int
 	if hasSSE41 {
-		n = int(svb_delta_decode_alt(input, count, prev, &output[0]))
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_delta_decode_s32_std(input, count, prev, &output[0]))
+		case Scheme0124:
+			n = int(svb_delta_decode_s32_alt(input, count, prev, &output[0]))
+		}
 	} else {
-		decodeDeltaScalar0124(output, input, prev)
+		decodeDeltaScalarZigzag(output, input, prev, scheme)
 		n = count
 	}
 	return output[:n]

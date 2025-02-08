@@ -2,74 +2,74 @@
 
 package streamvbyte
 
-func (e stdEncoding) Encode(input []uint32, output []byte) []byte {
+func (uintEncodingWrapper) Encode(input []uint32, output []byte, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeScalar1234(output[:sz], input)
+	n := encodeScalar(output[:sz], input, scheme)
 	return output[:n]
 }
 
-func (e stdEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (uintEncodingWrapper) Decode(input []byte, count int, output []uint32, scheme Scheme) []uint32 {
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeScalar1234(output, input)
+	decodeScalar(output, input, scheme)
 	return output[:count]
 }
 
-func (e stdEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (uintEncodingWrapper) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeDeltaScalar1234(output[:sz], input, prev)
+	n := encodeDeltaScalar(output[:sz], input, prev, scheme)
 	return output[:n]
 }
 
-func (e stdEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (uintEncodingWrapper) DecodeDelta(input []byte, count int, output []uint32, prev uint32, scheme Scheme) []uint32 {
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	decodeDeltaScalar1234(output, input, prev)
+	decodeDeltaScalar(output, input, prev, scheme)
 	return output[:count]
 }
 
 /*
-	!!! AltEncoding below !!!
+	!!! Int32Encoding below !!!
 */
 
-func (e altEncoding) Encode(input []uint32, output []byte) []byte {
+func (intEncodingWrapper) Encode(input []int32, output []byte, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeScalar0124(output[:sz], input)
+	n := encodeScalarZigzag(output[:sz], input, scheme)
 	return output[:n]
 }
 
-func (e altEncoding) Decode(input []byte, count int, output []uint32) []uint32 {
+func (intEncodingWrapper) Decode(input []byte, count int, output []int32, scheme Scheme) []int32 {
 	if len(output) < count {
-		output = make([]uint32, count)
+		output = make([]int32, count)
 	}
-	decodeScalar0124(output, input)
+	decodeScalarZigzag(output, input, scheme)
 	return output[:count]
 }
 
-func (e altEncoding) EncodeDelta(input []uint32, output []byte, prev uint32) []byte {
+func (intEncodingWrapper) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
 	}
-	n := encodeDeltaScalar0124(output[:sz], input, prev)
+	n := encodeDeltaScalarZigzag(output[:sz], input, prev, scheme)
 	return output[:n]
 }
 
-func (e altEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32) []uint32 {
+func (intEncodingWrapper) DecodeDelta(input []byte, count int, output []int32, prev int32, scheme Scheme) []int32 {
 	if len(output) < count {
-		output = make([]uint32, count)
+		output = make([]int32, count)
 	}
-	decodeDeltaScalar0124(output, input, prev)
+	decodeDeltaScalarZigzag(output, input, prev, scheme)
 	return output[:count]
 }
