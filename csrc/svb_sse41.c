@@ -84,7 +84,7 @@ uint64_t svb_encode_s32_std(const int32_t *in, const uint64_t in_len, uint64_t i
     // do remaining
     count %= 8;
 
-    return (uint64_t)(svb_scalar_encode((const uint32_t*)in, keyPtr, dataPtr, count, zzEncode) - out);
+    return (uint64_t)(svb_scalar_encode((const uint32_t *)in, keyPtr, dataPtr, count, zzEncode) - out);
 }
 
 // gocc: svb_encode_s32_alt(in []int32, out *byte) uint64
@@ -107,12 +107,12 @@ uint64_t svb_encode_s32_alt(const int32_t *in, const uint64_t in_len, uint64_t i
     }
     count -= 4 * count_quads;
 
-    return (uint64_t)(svb_scalar_encode((const uint32_t*)in, keyPtr, dataPtr, count, zzAltEncode) - out);
+    return (uint64_t)(svb_scalar_encode((const uint32_t *)in, keyPtr, dataPtr, count, zzAltEncode) - out);
 }
 
 // gocc: svb_decode_u32_std(in []byte, count int, out *uint32) uint64
 uint64_t svb_decode_u32_std(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
-                    int64_t count, uint32_t *out)
+                            int64_t count, uint32_t *out)
 {
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
@@ -141,7 +141,7 @@ uint64_t svb_decode_u32_std(const uint8_t *in, const uint64_t in_len, uint64_t i
 
 // gocc: svb_decode_u32_alt(in []byte, count int, out *uint32) uint64
 uint64_t svb_decode_u32_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
-                        int64_t count, uint32_t *out)
+                            int64_t count, uint32_t *out)
 {
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
@@ -170,7 +170,7 @@ uint64_t svb_decode_u32_alt(const uint8_t *in, const uint64_t in_len, uint64_t i
 
 // gocc: svb_decode_s32_std(in []byte, count int, out *int32) uint64
 uint64_t svb_decode_s32_std(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
-                    int64_t count, int32_t *out)
+                            int64_t count, int32_t *out)
 {
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
@@ -184,14 +184,14 @@ uint64_t svb_decode_s32_std(const uint8_t *in, const uint64_t in_len, uint64_t i
     for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && dataPtr < dataBound; keyPtr++)
     {
         __m128i data = svb_decode_quad(*keyPtr, &dataPtr);
-        data = svb_zigzag_decode_32_sse4(data);
-        svb_write_sse41((uint32_t*)out, data);
+        data = svb_zigzag_decode_sse4(data);
+        svb_write_sse41((uint32_t *)out, data);
 
         out += 4; // 16-byte shift
     }
     count -= (out - outStartPtr);
 
-    dataPtr = svb_scalar_decode((uint32_t**)&out, keyPtr, dataPtr, count, zzEncode);
+    dataPtr = svb_scalar_decode((uint32_t **)&out, keyPtr, dataPtr, count, zzEncode);
     if (dataPtr == NULL)
         return 0;
 
@@ -200,7 +200,7 @@ uint64_t svb_decode_s32_std(const uint8_t *in, const uint64_t in_len, uint64_t i
 
 // gocc: svb_decode_s32_alt(in []byte, count int, out *int32) uint64
 uint64_t svb_decode_s32_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
-                        int64_t count, int32_t *out)
+                            int64_t count, int32_t *out)
 {
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
@@ -214,14 +214,14 @@ uint64_t svb_decode_s32_alt(const uint8_t *in, const uint64_t in_len, uint64_t i
     for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && dataPtr < dataBound; keyPtr++)
     {
         __m128i data = svb_decode_quad_alt(*keyPtr, &dataPtr);
-        data = svb_zigzag_decode_32_sse4(data);
-        svb_write_sse41((uint32_t*)out, data);
+        data = svb_zigzag_decode_sse4(data);
+        svb_write_sse41((uint32_t *)out, data);
 
         out += 4; // 16-byte shift
     }
     count -= (out - outStartPtr);
 
-    dataPtr = svb_scalar_decode((uint32_t**)&out, keyPtr, dataPtr, count, zzAltEncode);
+    dataPtr = svb_scalar_decode((uint32_t **)&out, keyPtr, dataPtr, count, zzAltEncode);
     if (dataPtr == NULL)
         return 0;
 
@@ -327,7 +327,7 @@ uint64_t svb_delta_encode_s32_std(const int32_t *in, const uint64_t in_len, uint
     // do remaining
     count %= 8;
 
-    return (uint64_t)(svb_scalar_delta_encode((const uint32_t*)in, keyPtr, dataPtr, count, zzEncode, prev) - out);
+    return (uint64_t)(svb_scalar_delta_encode((const uint32_t *)in, keyPtr, dataPtr, count, zzEncode, prev) - out);
 }
 
 // gocc: svb_delta_encode_s32_alt(in []int32, prev int32, out *byte) uint64
@@ -356,12 +356,12 @@ uint64_t svb_delta_encode_s32_alt(const int32_t *in, const uint64_t in_len, uint
 
     count -= 4 * count_quads;
 
-    return (uint64_t)(svb_scalar_delta_encode((const uint32_t*)in, keyPtr, dataPtr, count, zzAltEncode, prev) - out);
+    return (uint64_t)(svb_scalar_delta_encode((const uint32_t *)in, keyPtr, dataPtr, count, zzAltEncode, prev) - out);
 }
 
 // gocc: svb_delta_decode_u32_std(in []byte, count int, prev uint32, out *uint32) uint64
 uint64_t svb_delta_decode_u32_std(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
-                          int64_t count, uint32_t prev, uint32_t *out)
+                                  int64_t count, uint32_t prev, uint32_t *out)
 {
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
@@ -372,7 +372,7 @@ uint64_t svb_delta_decode_u32_std(const uint8_t *in, const uint64_t in_len, uint
     const uint32_t *outStartPtr = out;
 
     // FIXME: we're not checking whether there's enough "in" bytes left
-    dataPtr = svb_delta_decode_quad_quad(out, keyPtr, dataPtr, count, prev);
+    dataPtr = svb_delta_decode_sse4_u32_std(out, keyPtr, dataPtr, count, prev);
     out += count & ~31U;
     keyPtr += (count / 4) & ~7U;
     count &= 31;
@@ -389,7 +389,7 @@ uint64_t svb_delta_decode_u32_std(const uint8_t *in, const uint64_t in_len, uint
 
 // gocc: svb_delta_decode_u32_alt(in []byte, count int, prev uint32, out *uint32) uint64
 uint64_t svb_delta_decode_u32_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
-                              int64_t count, uint32_t prev, uint32_t *out)
+                                  int64_t count, uint32_t prev, uint32_t *out)
 {
     if (count <= 0 || in_len < (count + 3) / 4)
         return 0;
@@ -400,7 +400,7 @@ uint64_t svb_delta_decode_u32_alt(const uint8_t *in, const uint64_t in_len, uint
     const uint32_t *outStartPtr = out;
 
     // FIXME: we're not checking whether there's enough "in" bytes left
-    dataPtr = svb_delta_decode_quad_quad_alt(out, keyPtr, dataPtr, count, prev);
+    dataPtr = svb_delta_decode_sse4_u32_alt(out, keyPtr, dataPtr, count, prev);
     out += count & ~31U;
     keyPtr += (count / 4) & ~7U;
     count &= 31;
@@ -409,6 +409,62 @@ uint64_t svb_delta_decode_u32_alt(const uint8_t *in, const uint64_t in_len, uint
         prev = out[-1];
 
     dataPtr = svb_scalar_delta_decode(&out, keyPtr, dataPtr, count, altEncode, prev);
+    if (dataPtr == NULL)
+        return 0;
+
+    return (uint64_t)(out - outStartPtr);
+}
+
+// gocc: svb_delta_decode_s32_std(in []byte, count int, prev int32, out *int32) uint64
+uint64_t svb_delta_decode_s32_std(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
+                                  int64_t count, int32_t prev, int32_t *out)
+{
+    if (count <= 0 || in_len < (count + 3) / 4)
+        return 0;
+
+    uint32_t keyLen = ((count + 3) / 4); // 2-bits per key (rounded up)
+    const uint8_t *keyPtr = in;
+    const uint8_t *dataPtr = keyPtr + keyLen; // data starts at end of keys
+    const int32_t *outStartPtr = out;
+
+    // FIXME: we're not checking whether there's enough "in" bytes left
+    dataPtr = svb_delta_decode_sse4_s32_std((uint32_t*)out, keyPtr, dataPtr, count, prev);
+    out += count & ~31U;
+    keyPtr += (count / 4) & ~7U;
+    count &= 31;
+
+    if (count > 0 && out > outStartPtr)
+        prev = out[-1];
+
+    dataPtr = svb_scalar_delta_decode((uint32_t **)&out, keyPtr, dataPtr, count, zzEncode, prev);
+    if (dataPtr == NULL)
+        return 0;
+
+    return (uint64_t)(out - outStartPtr);
+}
+
+// gocc: svb_delta_decode_s32_alt(in []byte, count int, prev int32, out *int32) uint64
+uint64_t svb_delta_decode_s32_alt(const uint8_t *in, const uint64_t in_len, uint64_t in_cap,
+                                  int64_t count, int32_t prev, int32_t *out)
+{
+    if (count <= 0 || in_len < (count + 3) / 4)
+        return 0;
+
+    uint32_t keyLen = ((count + 3) / 4); // 2-bits per key (rounded up)
+    const uint8_t *keyPtr = in;
+    const uint8_t *dataPtr = keyPtr + keyLen; // data starts at end of keys
+    const int32_t *outStartPtr = out;
+
+    // FIXME: we're not checking whether there's enough "in" bytes left
+    dataPtr = svb_delta_decode_sse4_s32_alt((uint32_t*)out, keyPtr, dataPtr, count, prev);
+    out += count & ~31U;
+    keyPtr += (count / 4) & ~7U;
+    count &= 31;
+
+    if (count > 0 && out > outStartPtr)
+        prev = out[-1];
+
+    dataPtr = svb_scalar_delta_decode((uint32_t **)&out, keyPtr, dataPtr, count, zzAltEncode, prev);
     if (dataPtr == NULL)
         return 0;
 

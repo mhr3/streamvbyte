@@ -45,3 +45,9 @@ func svb_delta_decode_u32_std(in []byte, count int, prev uint32, out *uint32) ui
 
 //go:noescape
 func svb_delta_decode_u32_alt(in []byte, count int, prev uint32, out *uint32) uint64
+
+//go:noescape
+func svb_delta_decode_s32_std(in []byte, count int, prev int32, out *int32) uint64
+
+//go:noescape
+func svb_delta_decode_s32_alt(in []byte, count int, prev int32, out *int32) uint64

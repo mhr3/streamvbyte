@@ -180,6 +180,18 @@ func (intEncoding) DecodeDelta(input []byte, count int, output []int32, prev int
 	if len(output) < count {
 		output = make([]int32, count)
 	}
-	decodeDeltaScalarZigzag(output, input, prev, scheme)
-	return output[:count]
+
+	var n int
+	if hasSSE41 {
+		switch scheme {
+		case Scheme1234:
+			n = int(svb_delta_decode_s32_std(input, count, prev, &output[0]))
+		case Scheme0124:
+			n = int(svb_delta_decode_s32_alt(input, count, prev, &output[0]))
+		}
+	} else {
+		decodeDeltaScalarZigzag(output, input, prev, scheme)
+		n = count
+	}
+	return output[:n]
 }

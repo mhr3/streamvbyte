@@ -71,10 +71,10 @@ static __m128i svb_write_sse41_delta(uint32_t *out, __m128i vec, __m128i prev)
     return vec;
 }
 
-static const uint8_t *svb_delta_decode_quad_quad(uint32_t *out,
-                                                 const uint8_t *__restrict__ keyPtr,
-                                                 const uint8_t *__restrict__ dataPtr,
-                                                 uint64_t count, uint32_t previous)
+static const uint8_t *svb_delta_decode_sse4_u32_std(uint32_t *out,
+                                                    const uint8_t *__restrict__ keyPtr,
+                                                    const uint8_t *__restrict__ dataPtr,
+                                                    uint64_t count, uint32_t previous)
 {
     const uint64_t keybytes = count / 4; // number of key bytes
     __m128i prev = _mm_set1_epi32((int32_t)previous);
@@ -133,10 +133,10 @@ static const uint8_t *svb_delta_decode_quad_quad(uint32_t *out,
     return dataPtr;
 }
 
-static const uint8_t *svb_delta_decode_quad_quad_alt(uint32_t *out,
-                                                     const uint8_t *__restrict__ keyPtr,
-                                                     const uint8_t *__restrict__ dataPtr,
-                                                     uint64_t count, uint32_t previous)
+static const uint8_t *svb_delta_decode_sse4_u32_alt(uint32_t *out,
+                                                    const uint8_t *__restrict__ keyPtr,
+                                                    const uint8_t *__restrict__ dataPtr,
+                                                    uint64_t count, uint32_t previous)
 {
     const uint64_t keybytes = count / 4; // number of key bytes
     __m128i prev = _mm_set1_epi32((int32_t)previous);
@@ -196,7 +196,7 @@ static const uint8_t *svb_delta_decode_quad_quad_alt(uint32_t *out,
     return dataPtr;
 }
 
-static inline __m128i svb_zigzag_decode_32_sse4(__m128i val)
+static inline __m128i svb_zigzag_decode_sse4(__m128i val)
 {
     // SSE4 for: (val >> 1) ^ (0 - (val & 1));
     __m128i shifted = _mm_srli_epi32(val, 1); // val >> 1
@@ -205,4 +205,112 @@ static inline __m128i svb_zigzag_decode_32_sse4(__m128i val)
     __m128i negated = _mm_sub_epi32(_mm_setzero_si128(), masked);
 
     return _mm_xor_si128(shifted, negated);
+}
+
+static const uint8_t *svb_delta_decode_sse4_s32_std(uint32_t *out,
+                                                    const uint8_t *__restrict__ keyPtr,
+                                                    const uint8_t *__restrict__ dataPtr,
+                                                    uint64_t count, int32_t previous)
+{
+    const uint64_t keybytes = count / 4; // number of key bytes
+    __m128i prev = _mm_set1_epi32(previous);
+    __m128i data;
+
+    const uint64_t *keyPtr64 = (const uint64_t *)keyPtr;
+
+    for (const uint64_t *keyBoundPtr64 = (const uint64_t *)(keyPtr + keybytes - 7);
+         keyPtr64 < keyBoundPtr64;
+         keyPtr64++)
+    {
+        uint64_t keys = *keyPtr64;
+
+        data = svb_decode_quad(keys & 0x00FF, &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 0, data, prev);
+        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 4, data, prev);
+
+        keys >>= 16;
+        data = svb_decode_quad((keys & 0x00FF), &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 8, data, prev);
+        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 12, data, prev);
+
+        keys >>= 16;
+        data = svb_decode_quad((keys & 0x00FF), &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 16, data, prev);
+        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 20, data, prev);
+
+        keys >>= 16;
+        data = svb_decode_quad((keys & 0x00FF), &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 24, data, prev);
+        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 28, data, prev);
+
+        out += 32;
+    }
+
+    return dataPtr;
+}
+
+static const uint8_t *svb_delta_decode_sse4_s32_alt(uint32_t *out,
+                                                    const uint8_t *__restrict__ keyPtr,
+                                                    const uint8_t *__restrict__ dataPtr,
+                                                    uint64_t count, int32_t previous)
+{
+    const uint64_t keybytes = count / 4; // number of key bytes
+    __m128i prev = _mm_set1_epi32(previous);
+    __m128i data;
+
+    const uint64_t *keyPtr64 = (const uint64_t *)keyPtr;
+
+    for (const uint64_t *keyBoundPtr64 = (const uint64_t *)(keyPtr + keybytes - 7);
+         keyPtr64 < keyBoundPtr64;
+         keyPtr64++)
+    {
+        uint64_t keys = *keyPtr64;
+
+        data = svb_decode_quad_alt(keys & 0x00FF, &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 0, data, prev);
+        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 4, data, prev);
+
+        keys >>= 16;
+        data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 8, data, prev);
+        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 12, data, prev);
+
+        keys >>= 16;
+        data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 16, data, prev);
+        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 20, data, prev);
+
+        keys >>= 16;
+        data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 24, data, prev);
+        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+        data = svb_zigzag_decode_sse4(data);
+        prev = svb_write_sse41_delta(out + 28, data, prev);
+
+        out += 32;
+    }
+
+    return dataPtr;
 }
