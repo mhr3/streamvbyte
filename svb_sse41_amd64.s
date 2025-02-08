@@ -1191,17 +1191,17 @@ LBB4_4:
 	MOVQ CX, AX                       // <--                                  // mov	rax, rcx
 	SHRQ $0x2, AX                     // <--                                  // shr	rax, 2
 	ADDQ DI, AX                       // <--                                  // add	rax, rdi
-	LEAQ shuffleTable_1234<>(SB), R10 // <--                                  // lea	r10, [rip + shuffleTable_1234]
-	LEAQ lengthTable_1234<>(SB), R11  // <--                                  // lea	r11, [rip + lengthTable_1234]
+	LEAQ lengthTable_1234<>(SB), R10  // <--                                  // lea	r10, [rip + lengthTable_1234]
+	LEAQ shuffleTable_1234<>(SB), R11 // <--                                  // lea	r11, [rip + shuffleTable_1234]
 	MOVQ R8, R9                       // <--                                  // mov	r9, r8
 
 LBB4_7:
 	MOVQ DX, BX                                // <--                                  // mov	rbx, rdx
 	LONG $0x37b60f44                           // MOVZX 0(DI), R14                     // movzx	r14d, byte ptr [rdi]
-	LONG $0x026f0ff3                           // MOVDQU 0(DX), X0                     // movdqu	xmm0, xmmword ptr [rdx]
-	LONG $0x14b60f43; BYTE $0x1e               // MOVZX 0(R14)(R11*1), DX              // movzx	edx, byte ptr [r14 + r11]
+	LONG $0x14b60f43; BYTE $0x16               // MOVZX 0(R14)(R10*1), DX              // movzx	edx, byte ptr [r14 + r10]
+	LONG $0x036f0ff3                           // MOVDQU 0(BX), X0                     // movdqu	xmm0, xmmword ptr [rbx]
 	SHLQ $0x4, R14                             // <--                                  // shl	r14, 4
-	LONG $0x380f4366; WORD $0x0400; BYTE $0x16 // PSHUFB 0(R14)(R10*1), X0             // pshufb	xmm0, xmmword ptr [r14 + r10]
+	LONG $0x380f4366; WORD $0x0400; BYTE $0x1e // PSHUFB 0(R14)(R11*1), X0             // pshufb	xmm0, xmmword ptr [r14 + r11]
 	ADDQ BX, DX                                // <--                                  // add	rdx, rbx
 	LONG $0x7f0f41f3; BYTE $0x01               // MOVDQU X0, 0(R9)                     // movdqu	xmmword ptr [r9], xmm0
 	ADDQ $0x10, R9                             // <--                                  // add	r9, 16
@@ -1453,18 +1453,18 @@ LBB6_4:
 	MOVQ CX, AX                       // <--                                  // mov	rax, rcx
 	SHRQ $0x2, AX                     // <--                                  // shr	rax, 2
 	ADDQ DI, AX                       // <--                                  // add	rax, rdi
-	LEAQ shuffleTable_1234<>(SB), R10 // <--                                  // lea	r10, [rip + shuffleTable_1234]
-	LEAQ lengthTable_1234<>(SB), R11  // <--                                  // lea	r11, [rip + lengthTable_1234]
+	LEAQ lengthTable_1234<>(SB), R10  // <--                                  // lea	r10, [rip + lengthTable_1234]
+	LEAQ shuffleTable_1234<>(SB), R11 // <--                                  // lea	r11, [rip + shuffleTable_1234]
 	MOVO LCPI6_0<>(SB), X0            // <--                                  // movdqa	xmm0, xmmword ptr [rip + .LCPI6_0]
 	MOVQ R8, R9                       // <--                                  // mov	r9, r8
 
 LBB6_7:
 	MOVQ DX, BX                                // <--                                  // mov	rbx, rdx
 	LONG $0x37b60f44                           // MOVZX 0(DI), R14                     // movzx	r14d, byte ptr [rdi]
-	LONG $0x0a6f0ff3                           // MOVDQU 0(DX), X1                     // movdqu	xmm1, xmmword ptr [rdx]
-	LONG $0x14b60f43; BYTE $0x1e               // MOVZX 0(R14)(R11*1), DX              // movzx	edx, byte ptr [r14 + r11]
+	LONG $0x14b60f43; BYTE $0x16               // MOVZX 0(R14)(R10*1), DX              // movzx	edx, byte ptr [r14 + r10]
+	LONG $0x0b6f0ff3                           // MOVDQU 0(BX), X1                     // movdqu	xmm1, xmmword ptr [rbx]
 	SHLQ $0x4, R14                             // <--                                  // shl	r14, 4
-	LONG $0x380f4366; WORD $0x0c00; BYTE $0x16 // PSHUFB 0(R14)(R10*1), X1             // pshufb	xmm1, xmmword ptr [r14 + r10]
+	LONG $0x380f4366; WORD $0x0c00; BYTE $0x1e // PSHUFB 0(R14)(R11*1), X1             // pshufb	xmm1, xmmword ptr [r14 + r11]
 	ADDQ BX, DX                                // <--                                  // add	rdx, rbx
 	LONG $0xd16f0f66                           // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
 	LONG $0xd2720f66; BYTE $0x01               // PSRLD $0x1, X2                       // psrld	xmm2, 1
@@ -2940,6 +2940,7 @@ TEXT ·svb_delta_decode_u32_std(SB), 0, $24-56
 	MOVQ    out+40(FP), R9
 	WORD    $0x8548; BYTE $0xc9 // TESTQ CX, CX                         // test	rcx, rcx
 	JLE     LBB12_3             // <--                                  // jle	.LBB12_3
+	MOVQ    CX, DX              // <--                                  // mov	rdx, rcx
 	LEAQ    0x3(CX), AX         // <--                                  // lea	rax, [rcx + 3]
 	SHRQ    $0x2, AX            // <--                                  // shr	rax, 2
 	CMPQ    AX, SI              // <--                                  // cmp	rax, rsi
@@ -2951,197 +2952,55 @@ LBB12_3:
 	RET                 // <--                                  // ret
 
 LBB12_4:
-	NOP                          // (skipped)                            // push	rbp
-	NOP                          // (skipped)                            // mov	rbp, rsp
-	NOP                          // (skipped)                            // push	r15
-	NOP                          // (skipped)                            // push	r14
-	NOP                          // (skipped)                            // push	r13
-	NOP                          // (skipped)                            // push	r12
-	NOP                          // (skipped)                            // push	rbx
-	NOP                          // (skipped)                            // and	rsp, -8
-	NOP                          // (skipped)                            // sub	rsp, 24
-	WORD $0xc289                 // MOVL AX, DX                          // mov	edx, eax
-	ADDQ DI, DX                  // <--                                  // add	rdx, rdi
-	CMPQ CX, $0x20               // <--                                  // cmp	rcx, 32
-	JB   LBB12_16                // <--                                  // jb	.LBB12_16
-	MOVQ CX, SI                  // <--                                  // mov	rsi, rcx
-	SHRQ $0x5, SI                // <--                                  // shr	rsi, 5
-	LONG $0x6e0f4166; BYTE $0xc0 // MOVD R8, X0                          // movd	xmm0, r8d
-	LONG $0xc8700f66; BYTE $0x00 // PSHUFD $0x0, X0, X1                  // pshufd	xmm1, xmm0, 0
-	MOVQ 0(DI), BX               // <--                                  // mov	rbx, qword ptr [rdi]
-	CMPQ SI, $0x1                // <--                                  // cmp	rsi, 1
-	MOVQ R9, 0x10(SP)            // <--                                  // mov	qword ptr [rsp + 16], r9
-	MOVQ CX, 0x8(SP)             // <--                                  // mov	qword ptr [rsp + 8], rcx
-	JNE  LBB12_9                 // <--                                  // jne	.LBB12_9
-	MOVQ R9, AX                  // <--                                  // mov	rax, r9
-	MOVQ BX, CX                  // <--                                  // mov	rcx, rbx
-
-LBB12_7:
-	WORD $0x8548; BYTE $0xc9                   // TESTQ CX, CX                         // test	rcx, rcx
-	JE   LBB12_14                              // <--                                  // je	.LBB12_14
-	LONG $0x026f0ff3                           // MOVDQU 0(DX), X0                     // movdqu	xmm0, xmmword ptr [rdx]
-	LONG $0xd9b60f44                           // MOVZX CL, R11                        // movzx	r11d, cl
-	LEAQ shuffleTable_1234<>(SB), SI           // <--                                  // lea	rsi, [rip + shuffleTable_1234]
-	LEAQ lengthTable_1234<>(SB), R10           // <--                                  // lea	r10, [rip + lengthTable_1234]
-	LONG $0x34b60f47; BYTE $0x13               // MOVZX 0(R11)(R10*1), R14             // movzx	r14d, byte ptr [r11 + r10]
-	SHLQ $0x4, R11                             // <--                                  // shl	r11, 4
-	LONG $0x380f4166; WORD $0x0400; BYTE $0x33 // PSHUFB 0(R11)(SI*1), X0              // pshufb	xmm0, xmmword ptr [r11 + rsi]
-	LEAQ 0(DX)(R14*1), BX                      // <--                                  // lea	rbx, [rdx + r14]
-	LONG $0xd06f0f66                           // MOVDQA X0, X2                        // movdqa	xmm2, xmm0
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xd0fe0f66                           // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0xc26f0f66                           // MOVDQA X2, X0                        // movdqa	xmm0, xmm2
-	LONG $0xf8730f66; BYTE $0x08               // PSLLDQ $0x8, X0                      // pslldq	xmm0, 8
-	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xd0fe0f66                           // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0x107f0ff3                           // MOVDQU X2, 0(AX)                     // movdqu	xmmword ptr [rax], xmm2
-	LONG $0x6f0f42f3; WORD $0x3204             // MOVDQU 0(DX)(R14*1), X0              // movdqu	xmm0, xmmword ptr [rdx + r14]
-	WORD $0xb60f; BYTE $0xd5                   // MOVZX CH, DX                         // movzx	edx, ch
-	LONG $0x34b60f46; BYTE $0x12               // MOVZX 0(DX)(R10*1), R14              // movzx	r14d, byte ptr [rdx + r10]
-	SHLQ $0x4, DX                              // <--                                  // shl	rdx, 4
-	LONG $0x00380f66; WORD $0x3204             // PSHUFB 0(DX)(SI*1), X0               // pshufb	xmm0, xmmword ptr [rdx + rsi]
-	LEAQ 0(BX)(R14*1), R11                     // <--                                  // lea	r11, [rbx + r14]
-	LONG $0xc86f0f66                           // MOVDQA X0, X1                        // movdqa	xmm1, xmm0
-	LONG $0xf9730f66; BYTE $0x04               // PSLLDQ $0x4, X1                      // pslldq	xmm1, 4
-	LONG $0xd2700f66; BYTE $0xff               // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
-	LONG $0xc8fe0f66                           // PADDD X0, X1                         // paddd	xmm1, xmm0
-	LONG $0xc16f0f66                           // MOVDQA X1, X0                        // movdqa	xmm0, xmm1
-	LONG $0xf8730f66; BYTE $0x08               // PSLLDQ $0x8, X0                      // pslldq	xmm0, 8
-	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0xc8fe0f66                           // PADDD X0, X1                         // paddd	xmm1, xmm0
-	LONG $0x487f0ff3; BYTE $0x10               // MOVDQU X1, 0x10(AX)                  // movdqu	xmmword ptr [rax + 16], xmm1
-	WORD $0xca89                               // MOVL CX, DX                          // mov	edx, ecx
-	WORD $0xeac1; BYTE $0x10                   // SHRL $0x10, DX                       // shr	edx, 16
-	LONG $0x6f0f41f3; WORD $0x1e04             // MOVDQU 0(R14)(BX*1), X0              // movdqu	xmm0, xmmword ptr [r14 + rbx]
-	WORD $0xb60f; BYTE $0xd2                   // MOVZX DL, DX                         // movzx	edx, dl
-	LONG $0x1cb60f42; BYTE $0x12               // MOVZX 0(DX)(R10*1), BX               // movzx	ebx, byte ptr [rdx + r10]
-	SHLQ $0x4, DX                              // <--                                  // shl	rdx, 4
-	LONG $0x00380f66; WORD $0x3204             // PSHUFB 0(DX)(SI*1), X0               // pshufb	xmm0, xmmword ptr [rdx + rsi]
-	LEAQ 0(R11)(BX*1), DX                      // <--                                  // lea	rdx, [r11 + rbx]
-	LONG $0xd06f0f66                           // MOVDQA X0, X2                        // movdqa	xmm2, xmm0
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xd0fe0f66                           // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0xc26f0f66                           // MOVDQA X2, X0                        // movdqa	xmm0, xmm2
-	LONG $0xf8730f66; BYTE $0x08               // PSLLDQ $0x8, X0                      // pslldq	xmm0, 8
-	LONG $0xc2fe0f66                           // PADDD X2, X0                         // paddd	xmm0, xmm2
-	LONG $0xc1fe0f66                           // PADDD X1, X0                         // paddd	xmm0, xmm1
-	LONG $0x407f0ff3; BYTE $0x20               // MOVDQU X0, 0x20(AX)                  // movdqu	xmmword ptr [rax + 32], xmm0
-	WORD $0x8941; BYTE $0xce                   // MOVL CX, R14                         // mov	r14d, ecx
-	LONG $0x18eec141                           // SHRL $0x18, R14                      // shr	r14d, 24
-	LONG $0x6f0f42f3; WORD $0x1b0c             // MOVDQU 0(BX)(R11*1), X1              // movdqu	xmm1, xmmword ptr [rbx + r11]
-	LONG $0x1cb60f47; BYTE $0x16               // MOVZX 0(R14)(R10*1), R11             // movzx	r11d, byte ptr [r14 + r10]
-	SHLQ $0x4, R14                             // <--                                  // shl	r14, 4
-	LONG $0x380f4166; WORD $0x0c00; BYTE $0x36 // PSHUFB 0(R14)(SI*1), X1              // pshufb	xmm1, xmmword ptr [r14 + rsi]
-	LONG $0xd16f0f66                           // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc0700f66; BYTE $0xff               // PSHUFD $0xff, X0, X0                 // pshufd	xmm0, xmm0, 255
-	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xca6f0f66                           // MOVDQA X2, X1                        // movdqa	xmm1, xmm2
-	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
-	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0xc8fe0f66                           // PADDD X0, X1                         // paddd	xmm1, xmm0
-	LONG $0x487f0ff3; BYTE $0x30               // MOVDQU X1, 0x30(AX)                  // movdqu	xmmword ptr [rax + 48], xmm1
-	MOVQ CX, BX                                // <--                                  // mov	rbx, rcx
-	SHRQ $0x20, BX                             // <--                                  // shr	rbx, 32
-	LONG $0x6f0f41f3; WORD $0x1304             // MOVDQU 0(R11)(DX*1), X0              // movdqu	xmm0, xmmword ptr [r11 + rdx]
-	WORD $0xb60f; BYTE $0xdb                   // MOVZX BL, BX                         // movzx	ebx, bl
-	LONG $0x34b60f46; BYTE $0x13               // MOVZX 0(BX)(R10*1), R14              // movzx	r14d, byte ptr [rbx + r10]
-	SHLQ $0x4, BX                              // <--                                  // shl	rbx, 4
-	LONG $0x00380f66; WORD $0x3304             // PSHUFB 0(BX)(SI*1), X0               // pshufb	xmm0, xmmword ptr [rbx + rsi]
-	ADDQ DX, R11                               // <--                                  // add	r11, rdx
-	LEAQ 0(R11)(R14*1), DX                     // <--                                  // lea	rdx, [r11 + r14]
-	LONG $0xd06f0f66                           // MOVDQA X0, X2                        // movdqa	xmm2, xmm0
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xd0fe0f66                           // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0xc26f0f66                           // MOVDQA X2, X0                        // movdqa	xmm0, xmm2
-	LONG $0xf8730f66; BYTE $0x08               // PSLLDQ $0x8, X0                      // pslldq	xmm0, 8
-	LONG $0xc2fe0f66                           // PADDD X2, X0                         // paddd	xmm0, xmm2
-	LONG $0xc1fe0f66                           // PADDD X1, X0                         // paddd	xmm0, xmm1
-	LONG $0x407f0ff3; BYTE $0x40               // MOVDQU X0, 0x40(AX)                  // movdqu	xmmword ptr [rax + 64], xmm0
-	MOVQ CX, BX                                // <--                                  // mov	rbx, rcx
-	SHRQ $0x28, BX                             // <--                                  // shr	rbx, 40
-	LONG $0x6f0f43f3; WORD $0x1e0c             // MOVDQU 0(R14)(R11*1), X1             // movdqu	xmm1, xmmword ptr [r14 + r11]
-	WORD $0xb60f; BYTE $0xdb                   // MOVZX BL, BX                         // movzx	ebx, bl
-	LONG $0x1cb60f46; BYTE $0x13               // MOVZX 0(BX)(R10*1), R11              // movzx	r11d, byte ptr [rbx + r10]
-	SHLQ $0x4, BX                              // <--                                  // shl	rbx, 4
-	LONG $0x00380f66; WORD $0x330c             // PSHUFB 0(BX)(SI*1), X1               // pshufb	xmm1, xmmword ptr [rbx + rsi]
-	LONG $0xd16f0f66                           // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc0700f66; BYTE $0xff               // PSHUFD $0xff, X0, X0                 // pshufd	xmm0, xmm0, 255
-	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xca6f0f66                           // MOVDQA X2, X1                        // movdqa	xmm1, xmm2
-	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
-	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0xc8fe0f66                           // PADDD X0, X1                         // paddd	xmm1, xmm0
-	LONG $0x487f0ff3; BYTE $0x50               // MOVDQU X1, 0x50(AX)                  // movdqu	xmmword ptr [rax + 80], xmm1
-	MOVQ CX, BX                                // <--                                  // mov	rbx, rcx
-	SHRQ $0x30, BX                             // <--                                  // shr	rbx, 48
-	LONG $0x6f0f41f3; WORD $0x1304             // MOVDQU 0(R11)(DX*1), X0              // movdqu	xmm0, xmmword ptr [r11 + rdx]
-	WORD $0xb60f; BYTE $0xdb                   // MOVZX BL, BX                         // movzx	ebx, bl
-	LONG $0x34b60f46; BYTE $0x13               // MOVZX 0(BX)(R10*1), R14              // movzx	r14d, byte ptr [rbx + r10]
-	SHLQ $0x4, BX                              // <--                                  // shl	rbx, 4
-	LONG $0x00380f66; WORD $0x3304             // PSHUFB 0(BX)(SI*1), X0               // pshufb	xmm0, xmmword ptr [rbx + rsi]
-	ADDQ DX, R11                               // <--                                  // add	r11, rdx
-	LONG $0xd06f0f66                           // MOVDQA X0, X2                        // movdqa	xmm2, xmm0
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xd0fe0f66                           // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0xc26f0f66                           // MOVDQA X2, X0                        // movdqa	xmm0, xmm2
-	LONG $0xf8730f66; BYTE $0x08               // PSLLDQ $0x8, X0                      // pslldq	xmm0, 8
-	LONG $0xc2fe0f66                           // PADDD X2, X0                         // paddd	xmm0, xmm2
-	LONG $0xc1fe0f66                           // PADDD X1, X0                         // paddd	xmm0, xmm1
-	LONG $0x407f0ff3; BYTE $0x60               // MOVDQU X0, 0x60(AX)                  // movdqu	xmmword ptr [rax + 96], xmm0
-	SHRQ $0x38, CX                             // <--                                  // shr	rcx, 56
-	LONG $0x6f0f43f3; WORD $0x1e0c             // MOVDQU 0(R14)(R11*1), X1             // movdqu	xmm1, xmmword ptr [r14 + r11]
-	LONG $0x14b60f42; BYTE $0x11               // MOVZX 0(CX)(R10*1), DX               // movzx	edx, byte ptr [rcx + r10]
-	SHLQ $0x4, CX                              // <--                                  // shl	rcx, 4
-	LONG $0x00380f66; WORD $0x310c             // PSHUFB 0(CX)(SI*1), X1               // pshufb	xmm1, xmmword ptr [rcx + rsi]
-	ADDQ R14, DX                               // <--                                  // add	rdx, r14
-	ADDQ R11, DX                               // <--                                  // add	rdx, r11
-	LONG $0xd16f0f66                           // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc0700f66; BYTE $0xff               // PSHUFD $0xff, X0, X0                 // pshufd	xmm0, xmm0, 255
-	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xca6f0f66                           // MOVDQA X2, X1                        // movdqa	xmm1, xmm2
-	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
-	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0xc8fe0f66                           // PADDD X0, X1                         // paddd	xmm1, xmm0
-	LONG $0x487f0ff3; BYTE $0x70               // MOVDQU X1, 0x70(AX)                  // movdqu	xmmword ptr [rax + 112], xmm1
-	JMP  LBB12_15                              // <--                                  // jmp	.LBB12_15
-
-LBB12_9:
-	LONG $0x0001ba41; WORD $0x0000    // MOVL $0x1, R10                       // mov	r10d, 1
+	NOP                               // (skipped)                            // push	rbp
+	NOP                               // (skipped)                            // mov	rbp, rsp
+	NOP                               // (skipped)                            // push	r15
+	NOP                               // (skipped)                            // push	r14
+	NOP                               // (skipped)                            // push	r13
+	NOP                               // (skipped)                            // push	r12
+	NOP                               // (skipped)                            // push	rbx
+	NOP                               // (skipped)                            // and	rsp, -8
+	NOP                               // (skipped)                            // sub	rsp, 24
+	WORD $0xc689                      // MOVL AX, SI                          // mov	esi, eax
+	ADDQ DI, SI                       // <--                                  // add	rsi, rdi
+	MOVQ DX, AX                       // <--                                  // mov	rax, rdx
+	SHRQ $0x2, AX                     // <--                                  // shr	rax, 2
+	MOVQ AX, 0x8(SP)                  // <--                                  // mov	qword ptr [rsp + 8], rax
+	LEAQ 0(DI)(AX*1), R15             // <--                                  // lea	r15, [rdi + rax]
+	ADDQ $-0x7, R15                   // <--                                  // add	r15, -7
+	CMPQ R15, DI                      // <--                                  // cmp	r15, rdi
+	MOVQ R9, 0x10(SP)                 // <--                                  // mov	qword ptr [rsp + 16], r9
+	JBE  LBB12_10                     // <--                                  // jbe	.LBB12_10
+	LONG $0x6e0f4166; BYTE $0xc0      // MOVD R8, X0                          // movd	xmm0, r8d
+	LONG $0xc8700f66; BYTE $0x00      // PSHUFD $0x0, X0, X1                  // pshufd	xmm1, xmm0, 0
 	LONG $0xc0ef0f66                  // PXOR X0, X0                          // pxor	xmm0, xmm0
+	LEAQ lengthTable_1234<>(SB), R10  // <--                                  // lea	r10, [rip + lengthTable_1234]
 	LEAQ shuffleTable_1234<>(SB), R11 // <--                                  // lea	r11, [rip + shuffleTable_1234]
-	MOVQ R9, AX                       // <--                                  // mov	rax, r9
-	LEAQ lengthTable_1234<>(SB), R14  // <--                                  // lea	r14, [rip + lengthTable_1234]
-	JMP  LBB12_12                     // <--                                  // jmp	.LBB12_12
+	MOVQ R9, BX                       // <--                                  // mov	rbx, r9
+	MOVQ DI, R14                      // <--                                  // mov	r14, rdi
+	JMP  LBB12_8                      // <--                                  // jmp	.LBB12_8
 
-LBB12_10:
-	LONG $0x126f0ff3                           // MOVDQU 0(DX), X2                     // movdqu	xmm2, xmmword ptr [rdx]
-	LONG $0xe3b60f44                           // MOVZX BL, R12                        // movzx	r12d, bl
-	LONG $0x2cb60f47; BYTE $0x34               // MOVZX 0(R12)(R14*1), R13             // movzx	r13d, byte ptr [r12 + r14]
+LBB12_6:
+	LONG $0xe1b60f44                           // MOVZX CL, R12                        // movzx	r12d, cl
+	LONG $0x2cb60f47; BYTE $0x14               // MOVZX 0(R12)(R10*1), R13             // movzx	r13d, byte ptr [r12 + r10]
+	LONG $0x166f0ff3                           // MOVDQU 0(SI), X2                     // movdqu	xmm2, xmmword ptr [rsi]
 	SHLQ $0x4, R12                             // <--                                  // shl	r12, 4
 	LONG $0x380f4366; WORD $0x1400; BYTE $0x1c // PSHUFB 0(R12)(R11*1), X2             // pshufb	xmm2, xmmword ptr [r12 + r11]
-	LEAQ 0(DX)(R13*1), R12                     // <--                                  // lea	r12, [rdx + r13]
+	LEAQ 0(SI)(R13*1), R12                     // <--                                  // lea	r12, [rsi + r13]
 	LONG $0xda6f0f66                           // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
-	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
 	LONG $0xdafe0f66                           // PADDD X2, X3                         // paddd	xmm3, xmm2
 	LONG $0xd36f0f66                           // MOVDQA X3, X2                        // movdqa	xmm2, xmm3
 	LONG $0xfa730f66; BYTE $0x08               // PSLLDQ $0x8, X2                      // pslldq	xmm2, 8
 	LONG $0xd9fe0f66                           // PADDD X1, X3                         // paddd	xmm3, xmm1
 	LONG $0xdafe0f66                           // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0x187f0ff3                           // MOVDQU X3, 0(AX)                     // movdqu	xmmword ptr [rax], xmm3
-	LONG $0x6f0f42f3; WORD $0x2a0c             // MOVDQU 0(DX)(R13*1), X1              // movdqu	xmm1, xmmword ptr [rdx + r13]
-	WORD $0xb60f; BYTE $0xd7                   // MOVZX BH, DX                         // movzx	edx, bh
-	LONG $0x2cb60f46; BYTE $0x32               // MOVZX 0(DX)(R14*1), R13              // movzx	r13d, byte ptr [rdx + r14]
-	SHLQ $0x4, DX                              // <--                                  // shl	rdx, 4
-	LONG $0x380f4266; WORD $0x0c00; BYTE $0x1a // PSHUFB 0(DX)(R11*1), X1              // pshufb	xmm1, xmmword ptr [rdx + r11]
-	LEAQ 0(R12)(R13*1), DX                     // <--                                  // lea	rdx, [r12 + r13]
+	LONG $0x1b7f0ff3                           // MOVDQU X3, 0(BX)                     // movdqu	xmmword ptr [rbx], xmm3
+	WORD $0xb60f; BYTE $0xc5                   // MOVZX CH, AX                         // movzx	eax, ch
+	LONG $0x0cb60f46; BYTE $0x10               // MOVZX 0(AX)(R10*1), R9               // movzx	r9d, byte ptr [rax + r10]
+	LONG $0x6f0f42f3; WORD $0x2e0c             // MOVDQU 0(SI)(R13*1), X1              // movdqu	xmm1, xmmword ptr [rsi + r13]
+	SHLQ $0x4, AX                              // <--                                  // shl	rax, 4
+	LONG $0x380f4266; WORD $0x0c00; BYTE $0x18 // PSHUFB 0(AX)(R11*1), X1              // pshufb	xmm1, xmmword ptr [rax + r11]
+	LEAQ 0(R12)(R9*1), SI                      // <--                                  // lea	rsi, [r12 + r9]
 	LONG $0xd16f0f66                           // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
 	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
 	LONG $0xdb700f66; BYTE $0xff               // PSHUFD $0xff, X3, X3                 // pshufd	xmm3, xmm3, 255
@@ -3150,14 +3009,14 @@ LBB12_10:
 	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
 	LONG $0xd3fe0f66                           // PADDD X3, X2                         // paddd	xmm2, xmm3
 	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0x507f0ff3; BYTE $0x10               // MOVDQU X2, 0x10(AX)                  // movdqu	xmmword ptr [rax + 16], xmm2
-	WORD $0x8941; BYTE $0xdf                   // MOVL BX, R15                         // mov	r15d, ebx
-	LONG $0x10efc141                           // SHRL $0x10, R15                      // shr	r15d, 16
-	LONG $0x6f0f43f3; WORD $0x254c; BYTE $0x00 // MOVDQU 0(R13)(R12*1), X1             // movdqu	xmm1, xmmword ptr [r13 + r12]
-	LONG $0xffb60f45                           // MOVZX R15, R15                       // movzx	r15d, r15b
-	LONG $0x24b60f47; BYTE $0x37               // MOVZX 0(R15)(R14*1), R12             // movzx	r12d, byte ptr [r15 + r14]
-	SHLQ $0x4, R15                             // <--                                  // shl	r15, 4
-	LONG $0x380f4366; WORD $0x0c00; BYTE $0x1f // PSHUFB 0(R15)(R11*1), X1             // pshufb	xmm1, xmmword ptr [r15 + r11]
+	LONG $0x537f0ff3; BYTE $0x10               // MOVDQU X2, 0x10(BX)                  // movdqu	xmmword ptr [rbx + 16], xmm2
+	WORD $0xc889                               // MOVL CX, AX                          // mov	eax, ecx
+	WORD $0xe8c1; BYTE $0x10                   // SHRL $0x10, AX                       // shr	eax, 16
+	WORD $0xb60f; BYTE $0xc0                   // MOVZX AL, AX                         // movzx	eax, al
+	LONG $0x2cb60f46; BYTE $0x10               // MOVZX 0(AX)(R10*1), R13              // movzx	r13d, byte ptr [rax + r10]
+	LONG $0x6f0f43f3; WORD $0x210c             // MOVDQU 0(R9)(R12*1), X1              // movdqu	xmm1, xmmword ptr [r9 + r12]
+	SHLQ $0x4, AX                              // <--                                  // shl	rax, 4
+	LONG $0x380f4266; WORD $0x0c00; BYTE $0x18 // PSHUFB 0(AX)(R11*1), X1              // pshufb	xmm1, xmmword ptr [rax + r11]
 	LONG $0xd96f0f66                           // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xd2700f66; BYTE $0xff               // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
@@ -3166,15 +3025,15 @@ LBB12_10:
 	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
 	LONG $0xcbfe0f66                           // PADDD X3, X1                         // paddd	xmm1, xmm3
 	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0x487f0ff3; BYTE $0x20               // MOVDQU X1, 0x20(AX)                  // movdqu	xmmword ptr [rax + 32], xmm1
-	WORD $0x8941; BYTE $0xdf                   // MOVL BX, R15                         // mov	r15d, ebx
-	LONG $0x18efc141                           // SHRL $0x18, R15                      // shr	r15d, 24
-	LONG $0x6f0f41f3; WORD $0x1414             // MOVDQU 0(R12)(DX*1), X2              // movdqu	xmm2, xmmword ptr [r12 + rdx]
-	LONG $0x2cb60f47; BYTE $0x37               // MOVZX 0(R15)(R14*1), R13             // movzx	r13d, byte ptr [r15 + r14]
-	SHLQ $0x4, R15                             // <--                                  // shl	r15, 4
-	LONG $0x380f4366; WORD $0x1400; BYTE $0x1f // PSHUFB 0(R15)(R11*1), X2             // pshufb	xmm2, xmmword ptr [r15 + r11]
-	LEAQ 0(DX)(R12*1), R15                     // <--                                  // lea	r15, [rdx + r12]
-	LEAQ 0(R15)(R13*1), DX                     // <--                                  // lea	rdx, [r15 + r13]
+	LONG $0x4b7f0ff3; BYTE $0x20               // MOVDQU X1, 0x20(BX)                  // movdqu	xmmword ptr [rbx + 32], xmm1
+	WORD $0xc889                               // MOVL CX, AX                          // mov	eax, ecx
+	WORD $0xe8c1; BYTE $0x18                   // SHRL $0x18, AX                       // shr	eax, 24
+	LONG $0x0cb60f46; BYTE $0x10               // MOVZX 0(AX)(R10*1), R9               // movzx	r9d, byte ptr [rax + r10]
+	LONG $0x6f0f41f3; WORD $0x3554; BYTE $0x00 // MOVDQU 0(R13)(SI*1), X2              // movdqu	xmm2, xmmword ptr [r13 + rsi]
+	SHLQ $0x4, AX                              // <--                                  // shl	rax, 4
+	LONG $0x380f4266; WORD $0x1400; BYTE $0x18 // PSHUFB 0(AX)(R11*1), X2              // pshufb	xmm2, xmmword ptr [rax + r11]
+	LEAQ 0(SI)(R13*1), AX                      // <--                                  // lea	rax, [rsi + r13]
+	LEAQ 0(AX)(R9*1), SI                       // <--                                  // lea	rsi, [rax + r9]
 	LONG $0xda6f0f66                           // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
@@ -3183,14 +3042,14 @@ LBB12_10:
 	LONG $0xfa730f66; BYTE $0x08               // PSLLDQ $0x8, X2                      // pslldq	xmm2, 8
 	LONG $0xd3fe0f66                           // PADDD X3, X2                         // paddd	xmm2, xmm3
 	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0x507f0ff3; BYTE $0x30               // MOVDQU X2, 0x30(AX)                  // movdqu	xmmword ptr [rax + 48], xmm2
-	MOVQ BX, R12                               // <--                                  // mov	r12, rbx
+	LONG $0x537f0ff3; BYTE $0x30               // MOVDQU X2, 0x30(BX)                  // movdqu	xmmword ptr [rbx + 48], xmm2
+	MOVQ CX, R12                               // <--                                  // mov	r12, rcx
 	SHRQ $0x20, R12                            // <--                                  // shr	r12, 32
-	LONG $0x6f0f43f3; WORD $0x3d4c; BYTE $0x00 // MOVDQU 0(R13)(R15*1), X1             // movdqu	xmm1, xmmword ptr [r13 + r15]
-	LONG $0xfcb60f45                           // MOVZX R12, R15                       // movzx	r15d, r12b
-	LONG $0x24b60f47; BYTE $0x37               // MOVZX 0(R15)(R14*1), R12             // movzx	r12d, byte ptr [r15 + r14]
-	SHLQ $0x4, R15                             // <--                                  // shl	r15, 4
-	LONG $0x380f4366; WORD $0x0c00; BYTE $0x1f // PSHUFB 0(R15)(R11*1), X1             // pshufb	xmm1, xmmword ptr [r15 + r11]
+	LONG $0xecb60f45                           // MOVZX R12, R13                       // movzx	r13d, r12b
+	LONG $0x64b60f47; WORD $0x0015             // MOVZX 0(R13)(R10*1), R12             // movzx	r12d, byte ptr [r13 + r10]
+	LONG $0x6f0f41f3; WORD $0x010c             // MOVDQU 0(R9)(AX*1), X1               // movdqu	xmm1, xmmword ptr [r9 + rax]
+	SHLQ $0x4, R13                             // <--                                  // shl	r13, 4
+	QUAD $0x001d4c00380f4366                   // PSHUFB 0(R13)(R11*1), X1             // pshufb	xmm1, xmmword ptr [r13 + r11]
 	LONG $0xd96f0f66                           // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xd2700f66; BYTE $0xff               // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
@@ -3199,16 +3058,16 @@ LBB12_10:
 	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
 	LONG $0xcbfe0f66                           // PADDD X3, X1                         // paddd	xmm1, xmm3
 	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0x487f0ff3; BYTE $0x40               // MOVDQU X1, 0x40(AX)                  // movdqu	xmmword ptr [rax + 64], xmm1
-	MOVQ BX, R15                               // <--                                  // mov	r15, rbx
-	SHRQ $0x28, R15                            // <--                                  // shr	r15, 40
-	LONG $0x6f0f41f3; WORD $0x1414             // MOVDQU 0(R12)(DX*1), X2              // movdqu	xmm2, xmmword ptr [r12 + rdx]
-	LONG $0xffb60f45                           // MOVZX R15, R15                       // movzx	r15d, r15b
-	LONG $0x2cb60f47; BYTE $0x37               // MOVZX 0(R15)(R14*1), R13             // movzx	r13d, byte ptr [r15 + r14]
-	SHLQ $0x4, R15                             // <--                                  // shl	r15, 4
-	LONG $0x380f4366; WORD $0x1400; BYTE $0x1f // PSHUFB 0(R15)(R11*1), X2             // pshufb	xmm2, xmmword ptr [r15 + r11]
-	ADDQ R12, DX                               // <--                                  // add	rdx, r12
-	LEAQ 0(DX)(R13*1), R12                     // <--                                  // lea	r12, [rdx + r13]
+	LONG $0x4b7f0ff3; BYTE $0x40               // MOVDQU X1, 0x40(BX)                  // movdqu	xmmword ptr [rbx + 64], xmm1
+	MOVQ CX, AX                                // <--                                  // mov	rax, rcx
+	SHRQ $0x28, AX                             // <--                                  // shr	rax, 40
+	WORD $0xb60f; BYTE $0xc0                   // MOVZX AL, AX                         // movzx	eax, al
+	LONG $0x0cb60f46; BYTE $0x10               // MOVZX 0(AX)(R10*1), R9               // movzx	r9d, byte ptr [rax + r10]
+	LONG $0x6f0f41f3; WORD $0x3414             // MOVDQU 0(R12)(SI*1), X2              // movdqu	xmm2, xmmword ptr [r12 + rsi]
+	SHLQ $0x4, AX                              // <--                                  // shl	rax, 4
+	LONG $0x380f4266; WORD $0x1400; BYTE $0x18 // PSHUFB 0(AX)(R11*1), X2              // pshufb	xmm2, xmmword ptr [rax + r11]
+	LEAQ 0(SI)(R12*1), AX                      // <--                                  // lea	rax, [rsi + r12]
+	LEAQ 0(AX)(R9*1), R12                      // <--                                  // lea	r12, [rax + r9]
 	LONG $0xda6f0f66                           // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
@@ -3217,14 +3076,14 @@ LBB12_10:
 	LONG $0xfa730f66; BYTE $0x08               // PSLLDQ $0x8, X2                      // pslldq	xmm2, 8
 	LONG $0xd3fe0f66                           // PADDD X3, X2                         // paddd	xmm2, xmm3
 	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0x507f0ff3; BYTE $0x50               // MOVDQU X2, 0x50(AX)                  // movdqu	xmmword ptr [rax + 80], xmm2
-	MOVQ BX, R15                               // <--                                  // mov	r15, rbx
-	SHRQ $0x30, R15                            // <--                                  // shr	r15, 48
-	LONG $0x6f0f41f3; WORD $0x154c; BYTE $0x00 // MOVDQU 0(R13)(DX*1), X1              // movdqu	xmm1, xmmword ptr [r13 + rdx]
-	LONG $0xd7b60f41                           // MOVZX R15, DX                        // movzx	edx, r15b
-	LONG $0x3cb60f46; BYTE $0x32               // MOVZX 0(DX)(R14*1), R15              // movzx	r15d, byte ptr [rdx + r14]
-	SHLQ $0x4, DX                              // <--                                  // shl	rdx, 4
-	LONG $0x380f4266; WORD $0x0c00; BYTE $0x1a // PSHUFB 0(DX)(R11*1), X1              // pshufb	xmm1, xmmword ptr [rdx + r11]
+	LONG $0x537f0ff3; BYTE $0x50               // MOVDQU X2, 0x50(BX)                  // movdqu	xmmword ptr [rbx + 80], xmm2
+	MOVQ CX, SI                                // <--                                  // mov	rsi, rcx
+	SHRQ $0x30, SI                             // <--                                  // shr	rsi, 48
+	LONG $0xf6b60f40                           // MOVZX SI, SI                         // movzx	esi, sil
+	LONG $0x2cb60f46; BYTE $0x16               // MOVZX 0(SI)(R10*1), R13              // movzx	r13d, byte ptr [rsi + r10]
+	LONG $0x6f0f41f3; WORD $0x010c             // MOVDQU 0(R9)(AX*1), X1               // movdqu	xmm1, xmmword ptr [r9 + rax]
+	SHLQ $0x4, SI                              // <--                                  // shl	rsi, 4
+	LONG $0x380f4266; WORD $0x0c00; BYTE $0x1e // PSHUFB 0(SI)(R11*1), X1              // pshufb	xmm1, xmmword ptr [rsi + r11]
 	LONG $0xd96f0f66                           // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xd2700f66; BYTE $0xff               // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
@@ -3233,14 +3092,14 @@ LBB12_10:
 	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
 	LONG $0xcbfe0f66                           // PADDD X3, X1                         // paddd	xmm1, xmm3
 	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0x487f0ff3; BYTE $0x60               // MOVDQU X1, 0x60(AX)                  // movdqu	xmmword ptr [rax + 96], xmm1
-	SHRQ $0x38, BX                             // <--                                  // shr	rbx, 56
-	LONG $0x6f0f43f3; WORD $0x2714             // MOVDQU 0(R15)(R12*1), X2             // movdqu	xmm2, xmmword ptr [r15 + r12]
-	LONG $0x14b60f42; BYTE $0x33               // MOVZX 0(BX)(R14*1), DX               // movzx	edx, byte ptr [rbx + r14]
-	SHLQ $0x4, BX                              // <--                                  // shl	rbx, 4
-	LONG $0x380f4266; WORD $0x1400; BYTE $0x1b // PSHUFB 0(BX)(R11*1), X2              // pshufb	xmm2, xmmword ptr [rbx + r11]
-	ADDQ R15, DX                               // <--                                  // add	rdx, r15
-	ADDQ R12, DX                               // <--                                  // add	rdx, r12
+	LONG $0x4b7f0ff3; BYTE $0x60               // MOVDQU X1, 0x60(BX)                  // movdqu	xmmword ptr [rbx + 96], xmm1
+	SHRQ $0x38, CX                             // <--                                  // shr	rcx, 56
+	LONG $0x34b60f42; BYTE $0x11               // MOVZX 0(CX)(R10*1), SI               // movzx	esi, byte ptr [rcx + r10]
+	LONG $0x6f0f43f3; WORD $0x2554; BYTE $0x00 // MOVDQU 0(R13)(R12*1), X2             // movdqu	xmm2, xmmword ptr [r13 + r12]
+	SHLQ $0x4, CX                              // <--                                  // shl	rcx, 4
+	LONG $0x380f4266; WORD $0x1400; BYTE $0x19 // PSHUFB 0(CX)(R11*1), X2              // pshufb	xmm2, xmmword ptr [rcx + r11]
+	ADDQ R13, SI                               // <--                                  // add	rsi, r13
+	ADDQ R12, SI                               // <--                                  // add	rsi, r12
 	LONG $0xda6f0f66                           // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xe1700f66; BYTE $0xff               // PSHUFD $0xff, X1, X4                 // pshufd	xmm4, xmm1, 255
@@ -3250,34 +3109,33 @@ LBB12_10:
 	LONG $0xcbfe0f66                           // PADDD X3, X1                         // paddd	xmm1, xmm3
 	LONG $0xccfe0f66                           // PADDD X4, X1                         // paddd	xmm1, xmm4
 
-LBB12_11:
-	LONG $0x487f0ff3; BYTE $0x70 // MOVDQU X1, 0x70(AX)                  // movdqu	xmmword ptr [rax + 112], xmm1
-	SUBQ $-0x80, AX              // <--                                  // sub	rax, -128
-	INCQ R10                     // <--                                  // inc	r10
-	MOVQ CX, BX                  // <--                                  // mov	rbx, rcx
-	CMPQ SI, R10                 // <--                                  // cmp	rsi, r10
-	JE   LBB12_7                 // <--                                  // je	.LBB12_7
+LBB12_7:
+	LONG $0x4b7f0ff3; BYTE $0x70 // MOVDQU X1, 0x70(BX)                  // movdqu	xmmword ptr [rbx + 112], xmm1
+	SUBQ $-0x80, BX              // <--                                  // sub	rbx, -128
+	ADDQ $0x8, R14               // <--                                  // add	r14, 8
+	CMPQ R14, R15                // <--                                  // cmp	r14, r15
+	JAE  LBB12_10                // <--                                  // jae	.LBB12_10
 
-LBB12_12:
-	MOVQ 0(DI)(R10*8), CX        // <--                                  // mov	rcx, qword ptr [rdi + 8*r10]
-	WORD $0x8548; BYTE $0xdb     // TESTQ BX, BX                         // test	rbx, rbx
-	JNE  LBB12_10                // <--                                  // jne	.LBB12_10
-	LONG $0x12f00ff2             // LDDQU 0(DX), X2                      // lddqu	xmm2, xmmword ptr [rdx]
+LBB12_8:
+	MOVQ 0(R14), CX              // <--                                  // mov	rcx, qword ptr [r14]
+	LONG $0xc9700f66; BYTE $0xff // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
+	WORD $0x8548; BYTE $0xc9     // TESTQ CX, CX                         // test	rcx, rcx
+	JNE  LBB12_6                 // <--                                  // jne	.LBB12_6
+	LONG $0x16f00ff2             // LDDQU 0(SI), X2                      // lddqu	xmm2, xmmword ptr [rsi]
 	LONG $0x30380f66; BYTE $0xd2 // PMOVZXBW X2, X2                      // pmovzxbw	xmm2, xmm2
 	LONG $0xda6f0f66             // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
 	LONG $0xfb730f66; BYTE $0x02 // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
-	LONG $0xc9700f66; BYTE $0xff // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
 	LONG $0xdafe0f66             // PADDD X2, X3                         // paddd	xmm3, xmm2
 	LONG $0xd36f0f66             // MOVDQA X3, X2                        // movdqa	xmm2, xmm3
 	LONG $0xfa730f66; BYTE $0x04 // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
 	LONG $0xd3fe0f66             // PADDD X3, X2                         // paddd	xmm2, xmm3
 	LONG $0x33380f66; BYTE $0xda // PMOVZXWD X2, X3                      // pmovzxwd	xmm3, xmm2
-	LONG $0xd9fe0f66             // PADDD X1, X3                         // paddd	xmm3, xmm1
+	LONG $0xcbfe0f66             // PADDD X3, X1                         // paddd	xmm1, xmm3
 	LONG $0xd0690f66             // PUNPCKHWD X0, X2                     // punpckhwd	xmm2, xmm0
-	LONG $0xd3fe0f66             // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0x187f0ff3             // MOVDQU X3, 0(AX)                     // movdqu	xmmword ptr [rax], xmm3
-	LONG $0x507f0ff3; BYTE $0x10 // MOVDQU X2, 0x10(AX)                  // movdqu	xmmword ptr [rax + 16], xmm2
-	LONG $0x4af00ff2; BYTE $0x08 // LDDQU 0x8(DX), X1                    // lddqu	xmm1, xmmword ptr [rdx + 8]
+	LONG $0xd1fe0f66             // PADDD X1, X2                         // paddd	xmm2, xmm1
+	LONG $0x0b7f0ff3             // MOVDQU X1, 0(BX)                     // movdqu	xmmword ptr [rbx], xmm1
+	LONG $0x537f0ff3; BYTE $0x10 // MOVDQU X2, 0x10(BX)                  // movdqu	xmmword ptr [rbx + 16], xmm2
+	LONG $0x4ef00ff2; BYTE $0x08 // LDDQU 0x8(SI), X1                    // lddqu	xmm1, xmmword ptr [rsi + 8]
 	LONG $0x30380f66; BYTE $0xc9 // PMOVZXBW X1, X1                      // pmovzxbw	xmm1, xmm1
 	LONG $0xd96f0f66             // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
 	LONG $0xfb730f66; BYTE $0x02 // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
@@ -3290,9 +3148,9 @@ LBB12_12:
 	LONG $0xdafe0f66             // PADDD X2, X3                         // paddd	xmm3, xmm2
 	LONG $0xc8690f66             // PUNPCKHWD X0, X1                     // punpckhwd	xmm1, xmm0
 	LONG $0xcbfe0f66             // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0x587f0ff3; BYTE $0x20 // MOVDQU X3, 0x20(AX)                  // movdqu	xmmword ptr [rax + 32], xmm3
-	LONG $0x487f0ff3; BYTE $0x30 // MOVDQU X1, 0x30(AX)                  // movdqu	xmmword ptr [rax + 48], xmm1
-	LONG $0x52f00ff2; BYTE $0x10 // LDDQU 0x10(DX), X2                   // lddqu	xmm2, xmmword ptr [rdx + 16]
+	LONG $0x5b7f0ff3; BYTE $0x20 // MOVDQU X3, 0x20(BX)                  // movdqu	xmmword ptr [rbx + 32], xmm3
+	LONG $0x4b7f0ff3; BYTE $0x30 // MOVDQU X1, 0x30(BX)                  // movdqu	xmmword ptr [rbx + 48], xmm1
+	LONG $0x56f00ff2; BYTE $0x10 // LDDQU 0x10(SI), X2                   // lddqu	xmm2, xmmword ptr [rsi + 16]
 	LONG $0x30380f66; BYTE $0xd2 // PMOVZXBW X2, X2                      // pmovzxbw	xmm2, xmm2
 	LONG $0xda6f0f66             // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
 	LONG $0xfb730f66; BYTE $0x02 // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
@@ -3305,9 +3163,9 @@ LBB12_12:
 	LONG $0xd9fe0f66             // PADDD X1, X3                         // paddd	xmm3, xmm1
 	LONG $0xd0690f66             // PUNPCKHWD X0, X2                     // punpckhwd	xmm2, xmm0
 	LONG $0xd3fe0f66             // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0x587f0ff3; BYTE $0x40 // MOVDQU X3, 0x40(AX)                  // movdqu	xmmword ptr [rax + 64], xmm3
-	LONG $0x507f0ff3; BYTE $0x50 // MOVDQU X2, 0x50(AX)                  // movdqu	xmmword ptr [rax + 80], xmm2
-	LONG $0x4af00ff2; BYTE $0x18 // LDDQU 0x18(DX), X1                   // lddqu	xmm1, xmmword ptr [rdx + 24]
+	LONG $0x5b7f0ff3; BYTE $0x40 // MOVDQU X3, 0x40(BX)                  // movdqu	xmmword ptr [rbx + 64], xmm3
+	LONG $0x537f0ff3; BYTE $0x50 // MOVDQU X2, 0x50(BX)                  // movdqu	xmmword ptr [rbx + 80], xmm2
+	LONG $0x4ef00ff2; BYTE $0x18 // LDDQU 0x18(SI), X1                   // lddqu	xmm1, xmmword ptr [rsi + 24]
 	LONG $0x30380f66; BYTE $0xc9 // PMOVZXBW X1, X1                      // pmovzxbw	xmm1, xmm1
 	LONG $0xd96f0f66             // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
 	LONG $0xfb730f66; BYTE $0x02 // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
@@ -3320,153 +3178,86 @@ LBB12_12:
 	LONG $0xdafe0f66             // PADDD X2, X3                         // paddd	xmm3, xmm2
 	LONG $0xc8690f66             // PUNPCKHWD X0, X1                     // punpckhwd	xmm1, xmm0
 	LONG $0xcbfe0f66             // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0x587f0ff3; BYTE $0x60 // MOVDQU X3, 0x60(AX)                  // movdqu	xmmword ptr [rax + 96], xmm3
-	ADDQ $0x20, DX               // <--                                  // add	rdx, 32
-	JMP  LBB12_11                // <--                                  // jmp	.LBB12_11
+	LONG $0x5b7f0ff3; BYTE $0x60 // MOVDQU X3, 0x60(BX)                  // movdqu	xmmword ptr [rbx + 96], xmm3
+	ADDQ $0x20, SI               // <--                                  // add	rsi, 32
+	JMP  LBB12_7                 // <--                                  // jmp	.LBB12_7
 
-LBB12_14:
-	LONG $0x02f00ff2               // LDDQU 0(DX), X0                      // lddqu	xmm0, xmmword ptr [rdx]
-	LONG $0x30380f66; BYTE $0xc0   // PMOVZXBW X0, X0                      // pmovzxbw	xmm0, xmm0
-	LONG $0xd06f0f66               // MOVDQA X0, X2                        // movdqa	xmm2, xmm0
-	LONG $0xfa730f66; BYTE $0x02   // PSLLDQ $0x2, X2                      // pslldq	xmm2, 2
-	LONG $0xc9700f66; BYTE $0xff   // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xd0fe0f66               // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0xda6f0f66               // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
-	LONG $0xfb730f66; BYTE $0x04   // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
-	LONG $0xdafe0f66               // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0x33380f66; BYTE $0xd3   // PMOVZXWD X3, X2                      // pmovzxwd	xmm2, xmm3
-	LONG $0xd1fe0f66               // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xc0ef0f66               // PXOR X0, X0                          // pxor	xmm0, xmm0
-	LONG $0xd8690f66               // PUNPCKHWD X0, X3                     // punpckhwd	xmm3, xmm0
-	LONG $0xdafe0f66               // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0x107f0ff3               // MOVDQU X2, 0(AX)                     // movdqu	xmmword ptr [rax], xmm2
-	LONG $0x587f0ff3; BYTE $0x10   // MOVDQU X3, 0x10(AX)                  // movdqu	xmmword ptr [rax + 16], xmm3
-	LONG $0x4af00ff2; BYTE $0x08   // LDDQU 0x8(DX), X1                    // lddqu	xmm1, xmmword ptr [rdx + 8]
-	LONG $0x30380f66; BYTE $0xc9   // PMOVZXBW X1, X1                      // pmovzxbw	xmm1, xmm1
-	LONG $0xd16f0f66               // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
-	LONG $0xfa730f66; BYTE $0x02   // PSLLDQ $0x2, X2                      // pslldq	xmm2, 2
-	LONG $0xdb700f66; BYTE $0xff   // PSHUFD $0xff, X3, X3                 // pshufd	xmm3, xmm3, 255
-	LONG $0xd1fe0f66               // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xca6f0f66               // MOVDQA X2, X1                        // movdqa	xmm1, xmm2
-	LONG $0xf9730f66; BYTE $0x04   // PSLLDQ $0x4, X1                      // pslldq	xmm1, 4
-	LONG $0xcafe0f66               // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0x33380f66; BYTE $0xd1   // PMOVZXWD X1, X2                      // pmovzxwd	xmm2, xmm1
-	LONG $0xd3fe0f66               // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0xc8690f66               // PUNPCKHWD X0, X1                     // punpckhwd	xmm1, xmm0
-	LONG $0xcafe0f66               // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0x507f0ff3; BYTE $0x20   // MOVDQU X2, 0x20(AX)                  // movdqu	xmmword ptr [rax + 32], xmm2
-	LONG $0x487f0ff3; BYTE $0x30   // MOVDQU X1, 0x30(AX)                  // movdqu	xmmword ptr [rax + 48], xmm1
-	LONG $0x52f00ff2; BYTE $0x10   // LDDQU 0x10(DX), X2                   // lddqu	xmm2, xmmword ptr [rdx + 16]
-	LONG $0x30380f66; BYTE $0xd2   // PMOVZXBW X2, X2                      // pmovzxbw	xmm2, xmm2
-	LONG $0xda6f0f66               // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
-	LONG $0xfb730f66; BYTE $0x02   // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
-	LONG $0xc9700f66; BYTE $0xff   // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xdafe0f66               // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0xd36f0f66               // MOVDQA X3, X2                        // movdqa	xmm2, xmm3
-	LONG $0xfa730f66; BYTE $0x04   // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xd3fe0f66               // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0x33380f66; BYTE $0xda   // PMOVZXWD X2, X3                      // pmovzxwd	xmm3, xmm2
-	LONG $0xd9fe0f66               // PADDD X1, X3                         // paddd	xmm3, xmm1
-	LONG $0xd0690f66               // PUNPCKHWD X0, X2                     // punpckhwd	xmm2, xmm0
-	LONG $0xd3fe0f66               // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0x587f0ff3; BYTE $0x40   // MOVDQU X3, 0x40(AX)                  // movdqu	xmmword ptr [rax + 64], xmm3
-	LONG $0x507f0ff3; BYTE $0x50   // MOVDQU X2, 0x50(AX)                  // movdqu	xmmword ptr [rax + 80], xmm2
-	LONG $0x30380f66; WORD $0x184a // PMOVZXBW 0x18(DX), X1                // pmovzxbw	xmm1, qword ptr [rdx + 24]
-	LONG $0xd96f0f66               // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
-	LONG $0xfb730f66; BYTE $0x02   // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
-	LONG $0xd2700f66; BYTE $0xff   // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
-	LONG $0xd9fe0f66               // PADDD X1, X3                         // paddd	xmm3, xmm1
-	LONG $0xcb6f0f66               // MOVDQA X3, X1                        // movdqa	xmm1, xmm3
-	LONG $0xf9730f66; BYTE $0x04   // PSLLDQ $0x4, X1                      // pslldq	xmm1, 4
-	LONG $0xcbfe0f66               // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0x33380f66; BYTE $0xd9   // PMOVZXWD X1, X3                      // pmovzxwd	xmm3, xmm1
-	LONG $0xdafe0f66               // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0xc8690f66               // PUNPCKHWD X0, X1                     // punpckhwd	xmm1, xmm0
-	LONG $0xcbfe0f66               // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0x587f0ff3; BYTE $0x60   // MOVDQU X3, 0x60(AX)                  // movdqu	xmmword ptr [rax + 96], xmm3
-	LONG $0x487f0ff3; BYTE $0x70   // MOVDQU X1, 0x70(AX)                  // movdqu	xmmword ptr [rax + 112], xmm1
-	ADDQ $0x20, DX                 // <--                                  // add	rdx, 32
-
-LBB12_15:
-	MOVQ 0x10(SP), R9 // <--                                  // mov	r9, qword ptr [rsp + 16]
-	MOVQ 0x8(SP), CX  // <--                                  // mov	rcx, qword ptr [rsp + 8]
-
-LBB12_16:
-	WORD $0x8941; BYTE $0xca // MOVL CX, R10                         // mov	r10d, ecx
-	LONG $0xe0e28341         // ANDL $-0x20, R10                     // and	r10d, -32
-	LEAQ 0(R9)(R10*4), AX    // <--                                  // lea	rax, [r9 + 4*r10]
-	MOVQ CX, SI              // <--                                  // mov	rsi, rcx
-	ANDQ $0x1f, SI           // <--                                  // and	rsi, 31
-	JE   LBB12_19            // <--                                  // je	.LBB12_19
-	WORD $0x854d; BYTE $0xd2 // TESTQ R10, R10                       // test	r10, r10
-	JE   LBB12_19            // <--                                  // je	.LBB12_19
+LBB12_10:
+	WORD $0xd189             // MOVL DX, CX                          // mov	ecx, edx
+	WORD $0xe183; BYTE $0xe0 // ANDL $-0x20, CX                      // and	ecx, -32
+	MOVQ 0x10(SP), R14       // <--                                  // mov	r14, qword ptr [rsp + 16]
+	LEAQ 0(R14)(CX*4), AX    // <--                                  // lea	rax, [r14 + 4*rcx]
+	ANDQ $0x1f, DX           // <--                                  // and	rdx, 31
+	JE   LBB12_13            // <--                                  // je	.LBB12_13
+	WORD $0x8548; BYTE $0xc9 // TESTQ CX, CX                         // test	rcx, rcx
+	JE   LBB12_13            // <--                                  // je	.LBB12_13
 	LONG $0xfc408b44         // MOVL -0x4(AX), R8                    // mov	r8d, dword ptr [rax - 4]
 
-LBB12_19:
-	WORD $0x8548; BYTE $0xf6 // TESTQ SI, SI                         // test	rsi, rsi
-	JE   LBB12_32            // <--                                  // je	.LBB12_32
+LBB12_13:
 	WORD $0x8548; BYTE $0xd2 // TESTQ DX, DX                         // test	rdx, rdx
-	JE   LBB12_32            // <--                                  // je	.LBB12_32
-	SHRQ $0x2, CX            // <--                                  // shr	rcx, 2
+	JE   LBB12_26            // <--                                  // je	.LBB12_26
+	WORD $0x8548; BYTE $0xf6 // TESTQ SI, SI                         // test	rsi, rsi
+	JE   LBB12_26            // <--                                  // je	.LBB12_26
+	MOVQ 0x8(SP), CX         // <--                                  // mov	rcx, qword ptr [rsp + 8]
 	WORD $0xe183; BYTE $0xf8 // ANDL $-0x8, CX                       // and	ecx, -8
 	ADDQ CX, DI              // <--                                  // add	rdi, rcx
 	LONG $0x17b60f44         // MOVZX 0(DI), R10                     // movzx	r10d, byte ptr [rdi]
 	INCQ DI                  // <--                                  // inc	rdi
 	XORL CX, CX              // <--                                  // xor	ecx, ecx
-	JMP  LBB12_24            // <--                                  // jmp	.LBB12_24
+	JMP  LBB12_18            // <--                                  // jmp	.LBB12_18
 
-LBB12_22:
-	WORD $0x8b44; BYTE $0x1a     // MOVL 0(DX), R11                      // mov	r11d, dword ptr [rdx]
-	LONG $0x000004bb; BYTE $0x00 // MOVL $0x4, BX                        // mov	ebx, 4
+LBB12_16:
+	LONG $0x1eb70f44             // MOVZX 0(SI), R11                     // movzx	r11d, word ptr [rsi]
+	LONG $0x000002bb; BYTE $0x00 // MOVL $0x2, BX                        // mov	ebx, 2
 
-LBB12_23:
+LBB12_17:
 	WORD $0x0145; BYTE $0xd8 // ADDL R11, R8                         // add	r8d, r11d
-	ADDQ BX, DX              // <--                                  // add	rdx, rbx
+	ADDQ BX, SI              // <--                                  // add	rsi, rbx
 	WORD $0x8944; BYTE $0x00 // MOVL R8, 0(AX)                       // mov	dword ptr [rax], r8d
 	ADDQ $0x4, AX            // <--                                  // add	rax, 4
 	WORD $0xc180; BYTE $0x02 // ADDL $0x2, CL                        // add	cl, 2
-	WORD $0xceff             // DECL SI                              // dec	esi
-	JE   LBB12_32            // <--                                  // je	.LBB12_32
+	WORD $0xcaff             // DECL DX                              // dec	edx
+	JE   LBB12_26            // <--                                  // je	.LBB12_26
 
-LBB12_24:
+LBB12_18:
 	WORD $0xf980; BYTE $0x08 // CMPL CL, $0x8                        // cmp	cl, 8
-	JNE  LBB12_26            // <--                                  // jne	.LBB12_26
+	JNE  LBB12_20            // <--                                  // jne	.LBB12_20
 	LONG $0x17b60f44         // MOVZX 0(DI), R10                     // movzx	r10d, byte ptr [rdi]
 	INCQ DI                  // <--                                  // inc	rdi
 	XORL CX, CX              // <--                                  // xor	ecx, ecx
 
-LBB12_26:
+LBB12_20:
 	WORD $0x8945; BYTE $0xd3     // MOVL R10, R11                        // mov	r11d, r10d
 	WORD $0xd341; BYTE $0xeb     // SHRL CL, R11                         // shr	r11d, cl
 	LONG $0x03c3f641             // TESTL $0x3, R11                      // test	r11b, 3
-	JE   LBB12_30                // <--                                  // je	.LBB12_30
+	JE   LBB12_24                // <--                                  // je	.LBB12_24
 	LONG $0x03e38341             // ANDL $0x3, R11                       // and	r11d, 3
 	CMPL R11, $0x1               // <--                                  // cmp	r11d, 1
-	JE   LBB12_31                // <--                                  // je	.LBB12_31
+	JE   LBB12_16                // <--                                  // je	.LBB12_16
 	CMPL R11, $0x2               // <--                                  // cmp	r11d, 2
-	JNE  LBB12_22                // <--                                  // jne	.LBB12_22
-	WORD $0xb70f; BYTE $0x1a     // MOVZX 0(DX), BX                      // movzx	ebx, word ptr [rdx]
-	LONG $0x5ab60f44; BYTE $0x02 // MOVZX 0x2(DX), R11                   // movzx	r11d, byte ptr [rdx + 2]
+	JNE  LBB12_25                // <--                                  // jne	.LBB12_25
+	LONG $0x0eb70f44             // MOVZX 0(SI), R9                      // movzx	r9d, word ptr [rsi]
+	LONG $0x5eb60f44; BYTE $0x02 // MOVZX 0x2(SI), R11                   // movzx	r11d, byte ptr [rsi + 2]
 	LONG $0x10e3c141             // SHLL $0x10, R11                      // shl	r11d, 16
-	WORD $0x0941; BYTE $0xdb     // ORL BX, R11                          // or	r11d, ebx
+	WORD $0x0945; BYTE $0xcb     // ORL R9, R11                          // or	r11d, r9d
 	LONG $0x000003bb; BYTE $0x00 // MOVL $0x3, BX                        // mov	ebx, 3
-	JMP  LBB12_23                // <--                                  // jmp	.LBB12_23
+	JMP  LBB12_17                // <--                                  // jmp	.LBB12_17
 
-LBB12_30:
-	LONG $0x1ab60f44             // MOVZX 0(DX), R11                     // movzx	r11d, byte ptr [rdx]
+LBB12_24:
+	LONG $0x1eb60f44             // MOVZX 0(SI), R11                     // movzx	r11d, byte ptr [rsi]
 	LONG $0x000001bb; BYTE $0x00 // MOVL $0x1, BX                        // mov	ebx, 1
-	JMP  LBB12_23                // <--                                  // jmp	.LBB12_23
+	JMP  LBB12_17                // <--                                  // jmp	.LBB12_17
 
-LBB12_31:
-	LONG $0x1ab70f44             // MOVZX 0(DX), R11                     // movzx	r11d, word ptr [rdx]
-	LONG $0x000002bb; BYTE $0x00 // MOVL $0x2, BX                        // mov	ebx, 2
-	JMP  LBB12_23                // <--                                  // jmp	.LBB12_23
+LBB12_25:
+	WORD $0x8b44; BYTE $0x1e     // MOVL 0(SI), R11                      // mov	r11d, dword ptr [rsi]
+	LONG $0x000004bb; BYTE $0x00 // MOVL $0x4, BX                        // mov	ebx, 4
+	JMP  LBB12_17                // <--                                  // jmp	.LBB12_17
 
-LBB12_32:
-	SUBQ R9, AX              // <--                                  // sub	rax, r9
+LBB12_26:
+	SUBQ R14, AX             // <--                                  // sub	rax, r14
 	SARQ $0x2, AX            // <--                                  // sar	rax, 2
-	WORD $0x8548; BYTE $0xd2 // TESTQ DX, DX                         // test	rdx, rdx
-	LONG $0xc2440f48         // CMOVE DX, AX                         // cmove	rax, rdx
+	WORD $0x8548; BYTE $0xf6 // TESTQ SI, SI                         // test	rsi, rsi
+	LONG $0xc6440f48         // CMOVE SI, AX                         // cmove	rax, rsi
 	NOP                      // (skipped)                            // lea	rsp, [rbp - 40]
 	NOP                      // (skipped)                            // pop	rbx
 	NOP                      // (skipped)                            // pop	r12
@@ -5226,6 +5017,7 @@ TEXT ·svb_delta_decode_u32_alt(SB), 0, $24-56
 	MOVQ    out+40(FP), R9
 	WORD    $0x8548; BYTE $0xc9 // TESTQ CX, CX                         // test	rcx, rcx
 	JLE     LBB13_3             // <--                                  // jle	.LBB13_3
+	MOVQ    CX, DX              // <--                                  // mov	rdx, rcx
 	LEAQ    0x3(CX), AX         // <--                                  // lea	rax, [rcx + 3]
 	SHRQ    $0x2, AX            // <--                                  // shr	rax, 2
 	CMPQ    AX, SI              // <--                                  // cmp	rax, rsi
@@ -5237,130 +5029,56 @@ LBB13_3:
 	RET                 // <--                                  // ret
 
 LBB13_4:
-	NOP                                    // (skipped)                            // push	rbp
-	NOP                                    // (skipped)                            // mov	rbp, rsp
-	NOP                                    // (skipped)                            // push	r15
-	NOP                                    // (skipped)                            // push	r14
-	NOP                                    // (skipped)                            // push	r13
-	NOP                                    // (skipped)                            // push	r12
-	NOP                                    // (skipped)                            // push	rbx
-	NOP                                    // (skipped)                            // and	rsp, -8
-	NOP                                    // (skipped)                            // sub	rsp, 24
-	WORD $0xc289                           // MOVL AX, DX                          // mov	edx, eax
-	ADDQ DI, DX                            // <--                                  // add	rdx, rdi
-	CMPQ CX, $0x20                         // <--                                  // cmp	rcx, 32
-	JB   LBB13_16                          // <--                                  // jb	.LBB13_16
-	QUAD $0x555555555555be48; WORD $0x5555 // MOVQ $0x5555555555555555, SI         // movabs	rsi, 6148914691236517205
-	MOVQ CX, 0(SP)                         // <--                                  // mov	qword ptr [rsp], rcx
-	MOVQ CX, R10                           // <--                                  // mov	r10, rcx
-	SHRQ $0x5, CX                          // <--                                  // shr	rcx, 5
-	LONG $0x6e0f4166; BYTE $0xc0           // MOVD R8, X0                          // movd	xmm0, r8d
-	LONG $0xc8700f66; BYTE $0x00           // PSHUFD $0x0, X0, X1                  // pshufd	xmm1, xmm0, 0
-	MOVQ 0(DI), BX                         // <--                                  // mov	rbx, qword ptr [rdi]
-	CMPQ CX, $0x1                          // <--                                  // cmp	rcx, 1
-	MOVQ R9, 0x8(SP)                       // <--                                  // mov	qword ptr [rsp + 8], r9
-	JNE  LBB13_9                           // <--                                  // jne	.LBB13_9
-	MOVQ R9, AX                            // <--                                  // mov	rax, r9
-	MOVQ BX, R10                           // <--                                  // mov	r10, rbx
+	NOP                              // (skipped)                            // push	rbp
+	NOP                              // (skipped)                            // mov	rbp, rsp
+	NOP                              // (skipped)                            // push	r15
+	NOP                              // (skipped)                            // push	r14
+	NOP                              // (skipped)                            // push	r13
+	NOP                              // (skipped)                            // push	r12
+	NOP                              // (skipped)                            // push	rbx
+	NOP                              // (skipped)                            // and	rsp, -8
+	NOP                              // (skipped)                            // sub	rsp, 24
+	WORD $0xc689                     // MOVL AX, SI                          // mov	esi, eax
+	ADDQ DI, SI                      // <--                                  // add	rsi, rdi
+	MOVQ DX, AX                      // <--                                  // mov	rax, rdx
+	SHRQ $0x2, AX                    // <--                                  // shr	rax, 2
+	MOVQ AX, 0x8(SP)                 // <--                                  // mov	qword ptr [rsp + 8], rax
+	LEAQ 0(DI)(AX*1), R11            // <--                                  // lea	r11, [rdi + rax]
+	ADDQ $-0x7, R11                  // <--                                  // add	r11, -7
+	CMPQ R11, DI                     // <--                                  // cmp	r11, rdi
+	MOVQ R9, 0x10(SP)                // <--                                  // mov	qword ptr [rsp + 16], r9
+	MOVQ DI, 0(SP)                   // <--                                  // mov	qword ptr [rsp], rdi
+	JBE  LBB13_10                    // <--                                  // jbe	.LBB13_10
+	LONG $0x6e0f4166; BYTE $0xc0     // MOVD R8, X0                          // movd	xmm0, r8d
+	LONG $0xc8700f66; BYTE $0x00     // PSHUFD $0x0, X0, X1                  // pshufd	xmm1, xmm0, 0
+	LONG $0xc0ef0f66                 // PXOR X0, X0                          // pxor	xmm0, xmm0
+	LEAQ shuffleTable_0124<>(SB), BX // <--                                  // lea	rbx, [rip + shuffleTable_0124]
+	MOVQ R9, R14                     // <--                                  // mov	r14, r9
+	MOVQ DI, R15                     // <--                                  // mov	r15, rdi
+	JMP  LBB13_8                     // <--                                  // jmp	.LBB13_8
 
-LBB13_7:
-	CMPQ R10, SI                   // <--                                  // cmp	r10, rsi
-	JNE  LBB13_14                  // <--                                  // jne	.LBB13_14
-	LONG $0x02f00ff2               // LDDQU 0(DX), X0                      // lddqu	xmm0, xmmword ptr [rdx]
-	LONG $0x30380f66; BYTE $0xc0   // PMOVZXBW X0, X0                      // pmovzxbw	xmm0, xmm0
-	LONG $0xd06f0f66               // MOVDQA X0, X2                        // movdqa	xmm2, xmm0
-	LONG $0xfa730f66; BYTE $0x02   // PSLLDQ $0x2, X2                      // pslldq	xmm2, 2
-	LONG $0xc9700f66; BYTE $0xff   // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xd0fe0f66               // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0xda6f0f66               // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
-	LONG $0xfb730f66; BYTE $0x04   // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
-	LONG $0xdafe0f66               // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0x33380f66; BYTE $0xd3   // PMOVZXWD X3, X2                      // pmovzxwd	xmm2, xmm3
-	LONG $0xd1fe0f66               // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xc0ef0f66               // PXOR X0, X0                          // pxor	xmm0, xmm0
-	LONG $0xd8690f66               // PUNPCKHWD X0, X3                     // punpckhwd	xmm3, xmm0
-	LONG $0xdafe0f66               // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0x107f0ff3               // MOVDQU X2, 0(AX)                     // movdqu	xmmword ptr [rax], xmm2
-	LONG $0x587f0ff3; BYTE $0x10   // MOVDQU X3, 0x10(AX)                  // movdqu	xmmword ptr [rax + 16], xmm3
-	LONG $0x4af00ff2; BYTE $0x08   // LDDQU 0x8(DX), X1                    // lddqu	xmm1, xmmword ptr [rdx + 8]
-	LONG $0x30380f66; BYTE $0xc9   // PMOVZXBW X1, X1                      // pmovzxbw	xmm1, xmm1
-	LONG $0xd16f0f66               // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
-	LONG $0xfa730f66; BYTE $0x02   // PSLLDQ $0x2, X2                      // pslldq	xmm2, 2
-	LONG $0xdb700f66; BYTE $0xff   // PSHUFD $0xff, X3, X3                 // pshufd	xmm3, xmm3, 255
-	LONG $0xd1fe0f66               // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xca6f0f66               // MOVDQA X2, X1                        // movdqa	xmm1, xmm2
-	LONG $0xf9730f66; BYTE $0x04   // PSLLDQ $0x4, X1                      // pslldq	xmm1, 4
-	LONG $0xcafe0f66               // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0x33380f66; BYTE $0xd1   // PMOVZXWD X1, X2                      // pmovzxwd	xmm2, xmm1
-	LONG $0xd3fe0f66               // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0xc8690f66               // PUNPCKHWD X0, X1                     // punpckhwd	xmm1, xmm0
-	LONG $0xcafe0f66               // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0x507f0ff3; BYTE $0x20   // MOVDQU X2, 0x20(AX)                  // movdqu	xmmword ptr [rax + 32], xmm2
-	LONG $0x487f0ff3; BYTE $0x30   // MOVDQU X1, 0x30(AX)                  // movdqu	xmmword ptr [rax + 48], xmm1
-	LONG $0x52f00ff2; BYTE $0x10   // LDDQU 0x10(DX), X2                   // lddqu	xmm2, xmmword ptr [rdx + 16]
-	LONG $0x30380f66; BYTE $0xd2   // PMOVZXBW X2, X2                      // pmovzxbw	xmm2, xmm2
-	LONG $0xda6f0f66               // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
-	LONG $0xfb730f66; BYTE $0x02   // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
-	LONG $0xc9700f66; BYTE $0xff   // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xdafe0f66               // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0xd36f0f66               // MOVDQA X3, X2                        // movdqa	xmm2, xmm3
-	LONG $0xfa730f66; BYTE $0x04   // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xd3fe0f66               // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0x33380f66; BYTE $0xda   // PMOVZXWD X2, X3                      // pmovzxwd	xmm3, xmm2
-	LONG $0xd9fe0f66               // PADDD X1, X3                         // paddd	xmm3, xmm1
-	LONG $0xd0690f66               // PUNPCKHWD X0, X2                     // punpckhwd	xmm2, xmm0
-	LONG $0xd3fe0f66               // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0x587f0ff3; BYTE $0x40   // MOVDQU X3, 0x40(AX)                  // movdqu	xmmword ptr [rax + 64], xmm3
-	LONG $0x507f0ff3; BYTE $0x50   // MOVDQU X2, 0x50(AX)                  // movdqu	xmmword ptr [rax + 80], xmm2
-	LONG $0x30380f66; WORD $0x184a // PMOVZXBW 0x18(DX), X1                // pmovzxbw	xmm1, qword ptr [rdx + 24]
-	LONG $0xd96f0f66               // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
-	LONG $0xfb730f66; BYTE $0x02   // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
-	LONG $0xd2700f66; BYTE $0xff   // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
-	LONG $0xd9fe0f66               // PADDD X1, X3                         // paddd	xmm3, xmm1
-	LONG $0xcb6f0f66               // MOVDQA X3, X1                        // movdqa	xmm1, xmm3
-	LONG $0xf9730f66; BYTE $0x04   // PSLLDQ $0x4, X1                      // pslldq	xmm1, 4
-	LONG $0xcbfe0f66               // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0x33380f66; BYTE $0xd9   // PMOVZXWD X1, X3                      // pmovzxwd	xmm3, xmm1
-	LONG $0xdafe0f66               // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0xc8690f66               // PUNPCKHWD X0, X1                     // punpckhwd	xmm1, xmm0
-	LONG $0xcbfe0f66               // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0x587f0ff3; BYTE $0x60   // MOVDQU X3, 0x60(AX)                  // movdqu	xmmword ptr [rax + 96], xmm3
-	LONG $0x487f0ff3; BYTE $0x70   // MOVDQU X1, 0x70(AX)                  // movdqu	xmmword ptr [rax + 112], xmm1
-	ADDQ $0x20, DX                 // <--                                  // add	rdx, 32
-	JMP  LBB13_15                  // <--                                  // jmp	.LBB13_15
-
-LBB13_9:
-	LONG $0x0001bb41; WORD $0x0000    // MOVL $0x1, R11                       // mov	r11d, 1
-	LONG $0xc0ef0f66                  // PXOR X0, X0                          // pxor	xmm0, xmm0
-	MOVQ R9, AX                       // <--                                  // mov	rax, r9
-	LEAQ lengthTable_0124<>(SB), R14  // <--                                  // lea	r14, [rip + lengthTable_0124]
-	LEAQ shuffleTable_0124<>(SB), R15 // <--                                  // lea	r15, [rip + shuffleTable_0124]
-	MOVQ CX, 0x10(SP)                 // <--                                  // mov	qword ptr [rsp + 16], rcx
-	JMP  LBB13_12                     // <--                                  // jmp	.LBB13_12
-
-LBB13_10:
-	MOVQ SI, CX                                // <--                                  // mov	rcx, rsi
-	WORD $0xb60f; BYTE $0xf3                   // MOVZX BL, SI                         // movzx	esi, bl
-	LONG $0x0cb60f46; BYTE $0x36               // MOVZX 0(SI)(R14*1), R9               // movzx	r9d, byte ptr [rsi + r14]
-	LONG $0x126f0ff3                           // MOVDQU 0(DX), X2                     // movdqu	xmm2, xmmword ptr [rdx]
-	SHLQ $0x4, SI                              // <--                                  // shl	rsi, 4
-	LONG $0x380f4266; WORD $0x1400; BYTE $0x3e // PSHUFB 0(SI)(R15*1), X2              // pshufb	xmm2, xmmword ptr [rsi + r15]
-	LEAQ 0(DX)(R9*1), R13                      // <--                                  // lea	r13, [rdx + r9]
+LBB13_6:
+	LONG $0xe1b60f44                           // MOVZX CL, R12                        // movzx	r12d, cl
+	LEAQ lengthTable_0124<>(SB), DI            // <--                                  // lea	rdi, [rip + lengthTable_0124]
+	LONG $0x0cb60f45; BYTE $0x3c               // MOVZX 0(R12)(DI*1), R9               // movzx	r9d, byte ptr [r12 + rdi]
+	LONG $0x166f0ff3                           // MOVDQU 0(SI), X2                     // movdqu	xmm2, xmmword ptr [rsi]
+	SHLQ $0x4, R12                             // <--                                  // shl	r12, 4
+	LONG $0x380f4166; WORD $0x1400; BYTE $0x1c // PSHUFB 0(R12)(BX*1), X2              // pshufb	xmm2, xmmword ptr [r12 + rbx]
+	LEAQ 0(SI)(R9*1), R13                      // <--                                  // lea	r13, [rsi + r9]
 	LONG $0xda6f0f66                           // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
-	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
 	LONG $0xdafe0f66                           // PADDD X2, X3                         // paddd	xmm3, xmm2
 	LONG $0xd36f0f66                           // MOVDQA X3, X2                        // movdqa	xmm2, xmm3
 	LONG $0xfa730f66; BYTE $0x08               // PSLLDQ $0x8, X2                      // pslldq	xmm2, 8
 	LONG $0xd9fe0f66                           // PADDD X1, X3                         // paddd	xmm3, xmm1
 	LONG $0xdafe0f66                           // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0x187f0ff3                           // MOVDQU X3, 0(AX)                     // movdqu	xmmword ptr [rax], xmm3
-	WORD $0xb60f; BYTE $0xf7                   // MOVZX BH, SI                         // movzx	esi, bh
-	LONG $0x24b60f46; BYTE $0x36               // MOVZX 0(SI)(R14*1), R12              // movzx	r12d, byte ptr [rsi + r14]
-	LONG $0x6f0f42f3; WORD $0x0a0c             // MOVDQU 0(DX)(R9*1), X1               // movdqu	xmm1, xmmword ptr [rdx + r9]
-	SHLQ $0x4, SI                              // <--                                  // shl	rsi, 4
-	LONG $0x380f4266; WORD $0x0c00; BYTE $0x3e // PSHUFB 0(SI)(R15*1), X1              // pshufb	xmm1, xmmword ptr [rsi + r15]
-	LEAQ 0(R12)(R13*1), DX                     // <--                                  // lea	rdx, [r12 + r13]
+	LONG $0x7f0f41f3; BYTE $0x1e               // MOVDQU X3, 0(R14)                    // movdqu	xmmword ptr [r14], xmm3
+	WORD $0xb60f; BYTE $0xc5                   // MOVZX CH, AX                         // movzx	eax, ch
+	LONG $0x14b60f44; BYTE $0x38               // MOVZX 0(AX)(DI*1), R10               // movzx	r10d, byte ptr [rax + rdi]
+	LONG $0x6f0f42f3; WORD $0x0e0c             // MOVDQU 0(SI)(R9*1), X1               // movdqu	xmm1, xmmword ptr [rsi + r9]
+	SHLQ $0x4, AX                              // <--                                  // shl	rax, 4
+	LONG $0x00380f66; WORD $0x180c             // PSHUFB 0(AX)(BX*1), X1               // pshufb	xmm1, xmmword ptr [rax + rbx]
+	LEAQ 0(R10)(R13*1), SI                     // <--                                  // lea	rsi, [r10 + r13]
 	LONG $0xd16f0f66                           // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
 	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
 	LONG $0xdb700f66; BYTE $0xff               // PSHUFD $0xff, X3, X3                 // pshufd	xmm3, xmm3, 255
@@ -5369,14 +5087,14 @@ LBB13_10:
 	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
 	LONG $0xd3fe0f66                           // PADDD X3, X2                         // paddd	xmm2, xmm3
 	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0x507f0ff3; BYTE $0x10               // MOVDQU X2, 0x10(AX)                  // movdqu	xmmword ptr [rax + 16], xmm2
-	WORD $0xde89                               // MOVL BX, SI                          // mov	esi, ebx
-	WORD $0xeec1; BYTE $0x10                   // SHRL $0x10, SI                       // shr	esi, 16
-	LONG $0xceb60f44                           // MOVZX SI, R9                         // movzx	r9d, sil
-	LONG $0x34b60f43; BYTE $0x31               // MOVZX 0(R9)(R14*1), SI               // movzx	esi, byte ptr [r9 + r14]
-	LONG $0x6f0f43f3; WORD $0x2c0c             // MOVDQU 0(R12)(R13*1), X1             // movdqu	xmm1, xmmword ptr [r12 + r13]
-	SHLQ $0x4, R9                              // <--                                  // shl	r9, 4
-	LONG $0x380f4366; WORD $0x0c00; BYTE $0x39 // PSHUFB 0(R9)(R15*1), X1              // pshufb	xmm1, xmmword ptr [r9 + r15]
+	LONG $0x7f0f41f3; WORD $0x1056             // MOVDQU X2, 0x10(R14)                 // movdqu	xmmword ptr [r14 + 16], xmm2
+	WORD $0xc889                               // MOVL CX, AX                          // mov	eax, ecx
+	WORD $0xe8c1; BYTE $0x10                   // SHRL $0x10, AX                       // shr	eax, 16
+	WORD $0xb60f; BYTE $0xc0                   // MOVZX AL, AX                         // movzx	eax, al
+	LONG $0x24b60f44; BYTE $0x38               // MOVZX 0(AX)(DI*1), R12               // movzx	r12d, byte ptr [rax + rdi]
+	LONG $0x6f0f43f3; WORD $0x2a0c             // MOVDQU 0(R10)(R13*1), X1             // movdqu	xmm1, xmmword ptr [r10 + r13]
+	SHLQ $0x4, AX                              // <--                                  // shl	rax, 4
+	LONG $0x00380f66; WORD $0x180c             // PSHUFB 0(AX)(BX*1), X1               // pshufb	xmm1, xmmword ptr [rax + rbx]
 	LONG $0xd96f0f66                           // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xd2700f66; BYTE $0xff               // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
@@ -5385,15 +5103,15 @@ LBB13_10:
 	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
 	LONG $0xcbfe0f66                           // PADDD X3, X1                         // paddd	xmm1, xmm3
 	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0x487f0ff3; BYTE $0x20               // MOVDQU X1, 0x20(AX)                  // movdqu	xmmword ptr [rax + 32], xmm1
-	WORD $0x8941; BYTE $0xd9                   // MOVL BX, R9                          // mov	r9d, ebx
-	LONG $0x18e9c141                           // SHRL $0x18, R9                       // shr	r9d, 24
-	LONG $0x24b60f47; BYTE $0x31               // MOVZX 0(R9)(R14*1), R12              // movzx	r12d, byte ptr [r9 + r14]
-	LONG $0x146f0ff3; BYTE $0x16               // MOVDQU 0(SI)(DX*1), X2               // movdqu	xmm2, xmmword ptr [rsi + rdx]
-	SHLQ $0x4, R9                              // <--                                  // shl	r9, 4
-	LONG $0x380f4366; WORD $0x1400; BYTE $0x39 // PSHUFB 0(R9)(R15*1), X2              // pshufb	xmm2, xmmword ptr [r9 + r15]
-	ADDQ DX, SI                                // <--                                  // add	rsi, rdx
-	LEAQ 0(SI)(R12*1), DX                      // <--                                  // lea	rdx, [rsi + r12]
+	LONG $0x7f0f41f3; WORD $0x204e             // MOVDQU X1, 0x20(R14)                 // movdqu	xmmword ptr [r14 + 32], xmm1
+	WORD $0xc889                               // MOVL CX, AX                          // mov	eax, ecx
+	WORD $0xe8c1; BYTE $0x18                   // SHRL $0x18, AX                       // shr	eax, 24
+	LONG $0x0cb60f44; BYTE $0x38               // MOVZX 0(AX)(DI*1), R9                // movzx	r9d, byte ptr [rax + rdi]
+	LONG $0x6f0f41f3; WORD $0x3414             // MOVDQU 0(R12)(SI*1), X2              // movdqu	xmm2, xmmword ptr [r12 + rsi]
+	SHLQ $0x4, AX                              // <--                                  // shl	rax, 4
+	LONG $0x00380f66; WORD $0x1814             // PSHUFB 0(AX)(BX*1), X2               // pshufb	xmm2, xmmword ptr [rax + rbx]
+	LEAQ 0(SI)(R12*1), AX                      // <--                                  // lea	rax, [rsi + r12]
+	LEAQ 0(AX)(R9*1), SI                       // <--                                  // lea	rsi, [rax + r9]
 	LONG $0xda6f0f66                           // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
@@ -5402,14 +5120,14 @@ LBB13_10:
 	LONG $0xfa730f66; BYTE $0x08               // PSLLDQ $0x8, X2                      // pslldq	xmm2, 8
 	LONG $0xd3fe0f66                           // PADDD X3, X2                         // paddd	xmm2, xmm3
 	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0x507f0ff3; BYTE $0x30               // MOVDQU X2, 0x30(AX)                  // movdqu	xmmword ptr [rax + 48], xmm2
-	MOVQ BX, R9                                // <--                                  // mov	r9, rbx
-	SHRQ $0x20, R9                             // <--                                  // shr	r9, 32
-	LONG $0xc9b60f45                           // MOVZX R9, R9                         // movzx	r9d, r9b
-	LONG $0x2cb60f47; BYTE $0x31               // MOVZX 0(R9)(R14*1), R13              // movzx	r13d, byte ptr [r9 + r14]
-	LONG $0x6f0f41f3; WORD $0x340c             // MOVDQU 0(R12)(SI*1), X1              // movdqu	xmm1, xmmword ptr [r12 + rsi]
-	SHLQ $0x4, R9                              // <--                                  // shl	r9, 4
-	LONG $0x380f4366; WORD $0x0c00; BYTE $0x39 // PSHUFB 0(R9)(R15*1), X1              // pshufb	xmm1, xmmword ptr [r9 + r15]
+	LONG $0x7f0f41f3; WORD $0x3056             // MOVDQU X2, 0x30(R14)                 // movdqu	xmmword ptr [r14 + 48], xmm2
+	MOVQ CX, R10                               // <--                                  // mov	r10, rcx
+	SHRQ $0x20, R10                            // <--                                  // shr	r10, 32
+	LONG $0xd2b60f45                           // MOVZX R10, R10                       // movzx	r10d, r10b
+	LONG $0x2cb60f45; BYTE $0x3a               // MOVZX 0(R10)(DI*1), R13              // movzx	r13d, byte ptr [r10 + rdi]
+	LONG $0x6f0f41f3; WORD $0x010c             // MOVDQU 0(R9)(AX*1), X1               // movdqu	xmm1, xmmword ptr [r9 + rax]
+	SHLQ $0x4, R10                             // <--                                  // shl	r10, 4
+	LONG $0x380f4166; WORD $0x0c00; BYTE $0x1a // PSHUFB 0(R10)(BX*1), X1              // pshufb	xmm1, xmmword ptr [r10 + rbx]
 	LONG $0xd96f0f66                           // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xd2700f66; BYTE $0xff               // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
@@ -5418,16 +5136,16 @@ LBB13_10:
 	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
 	LONG $0xcbfe0f66                           // PADDD X3, X1                         // paddd	xmm1, xmm3
 	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0x487f0ff3; BYTE $0x40               // MOVDQU X1, 0x40(AX)                  // movdqu	xmmword ptr [rax + 64], xmm1
-	MOVQ BX, SI                                // <--                                  // mov	rsi, rbx
-	SHRQ $0x28, SI                             // <--                                  // shr	rsi, 40
-	LONG $0xf6b60f40                           // MOVZX SI, SI                         // movzx	esi, sil
-	LONG $0x0cb60f46; BYTE $0x36               // MOVZX 0(SI)(R14*1), R9               // movzx	r9d, byte ptr [rsi + r14]
-	LONG $0x6f0f41f3; WORD $0x1554; BYTE $0x00 // MOVDQU 0(R13)(DX*1), X2              // movdqu	xmm2, xmmword ptr [r13 + rdx]
-	SHLQ $0x4, SI                              // <--                                  // shl	rsi, 4
-	LONG $0x380f4266; WORD $0x1400; BYTE $0x3e // PSHUFB 0(SI)(R15*1), X2              // pshufb	xmm2, xmmword ptr [rsi + r15]
-	ADDQ R13, DX                               // <--                                  // add	rdx, r13
-	LEAQ 0(DX)(R9*1), R13                      // <--                                  // lea	r13, [rdx + r9]
+	LONG $0x7f0f41f3; WORD $0x404e             // MOVDQU X1, 0x40(R14)                 // movdqu	xmmword ptr [r14 + 64], xmm1
+	MOVQ CX, AX                                // <--                                  // mov	rax, rcx
+	SHRQ $0x28, AX                             // <--                                  // shr	rax, 40
+	WORD $0xb60f; BYTE $0xc0                   // MOVZX AL, AX                         // movzx	eax, al
+	LONG $0x0cb60f44; BYTE $0x38               // MOVZX 0(AX)(DI*1), R9                // movzx	r9d, byte ptr [rax + rdi]
+	LONG $0x6f0f41f3; WORD $0x3554; BYTE $0x00 // MOVDQU 0(R13)(SI*1), X2              // movdqu	xmm2, xmmword ptr [r13 + rsi]
+	SHLQ $0x4, AX                              // <--                                  // shl	rax, 4
+	LONG $0x00380f66; WORD $0x1814             // PSHUFB 0(AX)(BX*1), X2               // pshufb	xmm2, xmmword ptr [rax + rbx]
+	LEAQ 0(SI)(R13*1), AX                      // <--                                  // lea	rax, [rsi + r13]
+	LEAQ 0(AX)(R9*1), R13                      // <--                                  // lea	r13, [rax + r9]
 	LONG $0xda6f0f66                           // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
@@ -5436,32 +5154,30 @@ LBB13_10:
 	LONG $0xfa730f66; BYTE $0x08               // PSLLDQ $0x8, X2                      // pslldq	xmm2, 8
 	LONG $0xd3fe0f66                           // PADDD X3, X2                         // paddd	xmm2, xmm3
 	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0x507f0ff3; BYTE $0x50               // MOVDQU X2, 0x50(AX)                  // movdqu	xmmword ptr [rax + 80], xmm2
-	MOVQ BX, SI                                // <--                                  // mov	rsi, rbx
-	SHRQ $0x30, SI                             // <--                                  // shr	rsi, 48
-	LONG $0xe6b60f44                           // MOVZX SI, R12                        // movzx	r12d, sil
-	LONG $0x34b60f43; BYTE $0x34               // MOVZX 0(R12)(R14*1), SI              // movzx	esi, byte ptr [r12 + r14]
-	LONG $0x6f0f41f3; WORD $0x110c             // MOVDQU 0(R9)(DX*1), X1               // movdqu	xmm1, xmmword ptr [r9 + rdx]
-	SHLQ $0x4, R12                             // <--                                  // shl	r12, 4
-	LONG $0x380f4366; WORD $0x0c00; BYTE $0x3c // PSHUFB 0(R12)(R15*1), X1             // pshufb	xmm1, xmmword ptr [r12 + r15]
-	LONG $0xd96f0f66                           // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
-	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
-	LONG $0xd2700f66; BYTE $0xff               // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
-	LONG $0xd9fe0f66                           // PADDD X1, X3                         // paddd	xmm3, xmm1
-	LONG $0xcb6f0f66                           // MOVDQA X3, X1                        // movdqa	xmm1, xmm3
-	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
-	LONG $0xcbfe0f66                           // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0x487f0ff3; BYTE $0x60               // MOVDQU X1, 0x60(AX)                  // movdqu	xmmword ptr [rax + 96], xmm1
-	SHRQ $0x38, BX                             // <--                                  // shr	rbx, 56
-	LONG $0x14b60f42; BYTE $0x33               // MOVZX 0(BX)(R14*1), DX               // movzx	edx, byte ptr [rbx + r14]
-	LONG $0x6f0f42f3; WORD $0x2e14             // MOVDQU 0(SI)(R13*1), X2              // movdqu	xmm2, xmmword ptr [rsi + r13]
-	SHLQ $0x4, BX                              // <--                                  // shl	rbx, 4
-	LONG $0x380f4266; WORD $0x1400; BYTE $0x3b // PSHUFB 0(BX)(R15*1), X2              // pshufb	xmm2, xmmword ptr [rbx + r15]
-	ADDQ SI, DX                                // <--                                  // add	rdx, rsi
+	LONG $0x7f0f41f3; WORD $0x5056             // MOVDQU X2, 0x50(R14)                 // movdqu	xmmword ptr [r14 + 80], xmm2
 	MOVQ CX, SI                                // <--                                  // mov	rsi, rcx
-	MOVQ 0x10(SP), CX                          // <--                                  // mov	rcx, qword ptr [rsp + 16]
-	ADDQ R13, DX                               // <--                                  // add	rdx, r13
+	SHRQ $0x30, SI                             // <--                                  // shr	rsi, 48
+	LONG $0xf6b60f40                           // MOVZX SI, SI                         // movzx	esi, sil
+	LONG $0x24b60f44; BYTE $0x3e               // MOVZX 0(SI)(DI*1), R12               // movzx	r12d, byte ptr [rsi + rdi]
+	LONG $0x6f0f41f3; WORD $0x010c             // MOVDQU 0(R9)(AX*1), X1               // movdqu	xmm1, xmmword ptr [r9 + rax]
+	SHLQ $0x4, SI                              // <--                                  // shl	rsi, 4
+	LONG $0x00380f66; WORD $0x1e0c             // PSHUFB 0(SI)(BX*1), X1               // pshufb	xmm1, xmmword ptr [rsi + rbx]
+	LONG $0xd96f0f66                           // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
+	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
+	LONG $0xd2700f66; BYTE $0xff               // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
+	LONG $0xd9fe0f66                           // PADDD X1, X3                         // paddd	xmm3, xmm1
+	LONG $0xcb6f0f66                           // MOVDQA X3, X1                        // movdqa	xmm1, xmm3
+	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
+	LONG $0xcbfe0f66                           // PADDD X3, X1                         // paddd	xmm1, xmm3
+	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
+	LONG $0x7f0f41f3; WORD $0x604e             // MOVDQU X1, 0x60(R14)                 // movdqu	xmmword ptr [r14 + 96], xmm1
+	SHRQ $0x38, CX                             // <--                                  // shr	rcx, 56
+	LONG $0x3934b60f                           // MOVZX 0(CX)(DI*1), SI                // movzx	esi, byte ptr [rcx + rdi]
+	LONG $0x6f0f43f3; WORD $0x2c14             // MOVDQU 0(R12)(R13*1), X2             // movdqu	xmm2, xmmword ptr [r12 + r13]
+	SHLQ $0x4, CX                              // <--                                  // shl	rcx, 4
+	LONG $0x00380f66; WORD $0x1914             // PSHUFB 0(CX)(BX*1), X2               // pshufb	xmm2, xmmword ptr [rcx + rbx]
+	ADDQ R12, SI                               // <--                                  // add	rsi, r12
+	ADDQ R13, SI                               // <--                                  // add	rsi, r13
 	LONG $0xda6f0f66                           // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
 	LONG $0xfb730f66; BYTE $0x04               // PSLLDQ $0x4, X3                      // pslldq	xmm3, 4
 	LONG $0xe1700f66; BYTE $0xff               // PSHUFD $0xff, X1, X4                 // pshufd	xmm4, xmm1, 255
@@ -5471,286 +5187,157 @@ LBB13_10:
 	LONG $0xcbfe0f66                           // PADDD X3, X1                         // paddd	xmm1, xmm3
 	LONG $0xccfe0f66                           // PADDD X4, X1                         // paddd	xmm1, xmm4
 
-LBB13_11:
-	LONG $0x487f0ff3; BYTE $0x70 // MOVDQU X1, 0x70(AX)                  // movdqu	xmmword ptr [rax + 112], xmm1
-	SUBQ $-0x80, AX              // <--                                  // sub	rax, -128
-	INCQ R11                     // <--                                  // inc	r11
-	MOVQ R10, BX                 // <--                                  // mov	rbx, r10
-	CMPQ CX, R11                 // <--                                  // cmp	rcx, r11
-	JE   LBB13_7                 // <--                                  // je	.LBB13_7
+LBB13_7:
+	LONG $0x7f0f41f3; WORD $0x704e // MOVDQU X1, 0x70(R14)                 // movdqu	xmmword ptr [r14 + 112], xmm1
+	SUBQ $-0x80, R14               // <--                                  // sub	r14, -128
+	ADDQ $0x8, R15                 // <--                                  // add	r15, 8
+	CMPQ R15, R11                  // <--                                  // cmp	r15, r11
+	JAE  LBB13_10                  // <--                                  // jae	.LBB13_10
 
-LBB13_12:
-	MOVQ 0(DI)(R11*8), R10       // <--                                  // mov	r10, qword ptr [rdi + 8*r11]
-	CMPQ BX, SI                  // <--                                  // cmp	rbx, rsi
-	JNE  LBB13_10                // <--                                  // jne	.LBB13_10
-	LONG $0x12f00ff2             // LDDQU 0(DX), X2                      // lddqu	xmm2, xmmword ptr [rdx]
-	LONG $0x30380f66; BYTE $0xd2 // PMOVZXBW X2, X2                      // pmovzxbw	xmm2, xmm2
-	LONG $0xda6f0f66             // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
-	LONG $0xfb730f66; BYTE $0x02 // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
-	LONG $0xc9700f66; BYTE $0xff // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xdafe0f66             // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0xd36f0f66             // MOVDQA X3, X2                        // movdqa	xmm2, xmm3
-	LONG $0xfa730f66; BYTE $0x04 // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xd3fe0f66             // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0x33380f66; BYTE $0xda // PMOVZXWD X2, X3                      // pmovzxwd	xmm3, xmm2
-	LONG $0xd9fe0f66             // PADDD X1, X3                         // paddd	xmm3, xmm1
-	LONG $0xd0690f66             // PUNPCKHWD X0, X2                     // punpckhwd	xmm2, xmm0
-	LONG $0xd3fe0f66             // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0x187f0ff3             // MOVDQU X3, 0(AX)                     // movdqu	xmmword ptr [rax], xmm3
-	LONG $0x507f0ff3; BYTE $0x10 // MOVDQU X2, 0x10(AX)                  // movdqu	xmmword ptr [rax + 16], xmm2
-	LONG $0x4af00ff2; BYTE $0x08 // LDDQU 0x8(DX), X1                    // lddqu	xmm1, xmmword ptr [rdx + 8]
-	LONG $0x30380f66; BYTE $0xc9 // PMOVZXBW X1, X1                      // pmovzxbw	xmm1, xmm1
-	LONG $0xd96f0f66             // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
-	LONG $0xfb730f66; BYTE $0x02 // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
-	LONG $0xd2700f66; BYTE $0xff // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
-	LONG $0xd9fe0f66             // PADDD X1, X3                         // paddd	xmm3, xmm1
-	LONG $0xcb6f0f66             // MOVDQA X3, X1                        // movdqa	xmm1, xmm3
-	LONG $0xf9730f66; BYTE $0x04 // PSLLDQ $0x4, X1                      // pslldq	xmm1, 4
-	LONG $0xcbfe0f66             // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0x33380f66; BYTE $0xd9 // PMOVZXWD X1, X3                      // pmovzxwd	xmm3, xmm1
-	LONG $0xdafe0f66             // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0xc8690f66             // PUNPCKHWD X0, X1                     // punpckhwd	xmm1, xmm0
-	LONG $0xcbfe0f66             // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0x587f0ff3; BYTE $0x20 // MOVDQU X3, 0x20(AX)                  // movdqu	xmmword ptr [rax + 32], xmm3
-	LONG $0x487f0ff3; BYTE $0x30 // MOVDQU X1, 0x30(AX)                  // movdqu	xmmword ptr [rax + 48], xmm1
-	LONG $0x52f00ff2; BYTE $0x10 // LDDQU 0x10(DX), X2                   // lddqu	xmm2, xmmword ptr [rdx + 16]
-	LONG $0x30380f66; BYTE $0xd2 // PMOVZXBW X2, X2                      // pmovzxbw	xmm2, xmm2
-	LONG $0xda6f0f66             // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
-	LONG $0xfb730f66; BYTE $0x02 // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
-	LONG $0xc9700f66; BYTE $0xff // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xdafe0f66             // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0xd36f0f66             // MOVDQA X3, X2                        // movdqa	xmm2, xmm3
-	LONG $0xfa730f66; BYTE $0x04 // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xd3fe0f66             // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0x33380f66; BYTE $0xda // PMOVZXWD X2, X3                      // pmovzxwd	xmm3, xmm2
-	LONG $0xd9fe0f66             // PADDD X1, X3                         // paddd	xmm3, xmm1
-	LONG $0xd0690f66             // PUNPCKHWD X0, X2                     // punpckhwd	xmm2, xmm0
-	LONG $0xd3fe0f66             // PADDD X3, X2                         // paddd	xmm2, xmm3
-	LONG $0x587f0ff3; BYTE $0x40 // MOVDQU X3, 0x40(AX)                  // movdqu	xmmword ptr [rax + 64], xmm3
-	LONG $0x507f0ff3; BYTE $0x50 // MOVDQU X2, 0x50(AX)                  // movdqu	xmmword ptr [rax + 80], xmm2
-	LONG $0x4af00ff2; BYTE $0x18 // LDDQU 0x18(DX), X1                   // lddqu	xmm1, xmmword ptr [rdx + 24]
-	LONG $0x30380f66; BYTE $0xc9 // PMOVZXBW X1, X1                      // pmovzxbw	xmm1, xmm1
-	LONG $0xd96f0f66             // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
-	LONG $0xfb730f66; BYTE $0x02 // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
-	LONG $0xd2700f66; BYTE $0xff // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
-	LONG $0xd9fe0f66             // PADDD X1, X3                         // paddd	xmm3, xmm1
-	LONG $0xcb6f0f66             // MOVDQA X3, X1                        // movdqa	xmm1, xmm3
-	LONG $0xf9730f66; BYTE $0x04 // PSLLDQ $0x4, X1                      // pslldq	xmm1, 4
-	LONG $0xcbfe0f66             // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0x33380f66; BYTE $0xd9 // PMOVZXWD X1, X3                      // pmovzxwd	xmm3, xmm1
-	LONG $0xdafe0f66             // PADDD X2, X3                         // paddd	xmm3, xmm2
-	LONG $0xc8690f66             // PUNPCKHWD X0, X1                     // punpckhwd	xmm1, xmm0
-	LONG $0xcbfe0f66             // PADDD X3, X1                         // paddd	xmm1, xmm3
-	LONG $0x587f0ff3; BYTE $0x60 // MOVDQU X3, 0x60(AX)                  // movdqu	xmmword ptr [rax + 96], xmm3
-	ADDQ $0x20, DX               // <--                                  // add	rdx, 32
-	JMP  LBB13_11                // <--                                  // jmp	.LBB13_11
+LBB13_8:
+	MOVQ 0(R15), CX                        // <--                                  // mov	rcx, qword ptr [r15]
+	LONG $0xc9700f66; BYTE $0xff           // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
+	QUAD $0x555555555555bf48; WORD $0x5555 // MOVQ $0x5555555555555555, DI         // movabs	rdi, 6148914691236517205
+	CMPQ CX, DI                            // <--                                  // cmp	rcx, rdi
+	JNE  LBB13_6                           // <--                                  // jne	.LBB13_6
+	LONG $0x16f00ff2                       // LDDQU 0(SI), X2                      // lddqu	xmm2, xmmword ptr [rsi]
+	LONG $0x30380f66; BYTE $0xd2           // PMOVZXBW X2, X2                      // pmovzxbw	xmm2, xmm2
+	LONG $0xda6f0f66                       // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
+	LONG $0xfb730f66; BYTE $0x02           // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
+	LONG $0xdafe0f66                       // PADDD X2, X3                         // paddd	xmm3, xmm2
+	LONG $0xd36f0f66                       // MOVDQA X3, X2                        // movdqa	xmm2, xmm3
+	LONG $0xfa730f66; BYTE $0x04           // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
+	LONG $0xd3fe0f66                       // PADDD X3, X2                         // paddd	xmm2, xmm3
+	LONG $0x33380f66; BYTE $0xda           // PMOVZXWD X2, X3                      // pmovzxwd	xmm3, xmm2
+	LONG $0xcbfe0f66                       // PADDD X3, X1                         // paddd	xmm1, xmm3
+	LONG $0xd0690f66                       // PUNPCKHWD X0, X2                     // punpckhwd	xmm2, xmm0
+	LONG $0xd1fe0f66                       // PADDD X1, X2                         // paddd	xmm2, xmm1
+	LONG $0x7f0f41f3; BYTE $0x0e           // MOVDQU X1, 0(R14)                    // movdqu	xmmword ptr [r14], xmm1
+	LONG $0x7f0f41f3; WORD $0x1056         // MOVDQU X2, 0x10(R14)                 // movdqu	xmmword ptr [r14 + 16], xmm2
+	LONG $0x4ef00ff2; BYTE $0x08           // LDDQU 0x8(SI), X1                    // lddqu	xmm1, xmmword ptr [rsi + 8]
+	LONG $0x30380f66; BYTE $0xc9           // PMOVZXBW X1, X1                      // pmovzxbw	xmm1, xmm1
+	LONG $0xd96f0f66                       // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
+	LONG $0xfb730f66; BYTE $0x02           // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
+	LONG $0xd2700f66; BYTE $0xff           // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
+	LONG $0xd9fe0f66                       // PADDD X1, X3                         // paddd	xmm3, xmm1
+	LONG $0xcb6f0f66                       // MOVDQA X3, X1                        // movdqa	xmm1, xmm3
+	LONG $0xf9730f66; BYTE $0x04           // PSLLDQ $0x4, X1                      // pslldq	xmm1, 4
+	LONG $0xcbfe0f66                       // PADDD X3, X1                         // paddd	xmm1, xmm3
+	LONG $0x33380f66; BYTE $0xd9           // PMOVZXWD X1, X3                      // pmovzxwd	xmm3, xmm1
+	LONG $0xdafe0f66                       // PADDD X2, X3                         // paddd	xmm3, xmm2
+	LONG $0xc8690f66                       // PUNPCKHWD X0, X1                     // punpckhwd	xmm1, xmm0
+	LONG $0xcbfe0f66                       // PADDD X3, X1                         // paddd	xmm1, xmm3
+	LONG $0x7f0f41f3; WORD $0x205e         // MOVDQU X3, 0x20(R14)                 // movdqu	xmmword ptr [r14 + 32], xmm3
+	LONG $0x7f0f41f3; WORD $0x304e         // MOVDQU X1, 0x30(R14)                 // movdqu	xmmword ptr [r14 + 48], xmm1
+	LONG $0x56f00ff2; BYTE $0x10           // LDDQU 0x10(SI), X2                   // lddqu	xmm2, xmmword ptr [rsi + 16]
+	LONG $0x30380f66; BYTE $0xd2           // PMOVZXBW X2, X2                      // pmovzxbw	xmm2, xmm2
+	LONG $0xda6f0f66                       // MOVDQA X2, X3                        // movdqa	xmm3, xmm2
+	LONG $0xfb730f66; BYTE $0x02           // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
+	LONG $0xc9700f66; BYTE $0xff           // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
+	LONG $0xdafe0f66                       // PADDD X2, X3                         // paddd	xmm3, xmm2
+	LONG $0xd36f0f66                       // MOVDQA X3, X2                        // movdqa	xmm2, xmm3
+	LONG $0xfa730f66; BYTE $0x04           // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
+	LONG $0xd3fe0f66                       // PADDD X3, X2                         // paddd	xmm2, xmm3
+	LONG $0x33380f66; BYTE $0xda           // PMOVZXWD X2, X3                      // pmovzxwd	xmm3, xmm2
+	LONG $0xd9fe0f66                       // PADDD X1, X3                         // paddd	xmm3, xmm1
+	LONG $0xd0690f66                       // PUNPCKHWD X0, X2                     // punpckhwd	xmm2, xmm0
+	LONG $0xd3fe0f66                       // PADDD X3, X2                         // paddd	xmm2, xmm3
+	LONG $0x7f0f41f3; WORD $0x405e         // MOVDQU X3, 0x40(R14)                 // movdqu	xmmword ptr [r14 + 64], xmm3
+	LONG $0x7f0f41f3; WORD $0x5056         // MOVDQU X2, 0x50(R14)                 // movdqu	xmmword ptr [r14 + 80], xmm2
+	LONG $0x4ef00ff2; BYTE $0x18           // LDDQU 0x18(SI), X1                   // lddqu	xmm1, xmmword ptr [rsi + 24]
+	LONG $0x30380f66; BYTE $0xc9           // PMOVZXBW X1, X1                      // pmovzxbw	xmm1, xmm1
+	LONG $0xd96f0f66                       // MOVDQA X1, X3                        // movdqa	xmm3, xmm1
+	LONG $0xfb730f66; BYTE $0x02           // PSLLDQ $0x2, X3                      // pslldq	xmm3, 2
+	LONG $0xd2700f66; BYTE $0xff           // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
+	LONG $0xd9fe0f66                       // PADDD X1, X3                         // paddd	xmm3, xmm1
+	LONG $0xcb6f0f66                       // MOVDQA X3, X1                        // movdqa	xmm1, xmm3
+	LONG $0xf9730f66; BYTE $0x04           // PSLLDQ $0x4, X1                      // pslldq	xmm1, 4
+	LONG $0xcbfe0f66                       // PADDD X3, X1                         // paddd	xmm1, xmm3
+	LONG $0x33380f66; BYTE $0xd9           // PMOVZXWD X1, X3                      // pmovzxwd	xmm3, xmm1
+	LONG $0xdafe0f66                       // PADDD X2, X3                         // paddd	xmm3, xmm2
+	LONG $0xc8690f66                       // PUNPCKHWD X0, X1                     // punpckhwd	xmm1, xmm0
+	LONG $0xcbfe0f66                       // PADDD X3, X1                         // paddd	xmm1, xmm3
+	LONG $0x7f0f41f3; WORD $0x605e         // MOVDQU X3, 0x60(R14)                 // movdqu	xmmword ptr [r14 + 96], xmm3
+	ADDQ $0x20, SI                         // <--                                  // add	rsi, 32
+	JMP  LBB13_7                           // <--                                  // jmp	.LBB13_7
 
-LBB13_14:
-	MOVQ R10, CX                               // <--                                  // mov	rcx, r10
-	LONG $0xc9b60f44                           // MOVZX CL, R9                         // movzx	r9d, cl
-	LEAQ lengthTable_0124<>(SB), R14           // <--                                  // lea	r14, [rip + lengthTable_0124]
-	LONG $0x1cb60f43; BYTE $0x31               // MOVZX 0(R9)(R14*1), BX               // movzx	ebx, byte ptr [r9 + r14]
-	LONG $0x026f0ff3                           // MOVDQU 0(DX), X0                     // movdqu	xmm0, xmmword ptr [rdx]
-	SHLQ $0x4, R9                              // <--                                  // shl	r9, 4
-	LEAQ shuffleTable_0124<>(SB), R10          // <--                                  // lea	r10, [rip + shuffleTable_0124]
-	LONG $0x380f4366; WORD $0x0400; BYTE $0x11 // PSHUFB 0(R9)(R10*1), X0              // pshufb	xmm0, xmmword ptr [r9 + r10]
-	LEAQ 0(DX)(BX*1), R11                      // <--                                  // lea	r11, [rdx + rbx]
-	LONG $0xd06f0f66                           // MOVDQA X0, X2                        // movdqa	xmm2, xmm0
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xd0fe0f66                           // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0xc26f0f66                           // MOVDQA X2, X0                        // movdqa	xmm0, xmm2
-	LONG $0xf8730f66; BYTE $0x08               // PSLLDQ $0x8, X0                      // pslldq	xmm0, 8
-	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xd0fe0f66                           // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0x107f0ff3                           // MOVDQU X2, 0(AX)                     // movdqu	xmmword ptr [rax], xmm2
-	WORD $0xb60f; BYTE $0xf5                   // MOVZX CH, SI                         // movzx	esi, ch
-	LONG $0x0cb60f46; BYTE $0x36               // MOVZX 0(SI)(R14*1), R9               // movzx	r9d, byte ptr [rsi + r14]
-	LONG $0x046f0ff3; BYTE $0x1a               // MOVDQU 0(DX)(BX*1), X0               // movdqu	xmm0, xmmword ptr [rdx + rbx]
-	SHLQ $0x4, SI                              // <--                                  // shl	rsi, 4
-	LONG $0x380f4266; WORD $0x0400; BYTE $0x16 // PSHUFB 0(SI)(R10*1), X0              // pshufb	xmm0, xmmword ptr [rsi + r10]
-	LEAQ 0(R11)(R9*1), BX                      // <--                                  // lea	rbx, [r11 + r9]
-	LONG $0xc86f0f66                           // MOVDQA X0, X1                        // movdqa	xmm1, xmm0
-	LONG $0xf9730f66; BYTE $0x04               // PSLLDQ $0x4, X1                      // pslldq	xmm1, 4
-	LONG $0xd2700f66; BYTE $0xff               // PSHUFD $0xff, X2, X2                 // pshufd	xmm2, xmm2, 255
-	LONG $0xc8fe0f66                           // PADDD X0, X1                         // paddd	xmm1, xmm0
-	LONG $0xc16f0f66                           // MOVDQA X1, X0                        // movdqa	xmm0, xmm1
-	LONG $0xf8730f66; BYTE $0x08               // PSLLDQ $0x8, X0                      // pslldq	xmm0, 8
-	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0xc8fe0f66                           // PADDD X0, X1                         // paddd	xmm1, xmm0
-	LONG $0x487f0ff3; BYTE $0x10               // MOVDQU X1, 0x10(AX)                  // movdqu	xmmword ptr [rax + 16], xmm1
-	WORD $0xca89                               // MOVL CX, DX                          // mov	edx, ecx
-	WORD $0xeac1; BYTE $0x10                   // SHRL $0x10, DX                       // shr	edx, 16
-	WORD $0xb60f; BYTE $0xd2                   // MOVZX DL, DX                         // movzx	edx, dl
-	LONG $0x34b60f42; BYTE $0x32               // MOVZX 0(DX)(R14*1), SI               // movzx	esi, byte ptr [rdx + r14]
-	LONG $0x6f0f43f3; WORD $0x1904             // MOVDQU 0(R9)(R11*1), X0              // movdqu	xmm0, xmmword ptr [r9 + r11]
-	SHLQ $0x4, DX                              // <--                                  // shl	rdx, 4
-	LONG $0x380f4266; WORD $0x0400; BYTE $0x12 // PSHUFB 0(DX)(R10*1), X0              // pshufb	xmm0, xmmword ptr [rdx + r10]
-	LEAQ 0(BX)(SI*1), DX                       // <--                                  // lea	rdx, [rbx + rsi]
-	LONG $0xd06f0f66                           // MOVDQA X0, X2                        // movdqa	xmm2, xmm0
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xd0fe0f66                           // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0xc26f0f66                           // MOVDQA X2, X0                        // movdqa	xmm0, xmm2
-	LONG $0xf8730f66; BYTE $0x08               // PSLLDQ $0x8, X0                      // pslldq	xmm0, 8
-	LONG $0xc2fe0f66                           // PADDD X2, X0                         // paddd	xmm0, xmm2
-	LONG $0xc1fe0f66                           // PADDD X1, X0                         // paddd	xmm0, xmm1
-	LONG $0x407f0ff3; BYTE $0x20               // MOVDQU X0, 0x20(AX)                  // movdqu	xmmword ptr [rax + 32], xmm0
-	WORD $0x8941; BYTE $0xc9                   // MOVL CX, R9                          // mov	r9d, ecx
-	LONG $0x18e9c141                           // SHRL $0x18, R9                       // shr	r9d, 24
-	LONG $0x1cb60f47; BYTE $0x31               // MOVZX 0(R9)(R14*1), R11              // movzx	r11d, byte ptr [r9 + r14]
-	LONG $0x0c6f0ff3; BYTE $0x1e               // MOVDQU 0(SI)(BX*1), X1               // movdqu	xmm1, xmmword ptr [rsi + rbx]
-	SHLQ $0x4, R9                              // <--                                  // shl	r9, 4
-	LONG $0x380f4366; WORD $0x0c00; BYTE $0x11 // PSHUFB 0(R9)(R10*1), X1              // pshufb	xmm1, xmmword ptr [r9 + r10]
-	LONG $0xd16f0f66                           // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc0700f66; BYTE $0xff               // PSHUFD $0xff, X0, X0                 // pshufd	xmm0, xmm0, 255
-	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xca6f0f66                           // MOVDQA X2, X1                        // movdqa	xmm1, xmm2
-	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
-	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0xc8fe0f66                           // PADDD X0, X1                         // paddd	xmm1, xmm0
-	LONG $0x487f0ff3; BYTE $0x30               // MOVDQU X1, 0x30(AX)                  // movdqu	xmmword ptr [rax + 48], xmm1
-	MOVQ CX, SI                                // <--                                  // mov	rsi, rcx
-	SHRQ $0x20, SI                             // <--                                  // shr	rsi, 32
-	LONG $0xf6b60f40                           // MOVZX SI, SI                         // movzx	esi, sil
-	LONG $0x0cb60f46; BYTE $0x36               // MOVZX 0(SI)(R14*1), R9               // movzx	r9d, byte ptr [rsi + r14]
-	LONG $0x6f0f41f3; WORD $0x1304             // MOVDQU 0(R11)(DX*1), X0              // movdqu	xmm0, xmmword ptr [r11 + rdx]
-	SHLQ $0x4, SI                              // <--                                  // shl	rsi, 4
-	LONG $0x380f4266; WORD $0x0400; BYTE $0x16 // PSHUFB 0(SI)(R10*1), X0              // pshufb	xmm0, xmmword ptr [rsi + r10]
-	LEAQ 0(DX)(R11*1), SI                      // <--                                  // lea	rsi, [rdx + r11]
-	LEAQ 0(SI)(R9*1), DX                       // <--                                  // lea	rdx, [rsi + r9]
-	LONG $0xd06f0f66                           // MOVDQA X0, X2                        // movdqa	xmm2, xmm0
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xd0fe0f66                           // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0xc26f0f66                           // MOVDQA X2, X0                        // movdqa	xmm0, xmm2
-	LONG $0xf8730f66; BYTE $0x08               // PSLLDQ $0x8, X0                      // pslldq	xmm0, 8
-	LONG $0xc2fe0f66                           // PADDD X2, X0                         // paddd	xmm0, xmm2
-	LONG $0xc1fe0f66                           // PADDD X1, X0                         // paddd	xmm0, xmm1
-	LONG $0x407f0ff3; BYTE $0x40               // MOVDQU X0, 0x40(AX)                  // movdqu	xmmword ptr [rax + 64], xmm0
-	MOVQ CX, R11                               // <--                                  // mov	r11, rcx
-	SHRQ $0x28, R11                            // <--                                  // shr	r11, 40
-	LONG $0xdbb60f41                           // MOVZX R11, BX                        // movzx	ebx, r11b
-	LONG $0x1cb60f46; BYTE $0x33               // MOVZX 0(BX)(R14*1), R11              // movzx	r11d, byte ptr [rbx + r14]
-	LONG $0x6f0f41f3; WORD $0x310c             // MOVDQU 0(R9)(SI*1), X1               // movdqu	xmm1, xmmword ptr [r9 + rsi]
-	SHLQ $0x4, BX                              // <--                                  // shl	rbx, 4
-	LONG $0x380f4266; WORD $0x0c00; BYTE $0x13 // PSHUFB 0(BX)(R10*1), X1              // pshufb	xmm1, xmmword ptr [rbx + r10]
-	LONG $0xd16f0f66                           // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc0700f66; BYTE $0xff               // PSHUFD $0xff, X0, X0                 // pshufd	xmm0, xmm0, 255
-	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xca6f0f66                           // MOVDQA X2, X1                        // movdqa	xmm1, xmm2
-	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
-	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0xc8fe0f66                           // PADDD X0, X1                         // paddd	xmm1, xmm0
-	LONG $0x487f0ff3; BYTE $0x50               // MOVDQU X1, 0x50(AX)                  // movdqu	xmmword ptr [rax + 80], xmm1
-	MOVQ CX, SI                                // <--                                  // mov	rsi, rcx
-	SHRQ $0x30, SI                             // <--                                  // shr	rsi, 48
-	LONG $0xf6b60f40                           // MOVZX SI, SI                         // movzx	esi, sil
-	LONG $0x0cb60f46; BYTE $0x36               // MOVZX 0(SI)(R14*1), R9               // movzx	r9d, byte ptr [rsi + r14]
-	LONG $0x6f0f41f3; WORD $0x1304             // MOVDQU 0(R11)(DX*1), X0              // movdqu	xmm0, xmmword ptr [r11 + rdx]
-	SHLQ $0x4, SI                              // <--                                  // shl	rsi, 4
-	LONG $0x380f4266; WORD $0x0400; BYTE $0x16 // PSHUFB 0(SI)(R10*1), X0              // pshufb	xmm0, xmmword ptr [rsi + r10]
-	LEAQ 0(DX)(R11*1), SI                      // <--                                  // lea	rsi, [rdx + r11]
-	LONG $0xd06f0f66                           // MOVDQA X0, X2                        // movdqa	xmm2, xmm0
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc9700f66; BYTE $0xff               // PSHUFD $0xff, X1, X1                 // pshufd	xmm1, xmm1, 255
-	LONG $0xd0fe0f66                           // PADDD X0, X2                         // paddd	xmm2, xmm0
-	LONG $0xc26f0f66                           // MOVDQA X2, X0                        // movdqa	xmm0, xmm2
-	LONG $0xf8730f66; BYTE $0x08               // PSLLDQ $0x8, X0                      // pslldq	xmm0, 8
-	LONG $0xc2fe0f66                           // PADDD X2, X0                         // paddd	xmm0, xmm2
-	LONG $0xc1fe0f66                           // PADDD X1, X0                         // paddd	xmm0, xmm1
-	LONG $0x407f0ff3; BYTE $0x60               // MOVDQU X0, 0x60(AX)                  // movdqu	xmmword ptr [rax + 96], xmm0
-	SHRQ $0x38, CX                             // <--                                  // shr	rcx, 56
-	LONG $0x14b60f42; BYTE $0x31               // MOVZX 0(CX)(R14*1), DX               // movzx	edx, byte ptr [rcx + r14]
-	LONG $0x6f0f41f3; WORD $0x310c             // MOVDQU 0(R9)(SI*1), X1               // movdqu	xmm1, xmmword ptr [r9 + rsi]
-	SHLQ $0x4, CX                              // <--                                  // shl	rcx, 4
-	LONG $0x380f4266; WORD $0x0c00; BYTE $0x11 // PSHUFB 0(CX)(R10*1), X1              // pshufb	xmm1, xmmword ptr [rcx + r10]
-	ADDQ R9, DX                                // <--                                  // add	rdx, r9
-	ADDQ SI, DX                                // <--                                  // add	rdx, rsi
-	LONG $0xd16f0f66                           // MOVDQA X1, X2                        // movdqa	xmm2, xmm1
-	LONG $0xfa730f66; BYTE $0x04               // PSLLDQ $0x4, X2                      // pslldq	xmm2, 4
-	LONG $0xc0700f66; BYTE $0xff               // PSHUFD $0xff, X0, X0                 // pshufd	xmm0, xmm0, 255
-	LONG $0xd1fe0f66                           // PADDD X1, X2                         // paddd	xmm2, xmm1
-	LONG $0xca6f0f66                           // MOVDQA X2, X1                        // movdqa	xmm1, xmm2
-	LONG $0xf9730f66; BYTE $0x08               // PSLLDQ $0x8, X1                      // pslldq	xmm1, 8
-	LONG $0xcafe0f66                           // PADDD X2, X1                         // paddd	xmm1, xmm2
-	LONG $0xc8fe0f66                           // PADDD X0, X1                         // paddd	xmm1, xmm0
-	LONG $0x487f0ff3; BYTE $0x70               // MOVDQU X1, 0x70(AX)                  // movdqu	xmmword ptr [rax + 112], xmm1
-
-LBB13_15:
-	MOVQ 0x8(SP), R9 // <--                                  // mov	r9, qword ptr [rsp + 8]
-	MOVQ 0(SP), CX   // <--                                  // mov	rcx, qword ptr [rsp]
-
-LBB13_16:
-	WORD $0x8941; BYTE $0xca // MOVL CX, R10                         // mov	r10d, ecx
-	LONG $0xe0e28341         // ANDL $-0x20, R10                     // and	r10d, -32
-	LEAQ 0(R9)(R10*4), AX    // <--                                  // lea	rax, [r9 + 4*r10]
-	MOVQ CX, SI              // <--                                  // mov	rsi, rcx
-	ANDQ $0x1f, SI           // <--                                  // and	rsi, 31
-	JE   LBB13_19            // <--                                  // je	.LBB13_19
-	WORD $0x854d; BYTE $0xd2 // TESTQ R10, R10                       // test	r10, r10
-	JE   LBB13_19            // <--                                  // je	.LBB13_19
+LBB13_10:
+	WORD $0xd189             // MOVL DX, CX                          // mov	ecx, edx
+	WORD $0xe183; BYTE $0xe0 // ANDL $-0x20, CX                      // and	ecx, -32
+	MOVQ 0x10(SP), BX        // <--                                  // mov	rbx, qword ptr [rsp + 16]
+	LEAQ 0(BX)(CX*4), AX     // <--                                  // lea	rax, [rbx + 4*rcx]
+	ANDQ $0x1f, DX           // <--                                  // and	rdx, 31
+	JE   LBB13_14            // <--                                  // je	.LBB13_14
+	WORD $0x8548; BYTE $0xc9 // TESTQ CX, CX                         // test	rcx, rcx
+	MOVQ 0(SP), DI           // <--                                  // mov	rdi, qword ptr [rsp]
+	JE   LBB13_13            // <--                                  // je	.LBB13_13
 	LONG $0xfc408b44         // MOVL -0x4(AX), R8                    // mov	r8d, dword ptr [rax - 4]
 
-LBB13_19:
-	WORD $0x8548; BYTE $0xf6 // TESTQ SI, SI                         // test	rsi, rsi
-	JE   LBB13_31            // <--                                  // je	.LBB13_31
+LBB13_13:
 	WORD $0x8548; BYTE $0xd2 // TESTQ DX, DX                         // test	rdx, rdx
-	JE   LBB13_31            // <--                                  // je	.LBB13_31
-	SHRQ $0x2, CX            // <--                                  // shr	rcx, 2
+	JNE  LBB13_15            // <--                                  // jne	.LBB13_15
+	JMP  LBB13_26            // <--                                  // jmp	.LBB13_26
+
+LBB13_14:
+	MOVQ 0(SP), DI           // <--                                  // mov	rdi, qword ptr [rsp]
+	WORD $0x8548; BYTE $0xd2 // TESTQ DX, DX                         // test	rdx, rdx
+	JE   LBB13_26            // <--                                  // je	.LBB13_26
+
+LBB13_15:
+	WORD $0x8548; BYTE $0xf6 // TESTQ SI, SI                         // test	rsi, rsi
+	JE   LBB13_26            // <--                                  // je	.LBB13_26
+	MOVQ 0x8(SP), CX         // <--                                  // mov	rcx, qword ptr [rsp + 8]
 	WORD $0xe183; BYTE $0xf8 // ANDL $-0x8, CX                       // and	ecx, -8
 	ADDQ CX, DI              // <--                                  // add	rdi, rcx
 	LONG $0x17b60f44         // MOVZX 0(DI), R10                     // movzx	r10d, byte ptr [rdi]
 	INCQ DI                  // <--                                  // inc	rdi
 	XORL CX, CX              // <--                                  // xor	ecx, ecx
-	JMP  LBB13_24            // <--                                  // jmp	.LBB13_24
+	JMP  LBB13_19            // <--                                  // jmp	.LBB13_19
 
-LBB13_22:
-	LONG $0x1ab60f44 // MOVZX 0(DX), R11                     // movzx	r11d, byte ptr [rdx]
-	INCQ DX          // <--                                  // inc	rdx
+LBB13_17:
+	LONG $0x1eb60f44 // MOVZX 0(SI), R11                     // movzx	r11d, byte ptr [rsi]
+	INCQ SI          // <--                                  // inc	rsi
 
-LBB13_23:
+LBB13_18:
 	WORD $0x0145; BYTE $0xd8 // ADDL R11, R8                         // add	r8d, r11d
 	WORD $0x8944; BYTE $0x00 // MOVL R8, 0(AX)                       // mov	dword ptr [rax], r8d
 	ADDQ $0x4, AX            // <--                                  // add	rax, 4
 	WORD $0xc180; BYTE $0x02 // ADDL $0x2, CL                        // add	cl, 2
-	WORD $0xceff             // DECL SI                              // dec	esi
-	JE   LBB13_31            // <--                                  // je	.LBB13_31
+	WORD $0xcaff             // DECL DX                              // dec	edx
+	JE   LBB13_26            // <--                                  // je	.LBB13_26
 
-LBB13_24:
+LBB13_19:
 	WORD $0xf980; BYTE $0x08 // CMPL CL, $0x8                        // cmp	cl, 8
-	JNE  LBB13_26            // <--                                  // jne	.LBB13_26
+	JNE  LBB13_21            // <--                                  // jne	.LBB13_21
 	LONG $0x17b60f44         // MOVZX 0(DI), R10                     // movzx	r10d, byte ptr [rdi]
 	INCQ DI                  // <--                                  // inc	rdi
 	XORL CX, CX              // <--                                  // xor	ecx, ecx
 
-LBB13_26:
-	WORD $0x8944; BYTE $0xd3 // MOVL R10, BX                         // mov	ebx, r10d
-	WORD $0xebd3             // SHRL CL, BX                          // shr	ebx, cl
-	WORD $0x8941; BYTE $0xdb // MOVL BX, R11                         // mov	r11d, ebx
+LBB13_21:
+	WORD $0x8945; BYTE $0xd1 // MOVL R10, R9                         // mov	r9d, r10d
+	WORD $0xd341; BYTE $0xe9 // SHRL CL, R9                          // shr	r9d, cl
+	WORD $0x8945; BYTE $0xcb // MOVL R9, R11                         // mov	r11d, r9d
 	LONG $0x03e38341         // ANDL $0x3, R11                       // and	r11d, 3
-	WORD $0xc3f6; BYTE $0x03 // TESTL $0x3, BL                       // test	bl, 3
-	JE   LBB13_23            // <--                                  // je	.LBB13_23
+	LONG $0x03c1f641         // TESTL $0x3, R9                       // test	r9b, 3
+	JE   LBB13_18            // <--                                  // je	.LBB13_18
 	CMPL R11, $0x1           // <--                                  // cmp	r11d, 1
-	JE   LBB13_22            // <--                                  // je	.LBB13_22
+	JE   LBB13_17            // <--                                  // je	.LBB13_17
 	CMPL R11, $0x2           // <--                                  // cmp	r11d, 2
-	JNE  LBB13_30            // <--                                  // jne	.LBB13_30
-	LONG $0x1ab70f44         // MOVZX 0(DX), R11                     // movzx	r11d, word ptr [rdx]
-	ADDQ $0x2, DX            // <--                                  // add	rdx, 2
-	JMP  LBB13_23            // <--                                  // jmp	.LBB13_23
+	JNE  LBB13_25            // <--                                  // jne	.LBB13_25
+	LONG $0x1eb70f44         // MOVZX 0(SI), R11                     // movzx	r11d, word ptr [rsi]
+	ADDQ $0x2, SI            // <--                                  // add	rsi, 2
+	JMP  LBB13_18            // <--                                  // jmp	.LBB13_18
 
-LBB13_30:
-	WORD $0x8b44; BYTE $0x1a // MOVL 0(DX), R11                      // mov	r11d, dword ptr [rdx]
-	ADDQ $0x4, DX            // <--                                  // add	rdx, 4
-	JMP  LBB13_23            // <--                                  // jmp	.LBB13_23
+LBB13_25:
+	WORD $0x8b44; BYTE $0x1e // MOVL 0(SI), R11                      // mov	r11d, dword ptr [rsi]
+	ADDQ $0x4, SI            // <--                                  // add	rsi, 4
+	JMP  LBB13_18            // <--                                  // jmp	.LBB13_18
 
-LBB13_31:
-	SUBQ R9, AX              // <--                                  // sub	rax, r9
+LBB13_26:
+	SUBQ BX, AX              // <--                                  // sub	rax, rbx
 	SARQ $0x2, AX            // <--                                  // sar	rax, 2
-	WORD $0x8548; BYTE $0xd2 // TESTQ DX, DX                         // test	rdx, rdx
-	LONG $0xc2440f48         // CMOVE DX, AX                         // cmove	rax, rdx
+	WORD $0x8548; BYTE $0xf6 // TESTQ SI, SI                         // test	rsi, rsi
+	LONG $0xc6440f48         // CMOVE SI, AX                         // cmove	rax, rsi
 	NOP                      // (skipped)                            // lea	rsp, [rbp - 40]
 	NOP                      // (skipped)                            // pop	rbx
 	NOP                      // (skipped)                            // pop	r12

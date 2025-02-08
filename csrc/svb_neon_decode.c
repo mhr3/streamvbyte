@@ -5,18 +5,16 @@
 
 static inline uint32x4_t svb_decode_quad(uint8_t key, const uint8_t **dataPtrPtr)
 {
-    uint8_t len;
-    uint8_t *pshuf = (uint8_t *)&shuffleTable_1234[key];
-    uint8x16_t decodingShuffle = vld1q_u8(pshuf);
-    uint8x16_t compressed = vld1q_u8(*dataPtrPtr);
-
 #ifdef AVOIDLENGTHLOOKUP
     // this avoids the dependency on lengthTable,
     // see https://github.com/lemire/streamvbyte/issues/12
-    len = pshuf[12 + (key >> 6)] + 1;
+    uint8_t len = pshuf[12 + (key >> 6)] + 1;
 #else
-    len = lengthTable_1234[key];
+    uint8_t len = lengthTable_1234[key];
 #endif
+    uint8_t *pshuf = (uint8_t *)&shuffleTable_1234[key];
+    uint8x16_t decodingShuffle = vld1q_u8(pshuf);
+    uint8x16_t compressed = vld1q_u8(*dataPtrPtr);
 
     *dataPtrPtr += len;
 
@@ -70,4 +68,18 @@ static inline int32x4_t svb_prefix_sum_s32(int32x4_t curr, int32x4_t prev)
     curr = vaddq_s32(curr, prev);
     curr = vaddq_s32(curr, add);
     return curr;
+}
+
+static inline uint32x4_t svb_write_u32_delta(uint32_t *out, uint32x4_t vec, uint32x4_t prev)
+{
+    vec = svb_prefix_sum_u32(vec, prev);
+    vst1q_u32(out, vec);
+    return vec;
+}
+
+static inline int32x4_t svb_write_s32_delta(int32_t *out, int32x4_t vec, int32x4_t prev)
+{
+    vec = svb_prefix_sum_s32(vec, prev);
+    vst1q_s32(out, vec);
+    return vec;
 }
