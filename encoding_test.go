@@ -228,16 +228,6 @@ func BenchmarkEncode(b *testing.B) {
 			})
 		}
 	})
-
-	b.Run("zigzag-two-step", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		var zzData []uint32
-		for i := 0; i < b.N; i++ {
-			zzData = ZigZag.Encode(benchInt32Data, zzData)
-			encoded = EncodeUint32(zzData, &EncodeOptionsNew[uint32]{Buffer: encoded})
-			_ = encoded
-		}
-	})
 }
 
 func BenchmarkEncodeDelta(b *testing.B) {
@@ -264,16 +254,6 @@ func BenchmarkEncodeDelta(b *testing.B) {
 					_ = encoded
 				}
 			})
-		}
-	})
-
-	b.Run("zigzag-two-step", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		var zzData []uint32
-		for i := 0; i < b.N; i++ {
-			zzData = ZigZag.EncodeDelta(benchInt32Data, zzData, 0)
-			encoded = EncodeUint32(zzData, &EncodeOptionsNew[uint32]{Buffer: encoded})
-			_ = encoded
 		}
 	})
 }
@@ -306,17 +286,6 @@ func BenchmarkDecode(b *testing.B) {
 					_ = decodedInt32
 				}
 			})
-		}
-	})
-
-	b.Run("zigzag-two-step", func(b *testing.B) {
-		b.SetBytes(int64(4 * benchSize))
-		var zzData []uint32
-		var decoded []int32
-		for i := 0; i < b.N; i++ {
-			zzData = DecodeUint32(encoded, len(benchUint32Data), &DecodeOptionsNew[uint32]{Buffer: zzData})
-			decoded = ZigZag.Decode(zzData, decoded)
-			_ = decoded
 		}
 	})
 }
