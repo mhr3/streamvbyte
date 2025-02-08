@@ -50,7 +50,7 @@ func EncodeInt32(input []int32, opts *EncodeOptions[int32]) []byte {
 		opts = &EncodeOptions[int32]{}
 	}
 
-	return intEncoding{}.Encode(input, opts.Buffer, opts.Scheme)
+	return intEncoding.Encode(input, opts.Buffer, opts.Scheme)
 }
 
 func DecodeInt32(input []byte, count int, opts *DecodeOptions[int32]) []int32 {
@@ -58,7 +58,7 @@ func DecodeInt32(input []byte, count int, opts *DecodeOptions[int32]) []int32 {
 		opts = &DecodeOptions[int32]{}
 	}
 
-	return intEncoding{}.Decode(input, count, opts.Buffer, opts.Scheme)
+	return intEncoding.Decode(input, count, opts.Buffer, opts.Scheme)
 }
 
 func DeltaEncodeInt32(input []int32, opts *EncodeOptions[int32]) []byte {
@@ -66,7 +66,7 @@ func DeltaEncodeInt32(input []int32, opts *EncodeOptions[int32]) []byte {
 		opts = &EncodeOptions[int32]{}
 	}
 
-	return intEncoding{}.EncodeDelta(input, opts.Buffer, opts.Initial, opts.Scheme)
+	return intEncoding.EncodeDelta(input, opts.Buffer, opts.Initial, opts.Scheme)
 }
 
 func DeltaDecodeInt32(input []byte, count int, opts *DecodeOptions[int32]) []int32 {
@@ -74,7 +74,7 @@ func DeltaDecodeInt32(input []byte, count int, opts *DecodeOptions[int32]) []int
 		opts = &DecodeOptions[int32]{}
 	}
 
-	return intEncoding{}.DecodeDelta(input, count, opts.Buffer, opts.Initial, opts.Scheme)
+	return intEncoding.DecodeDelta(input, count, opts.Buffer, opts.Initial, opts.Scheme)
 }
 
 func EncodeUint32(input []uint32, opts *EncodeOptions[uint32]) []byte {
@@ -82,7 +82,7 @@ func EncodeUint32(input []uint32, opts *EncodeOptions[uint32]) []byte {
 		opts = &EncodeOptions[uint32]{}
 	}
 
-	return uintEncoding{}.Encode(input, opts.Buffer, opts.Scheme)
+	return uintEncoding.Encode(input, opts.Buffer, opts.Scheme)
 }
 
 func DecodeUint32(input []byte, count int, opts *DecodeOptions[uint32]) []uint32 {
@@ -90,7 +90,7 @@ func DecodeUint32(input []byte, count int, opts *DecodeOptions[uint32]) []uint32
 		opts = &DecodeOptions[uint32]{}
 	}
 
-	return uintEncoding{}.Decode(input, count, opts.Buffer, opts.Scheme)
+	return uintEncoding.Decode(input, count, opts.Buffer, opts.Scheme)
 }
 
 func DeltaEncodeUint32(input []uint32, opts *EncodeOptions[uint32]) []byte {
@@ -98,7 +98,7 @@ func DeltaEncodeUint32(input []uint32, opts *EncodeOptions[uint32]) []byte {
 		opts = &EncodeOptions[uint32]{}
 	}
 
-	return uintEncoding{}.EncodeDelta(input, opts.Buffer, opts.Initial, opts.Scheme)
+	return uintEncoding.EncodeDelta(input, opts.Buffer, opts.Initial, opts.Scheme)
 }
 
 func DeltaDecodeUint32(input []byte, count int, opts *DecodeOptions[uint32]) []uint32 {
@@ -106,5 +106,5 @@ func DeltaDecodeUint32(input []byte, count int, opts *DecodeOptions[uint32]) []u
 		opts = &DecodeOptions[uint32]{}
 	}
 
-	return uintEncoding{}.DecodeDelta(input, count, opts.Buffer, opts.Initial, opts.Scheme)
+	return uintEncoding.DecodeDelta(input, count, opts.Buffer, opts.Initial, opts.Scheme)
 }

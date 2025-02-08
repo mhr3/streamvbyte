@@ -8,7 +8,7 @@ import (
 
 var hasSSE41 = cpu.X86.HasSSE41
 
-func (uintEncoding) Encode(input []uint32, output []byte, scheme Scheme) []byte {
+func (uintEncodingWrapper) Encode(input []uint32, output []byte, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -31,7 +31,7 @@ func (uintEncoding) Encode(input []uint32, output []byte, scheme Scheme) []byte 
 	return output[:n]
 }
 
-func (uintEncoding) Decode(input []byte, count int, output []uint32, scheme Scheme) []uint32 {
+func (uintEncodingWrapper) Decode(input []byte, count int, output []uint32, scheme Scheme) []uint32 {
 	if count <= 0 {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (uintEncoding) Decode(input []byte, count int, output []uint32, scheme Sche
 	return output[:n]
 }
 
-func (uintEncoding) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
+func (uintEncodingWrapper) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -77,7 +77,7 @@ func (uintEncoding) EncodeDelta(input []uint32, output []byte, prev uint32, sche
 	return output[:n]
 }
 
-func (uintEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32, scheme Scheme) []uint32 {
+func (uintEncodingWrapper) DecodeDelta(input []byte, count int, output []uint32, prev uint32, scheme Scheme) []uint32 {
 	if count <= 0 {
 		return nil
 	}
@@ -104,7 +104,7 @@ func (uintEncoding) DecodeDelta(input []byte, count int, output []uint32, prev u
 	!!! Int32Encoding below !!!
 */
 
-func (intEncoding) Encode(input []int32, output []byte, scheme Scheme) []byte {
+func (intEncodingWrapper) Encode(input []int32, output []byte, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -127,7 +127,7 @@ func (intEncoding) Encode(input []int32, output []byte, scheme Scheme) []byte {
 	return output[:n]
 }
 
-func (intEncoding) Decode(input []byte, count int, output []int32, scheme Scheme) []int32 {
+func (intEncodingWrapper) Decode(input []byte, count int, output []int32, scheme Scheme) []int32 {
 	if count <= 0 {
 		return nil
 	}
@@ -150,7 +150,7 @@ func (intEncoding) Decode(input []byte, count int, output []int32, scheme Scheme
 	return output[:n]
 }
 
-func (intEncoding) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
+func (intEncodingWrapper) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
 	if len(input) == 0 {
 		return nil
 	}
@@ -173,7 +173,7 @@ func (intEncoding) EncodeDelta(input []int32, output []byte, prev int32, scheme 
 	return output[:n]
 }
 
-func (intEncoding) DecodeDelta(input []byte, count int, output []int32, prev int32, scheme Scheme) []int32 {
+func (intEncodingWrapper) DecodeDelta(input []byte, count int, output []int32, prev int32, scheme Scheme) []int32 {
 	if count <= 0 {
 		return nil
 	}

@@ -16,10 +16,13 @@ type encodingImpl[T uint32 | int32] interface {
 	DecodeDelta(input []byte, count int, output []T, prev T, scheme Scheme) []T
 }
 
-type uintEncoding struct{}
-type intEncoding struct{}
+type uintEncodingWrapper struct{}
+type intEncodingWrapper struct{}
 
 var (
-	_ encodingImpl[uint32] = uintEncoding{}
-	_ encodingImpl[int32]  = intEncoding{}
+	uintEncoding = uintEncodingWrapper{}
+	intEncoding  = intEncodingWrapper{}
+
+	_ encodingImpl[uint32] = uintEncoding
+	_ encodingImpl[int32]  = intEncoding
 )

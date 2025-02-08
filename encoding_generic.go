@@ -2,7 +2,7 @@
 
 package streamvbyte
 
-func (uintEncoding) Encode(input []uint32, output []byte, scheme Scheme) []byte {
+func (uintEncodingWrapper) Encode(input []uint32, output []byte, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
@@ -11,7 +11,7 @@ func (uintEncoding) Encode(input []uint32, output []byte, scheme Scheme) []byte 
 	return output[:n]
 }
 
-func (uintEncoding) Decode(input []byte, count int, output []uint32, scheme Scheme) []uint32 {
+func (uintEncodingWrapper) Decode(input []byte, count int, output []uint32, scheme Scheme) []uint32 {
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
@@ -19,7 +19,7 @@ func (uintEncoding) Decode(input []byte, count int, output []uint32, scheme Sche
 	return output[:count]
 }
 
-func (uintEncoding) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
+func (uintEncodingWrapper) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
@@ -28,7 +28,7 @@ func (uintEncoding) EncodeDelta(input []uint32, output []byte, prev uint32, sche
 	return output[:n]
 }
 
-func (uintEncoding) DecodeDelta(input []byte, count int, output []uint32, prev uint32, scheme Scheme) []uint32 {
+func (uintEncodingWrapper) DecodeDelta(input []byte, count int, output []uint32, prev uint32, scheme Scheme) []uint32 {
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
@@ -40,7 +40,7 @@ func (uintEncoding) DecodeDelta(input []byte, count int, output []uint32, prev u
 	!!! Int32Encoding below !!!
 */
 
-func (intEncoding) Encode(input []int32, output []byte, scheme Scheme) []byte {
+func (intEncodingWrapper) Encode(input []int32, output []byte, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
@@ -49,7 +49,7 @@ func (intEncoding) Encode(input []int32, output []byte, scheme Scheme) []byte {
 	return output[:n]
 }
 
-func (intEncoding) Decode(input []byte, count int, output []int32, scheme Scheme) []int32 {
+func (intEncodingWrapper) Decode(input []byte, count int, output []int32, scheme Scheme) []int32 {
 	if len(output) < count {
 		output = make([]int32, count)
 	}
@@ -57,7 +57,7 @@ func (intEncoding) Decode(input []byte, count int, output []int32, scheme Scheme
 	return output[:count]
 }
 
-func (intEncoding) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
+func (intEncodingWrapper) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
 	sz := MaxEncodedLen(len(input))
 	if cap(output) < sz {
 		output = make([]byte, sz)
@@ -66,7 +66,7 @@ func (intEncoding) EncodeDelta(input []int32, output []byte, prev int32, scheme 
 	return output[:n]
 }
 
-func (intEncoding) DecodeDelta(input []byte, count int, output []int32, prev int32, scheme Scheme) []int32 {
+func (intEncodingWrapper) DecodeDelta(input []byte, count int, output []int32, prev int32, scheme Scheme) []int32 {
 	if len(output) < count {
 		output = make([]int32, count)
 	}
