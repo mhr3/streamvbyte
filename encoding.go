@@ -16,10 +16,10 @@ const (
 
 func (s Scheme) String() string {
 	switch s {
-	case Scheme0124:
-		return "0124"
 	case Scheme1234:
-		return "1234"
+		return "std"
+	case Scheme0124:
+		return "alt"
 	default:
 		return "unknown"
 	}
