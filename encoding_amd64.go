@@ -26,7 +26,7 @@ func (uintEncodingWrapper) Encode(input []uint32, output []byte, scheme Scheme) 
 			n = int(svb_encode_u32_alt(input, &output[0]))
 		}
 	} else {
-		n = encodeScalar(output[:sz], input, Scheme1234)
+		n = encodeScalar(output[:sz], input, scheme)
 	}
 	return output[:n]
 }
@@ -48,7 +48,7 @@ func (uintEncodingWrapper) Decode(input []byte, count int, output []uint32, sche
 			n = int(svb_decode_u32_alt(input, count, &output[0]))
 		}
 	} else {
-		decodeScalar(output, input, Scheme1234)
+		decodeScalar(output, input, scheme)
 		n = count
 	}
 	return output[:n]
@@ -72,7 +72,7 @@ func (uintEncodingWrapper) EncodeDelta(input []uint32, output []byte, prev uint3
 			n = int(svb_delta_encode_u32_alt(input, prev, &output[0]))
 		}
 	} else {
-		n = encodeDeltaScalar(output[:sz], input, prev, Scheme1234)
+		n = encodeDeltaScalar(output[:sz], input, prev, scheme)
 	}
 	return output[:n]
 }
@@ -94,7 +94,7 @@ func (uintEncodingWrapper) DecodeDelta(input []byte, count int, output []uint32,
 			n = int(svb_delta_decode_u32_alt(input, count, prev, &output[0]))
 		}
 	} else {
-		decodeDeltaScalar(output, input, prev, Scheme1234)
+		decodeDeltaScalar(output, input, prev, scheme)
 		n = count
 	}
 	return output[:n]
@@ -122,7 +122,7 @@ func (intEncodingWrapper) Encode(input []int32, output []byte, scheme Scheme) []
 			n = int(svb_encode_s32_alt(input, &output[0]))
 		}
 	} else {
-		n = encodeScalarZigzag(output[:sz], input, Scheme1234)
+		n = encodeScalarZigzag(output[:sz], input, scheme)
 	}
 	return output[:n]
 }
@@ -168,7 +168,7 @@ func (intEncodingWrapper) EncodeDelta(input []int32, output []byte, prev int32, 
 			n = int(svb_delta_encode_s32_alt(input, prev, &output[0]))
 		}
 	} else {
-		n = encodeDeltaScalarZigzag(output[:sz], input, prev, Scheme1234)
+		n = encodeDeltaScalarZigzag(output[:sz], input, prev, scheme)
 	}
 	return output[:n]
 }
