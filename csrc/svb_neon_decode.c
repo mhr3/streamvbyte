@@ -12,19 +12,32 @@ static inline uint8_t length_1234_for_key(uint8_t key)
     return len;
 }
 
+static uint8_t lt_base_1234[16] = {0, 1, 2, 3, 1, 2, 3, 4, 2, 3, 4, 5, 3, 4, 5, 6};
+
+static uint8_t lt_base_0124[16] = {0, 1, 2, 4, 1, 2, 3, 5, 2, 3, 4, 6, 4, 5, 6, 8};
+
 static inline uint8x8_t length_1234_for_keys(uint8x8_t keys)
 {
-    const uint8x8_t threes = vdup_n_u8(3);
-    uint8x8_t lengths;
+    const uint8x16_t table = vld1q_u8(lt_base_1234);
 
-    lengths = vadd_u8(vdup_n_u8(4), vand_u8(keys, threes));
-    keys = vshr_n_u8(keys, 2);
-    lengths = vadd_u8(lengths, vand_u8(keys, threes));
-    keys = vshr_n_u8(keys, 2);
-    lengths = vadd_u8(lengths, vand_u8(keys, threes));
-    keys = vshr_n_u8(keys, 2);
-    lengths = vadd_u8(lengths, vand_u8(keys, threes));
-    return lengths;
+    uint8x8_t t1 = vqtbl1_u8(table, vand_u8(keys, vdup_n_u8(15)));
+    uint8x8_t t2 = vqtbl1_u8(table, vshr_n_u8(keys, 4));
+
+    uint8x8_t lengths = vadd_u8(t1, t2);
+    return vadd_u8(lengths, vdup_n_u8(4));
+    /*
+        const uint8x8_t threes = vdup_n_u8(3);
+        uint8x8_t lengths;
+
+        lengths = vadd_u8(vdup_n_u8(4), vand_u8(keys, threes));
+        keys = vshr_n_u8(keys, 2);
+        lengths = vadd_u8(lengths, vand_u8(keys, threes));
+        keys = vshr_n_u8(keys, 2);
+        lengths = vadd_u8(lengths, vand_u8(keys, threes));
+        keys = vshr_n_u8(keys, 2);
+        lengths = vadd_u8(lengths, vand_u8(keys, threes));
+        return lengths;
+    */
 }
 
 static inline uint8_t length_0124_for_key(uint8_t key)
@@ -38,6 +51,13 @@ static inline uint8_t length_0124_for_key(uint8_t key)
 
 static inline uint8x8_t length_0124_for_keys(uint8x8_t keys)
 {
+    const uint8x16_t table = vld1q_u8(lt_base_0124);
+
+    uint8x8_t t1 = vqtbl1_u8(table, vand_u8(keys, vdup_n_u8(15)));
+    uint8x8_t t2 = vqtbl1_u8(table, vshr_n_u8(keys, 4));
+
+    return vadd_u8(t1, t2);
+/*
     const uint8x8_t ones = vdup_n_u8(1);
     const uint8x8_t threes = vdup_n_u8(3);
     uint8x8_t lengths;
@@ -50,6 +70,7 @@ static inline uint8x8_t length_0124_for_keys(uint8x8_t keys)
     keys = vshr_n_u8(keys, 2);
     lengths = vadd_u8(lengths, vshr_n_u8(vshl_u8(ones, vand_u8(keys, threes)), 1));
     return lengths;
+*/
 }
 
 static inline uint32x4_t svb_decode_quad(uint8_t key, const uint8_t **dataPtrPtr)
