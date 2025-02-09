@@ -1595,240 +1595,272 @@ LBB6_3:
 	SUB  $7, R10, R10                  // <--                                  // sub	x10, x10, #7
 	NOP                                // (skipped)                            // mov	x29, sp
 	CMP  R0, R10                       // <--                                  // cmp	x10, x0
-	BLS  LBB6_11                       // <--                                  // b.ls	.LBB6_11
-	AND  $-128, R1, R11                // <--                                  // and	x11, x1, #0xffffffffffffff80
-	CMP  R11, R8                       // <--                                  // cmp	x8, x11
-	BGE  LBB6_11                       // <--                                  // b.ge	.LBB6_11
-	MOVD $lengthTable_0124<>(SB), R8   // <--                                  // adrp	x8, lengthTable_0124
-	ADD  $0, R8, R8                    // <--                                  // add	x8, x8, :lo12:lengthTable_0124
-	MOVD $lengthTable_1234<>(SB), R12  // <--                                  // adrp	x12, lengthTable_1234
-	ADD  $0, R12, R12                  // <--                                  // add	x12, x12, :lo12:lengthTable_1234
-	TSTW $255, R6                      // <--                                  // tst	w6, #0xff
-	MOVD $shuffleTable_1234<>(SB), R13 // <--                                  // adrp	x13, shuffleTable_1234
-	ADD  $0, R13, R13                  // <--                                  // add	x13, x13, :lo12:shuffleTable_1234
-	CSEL EQ, R12, R8, R12              // <--                                  // csel	x12, x12, x8, eq
-	MOVD $shuffleTable_0124<>(SB), R8  // <--                                  // adrp	x8, shuffleTable_0124
-	ADD  $0, R8, R8                    // <--                                  // add	x8, x8, :lo12:shuffleTable_0124
-	WORD $0x6f00e400                   // VMOVI $0, V0.D2                      // movi	v0.2d, #0000000000000000
-	ADD  R11, R0, R11                  // <--                                  // add	x11, x0, x11
-	CSEL EQ, R13, R8, R13              // <--                                  // csel	x13, x13, x8, eq
+	BLS  LBB6_12                       // <--                                  // b.ls	.LBB6_12
+	AND  $-16, R1, R8                  // <--                                  // and	x8, x1, #0xfffffffffffffff0
+	WORD $0x0f00e460                   // VMOVI $3, V0.B8                      // movi	v0.8b, #3
+	WORD $0x0f00e481                   // VMOVI $4, V1.B8                      // movi	v1.8b, #4
+	WORD $0x0f00e423                   // VMOVI $1, V3.B8                      // movi	v3.8b, #1
+	WORD $0x6f00e402                   // VMOVI $0, V2.D2                      // movi	v2.2d, #0000000000000000
+	ADD  R8, R0, R11                   // <--                                  // add	x11, x0, x8
 	MOVD R5, R8                        // <--                                  // mov	x8, x5
-	VDUP R4, V1.S4                     // <--                                  // dup	v1.4s, w4
+	MOVD $shuffleTable_1234<>(SB), R12 // <--                                  // adrp	x12, shuffleTable_1234
+	ADD  $0, R12, R12                  // <--                                  // add	x12, x12, :lo12:shuffleTable_1234
+	MOVD $shuffleTable_0124<>(SB), R13 // <--                                  // adrp	x13, shuffleTable_0124
+	ADD  $0, R13, R13                  // <--                                  // add	x13, x13, :lo12:shuffleTable_0124
+	VDUP R4, V4.S4                     // <--                                  // dup	v4.4s, w4
 
-LBB6_6:
-	WORD $0xf840840e                 // MOVD.P 8(R0), R14                    // ldr	x14, [x0], #8
-	WORD $0x3dc00123                 // FMOVQ (R9), F3                       // ldr	q3, [x9]
-	VDUP V1.S[3], V1.S4              // <--                                  // dup	v1.4s, v1.s[3]
-	CMP  R10, R0                     // <--                                  // cmp	x0, x10
-	AND  $255, R14, R15              // <--                                  // and	x15, x14, #0xff
-	UBFX $8, R14, $8, R16            // <--                                  // ubfx	x16, x14, #8, #8
-	WORD $0x3cef79a2                 // FMOVQ (R13)(R15<<4), F2              // ldr	q2, [x13, x15, lsl #4]
-	WORD $0x386f698f                 // MOVBU (R12)(R15), R15                // ldrb	w15, [x12, x15]
-	VTBL V2.B16, [V3.B16], V2.B16    // <--                                  // tbl	v2.16b, { v3.16b }, v2.16b
-	ADD  R15, R9, R9                 // <--                                  // add	x9, x9, x15
-	VEXT $12, V2.B16, V0.B16, V3.B16 // <--                                  // ext	v3.16b, v0.16b, v2.16b, #12
-	VADD V2.S4, V3.S4, V2.S4         // <--                                  // add	v2.4s, v3.4s, v2.4s
-	VEXT $8, V2.B16, V0.B16, V3.B16  // <--                                  // ext	v3.16b, v0.16b, v2.16b, #8
-	VADD V1.S4, V2.S4, V1.S4         // <--                                  // add	v1.4s, v2.4s, v1.4s
-	VADD V3.S4, V1.S4, V1.S4         // <--                                  // add	v1.4s, v1.4s, v3.4s
-	WORD $0x3d800101                 // FMOVQ F1, (R8)                       // str	q1, [x8]
-	VDUP V1.S[3], V1.S4              // <--                                  // dup	v1.4s, v1.s[3]
-	WORD $0x3cf079a2                 // FMOVQ (R13)(R16<<4), F2              // ldr	q2, [x13, x16, lsl #4]
-	WORD $0x3dc00123                 // FMOVQ (R9), F3                       // ldr	q3, [x9]
-	WORD $0x3870698f                 // MOVBU (R12)(R16), R15                // ldrb	w15, [x12, x16]
-	UBFX $16, R14, $8, R16           // <--                                  // ubfx	x16, x14, #16, #8
-	VTBL V2.B16, [V3.B16], V2.B16    // <--                                  // tbl	v2.16b, { v3.16b }, v2.16b
-	ADD  R15, R9, R9                 // <--                                  // add	x9, x9, x15
-	VEXT $12, V2.B16, V0.B16, V3.B16 // <--                                  // ext	v3.16b, v0.16b, v2.16b, #12
-	VADD V2.S4, V3.S4, V2.S4         // <--                                  // add	v2.4s, v3.4s, v2.4s
-	VEXT $8, V2.B16, V0.B16, V3.B16  // <--                                  // ext	v3.16b, v0.16b, v2.16b, #8
-	VADD V1.S4, V2.S4, V1.S4         // <--                                  // add	v1.4s, v2.4s, v1.4s
-	VADD V3.S4, V1.S4, V1.S4         // <--                                  // add	v1.4s, v1.4s, v3.4s
-	WORD $0x3d800501                 // FMOVQ F1, 16(R8)                     // str	q1, [x8, #16]
-	VDUP V1.S[3], V1.S4              // <--                                  // dup	v1.4s, v1.s[3]
-	WORD $0x3cf079a2                 // FMOVQ (R13)(R16<<4), F2              // ldr	q2, [x13, x16, lsl #4]
-	WORD $0x3dc00123                 // FMOVQ (R9), F3                       // ldr	q3, [x9]
-	WORD $0x3870698f                 // MOVBU (R12)(R16), R15                // ldrb	w15, [x12, x16]
-	UBFX $24, R14, $8, R16           // <--                                  // ubfx	x16, x14, #24, #8
-	VTBL V2.B16, [V3.B16], V2.B16    // <--                                  // tbl	v2.16b, { v3.16b }, v2.16b
-	ADD  R15, R9, R9                 // <--                                  // add	x9, x9, x15
-	VEXT $12, V2.B16, V0.B16, V3.B16 // <--                                  // ext	v3.16b, v0.16b, v2.16b, #12
-	VADD V2.S4, V3.S4, V2.S4         // <--                                  // add	v2.4s, v3.4s, v2.4s
-	VEXT $8, V2.B16, V0.B16, V3.B16  // <--                                  // ext	v3.16b, v0.16b, v2.16b, #8
-	VADD V3.S4, V2.S4, V2.S4         // <--                                  // add	v2.4s, v2.4s, v3.4s
-	VADD V1.S4, V2.S4, V1.S4         // <--                                  // add	v1.4s, v2.4s, v1.4s
-	WORD $0x3d800901                 // FMOVQ F1, 32(R8)                     // str	q1, [x8, #32]
-	VDUP V1.S[3], V1.S4              // <--                                  // dup	v1.4s, v1.s[3]
-	WORD $0x3cf079a2                 // FMOVQ (R13)(R16<<4), F2              // ldr	q2, [x13, x16, lsl #4]
-	WORD $0x3dc00123                 // FMOVQ (R9), F3                       // ldr	q3, [x9]
-	WORD $0x3870698f                 // MOVBU (R12)(R16), R15                // ldrb	w15, [x12, x16]
-	UBFX $32, R14, $8, R16           // <--                                  // ubfx	x16, x14, #32, #8
-	VTBL V2.B16, [V3.B16], V2.B16    // <--                                  // tbl	v2.16b, { v3.16b }, v2.16b
-	ADD  R15, R9, R9                 // <--                                  // add	x9, x9, x15
-	VEXT $12, V2.B16, V0.B16, V3.B16 // <--                                  // ext	v3.16b, v0.16b, v2.16b, #12
-	VADD V2.S4, V3.S4, V2.S4         // <--                                  // add	v2.4s, v3.4s, v2.4s
-	VEXT $8, V2.B16, V0.B16, V3.B16  // <--                                  // ext	v3.16b, v0.16b, v2.16b, #8
-	VADD V3.S4, V2.S4, V2.S4         // <--                                  // add	v2.4s, v2.4s, v3.4s
-	VADD V1.S4, V2.S4, V1.S4         // <--                                  // add	v1.4s, v2.4s, v1.4s
-	WORD $0x3d800d01                 // FMOVQ F1, 48(R8)                     // str	q1, [x8, #48]
-	VDUP V1.S[3], V1.S4              // <--                                  // dup	v1.4s, v1.s[3]
-	WORD $0x3cf079a2                 // FMOVQ (R13)(R16<<4), F2              // ldr	q2, [x13, x16, lsl #4]
-	WORD $0x3dc00123                 // FMOVQ (R9), F3                       // ldr	q3, [x9]
-	WORD $0x3870698f                 // MOVBU (R12)(R16), R15                // ldrb	w15, [x12, x16]
-	UBFX $40, R14, $8, R16           // <--                                  // ubfx	x16, x14, #40, #8
-	VTBL V2.B16, [V3.B16], V2.B16    // <--                                  // tbl	v2.16b, { v3.16b }, v2.16b
-	ADD  R15, R9, R9                 // <--                                  // add	x9, x9, x15
-	VEXT $12, V2.B16, V0.B16, V3.B16 // <--                                  // ext	v3.16b, v0.16b, v2.16b, #12
-	VADD V2.S4, V3.S4, V2.S4         // <--                                  // add	v2.4s, v3.4s, v2.4s
-	VEXT $8, V2.B16, V0.B16, V3.B16  // <--                                  // ext	v3.16b, v0.16b, v2.16b, #8
-	VADD V3.S4, V2.S4, V2.S4         // <--                                  // add	v2.4s, v2.4s, v3.4s
-	VADD V1.S4, V2.S4, V1.S4         // <--                                  // add	v1.4s, v2.4s, v1.4s
-	WORD $0x3d801101                 // FMOVQ F1, 64(R8)                     // str	q1, [x8, #64]
-	VDUP V1.S[3], V1.S4              // <--                                  // dup	v1.4s, v1.s[3]
-	WORD $0x3cf079a2                 // FMOVQ (R13)(R16<<4), F2              // ldr	q2, [x13, x16, lsl #4]
-	WORD $0x3dc00123                 // FMOVQ (R9), F3                       // ldr	q3, [x9]
-	WORD $0x3870698f                 // MOVBU (R12)(R16), R15                // ldrb	w15, [x12, x16]
-	UBFX $48, R14, $8, R16           // <--                                  // ubfx	x16, x14, #48, #8
-	LSR  $56, R14, R14               // <--                                  // lsr	x14, x14, #56
-	VTBL V2.B16, [V3.B16], V2.B16    // <--                                  // tbl	v2.16b, { v3.16b }, v2.16b
-	ADD  R15, R9, R9                 // <--                                  // add	x9, x9, x15
-	VEXT $12, V2.B16, V0.B16, V3.B16 // <--                                  // ext	v3.16b, v0.16b, v2.16b, #12
-	VADD V2.S4, V3.S4, V2.S4         // <--                                  // add	v2.4s, v3.4s, v2.4s
-	VEXT $8, V2.B16, V0.B16, V3.B16  // <--                                  // ext	v3.16b, v0.16b, v2.16b, #8
-	VADD V3.S4, V2.S4, V2.S4         // <--                                  // add	v2.4s, v2.4s, v3.4s
-	VADD V1.S4, V2.S4, V1.S4         // <--                                  // add	v1.4s, v2.4s, v1.4s
-	WORD $0x3d801501                 // FMOVQ F1, 80(R8)                     // str	q1, [x8, #80]
-	VDUP V1.S[3], V1.S4              // <--                                  // dup	v1.4s, v1.s[3]
-	WORD $0x3cf079a2                 // FMOVQ (R13)(R16<<4), F2              // ldr	q2, [x13, x16, lsl #4]
-	WORD $0x3dc00123                 // FMOVQ (R9), F3                       // ldr	q3, [x9]
-	WORD $0x3870698f                 // MOVBU (R12)(R16), R15                // ldrb	w15, [x12, x16]
-	VTBL V2.B16, [V3.B16], V2.B16    // <--                                  // tbl	v2.16b, { v3.16b }, v2.16b
-	ADD  R15, R9, R9                 // <--                                  // add	x9, x9, x15
-	VEXT $12, V2.B16, V0.B16, V3.B16 // <--                                  // ext	v3.16b, v0.16b, v2.16b, #12
-	VADD V2.S4, V3.S4, V2.S4         // <--                                  // add	v2.4s, v3.4s, v2.4s
-	VEXT $8, V2.B16, V0.B16, V3.B16  // <--                                  // ext	v3.16b, v0.16b, v2.16b, #8
-	VADD V3.S4, V2.S4, V2.S4         // <--                                  // add	v2.4s, v2.4s, v3.4s
-	VADD V1.S4, V2.S4, V1.S4         // <--                                  // add	v1.4s, v2.4s, v1.4s
-	WORD $0x3d801901                 // FMOVQ F1, 96(R8)                     // str	q1, [x8, #96]
-	VDUP V1.S[3], V1.S4              // <--                                  // dup	v1.4s, v1.s[3]
-	WORD $0x3cee79a2                 // FMOVQ (R13)(R14<<4), F2              // ldr	q2, [x13, x14, lsl #4]
-	WORD $0x3dc00123                 // FMOVQ (R9), F3                       // ldr	q3, [x9]
-	WORD $0x386e698e                 // MOVBU (R12)(R14), R14                // ldrb	w14, [x12, x14]
-	VTBL V2.B16, [V3.B16], V2.B16    // <--                                  // tbl	v2.16b, { v3.16b }, v2.16b
-	ADD  R14, R9, R9                 // <--                                  // add	x9, x9, x14
-	VEXT $12, V2.B16, V0.B16, V3.B16 // <--                                  // ext	v3.16b, v0.16b, v2.16b, #12
-	VADD V2.S4, V3.S4, V2.S4         // <--                                  // add	v2.4s, v3.4s, v2.4s
-	VEXT $8, V2.B16, V0.B16, V3.B16  // <--                                  // ext	v3.16b, v0.16b, v2.16b, #8
-	VADD V3.S4, V2.S4, V2.S4         // <--                                  // add	v2.4s, v2.4s, v3.4s
-	VADD V1.S4, V2.S4, V1.S4         // <--                                  // add	v1.4s, v2.4s, v1.4s
-	WORD $0x3d801d01                 // FMOVQ F1, 112(R8)                    // str	q1, [x8, #112]
-	ADD  $128, R8, R8                // <--                                  // add	x8, x8, #128
-	BCS  LBB6_8                      // <--                                  // b.hs	.LBB6_8
-	CMP  R11, R9                     // <--                                  // cmp	x9, x11
-	BCC  LBB6_6                      // <--                                  // b.lo	.LBB6_6
+LBB6_5:
+	WORD  $0xf940000e           // MOVD (R0), R14                       // ldr	x14, [x0]
+	TSTW  $255, R6              // <--                                  // tst	w6, #0xff
+	FMOVD R14, F6               // <--                                  // fmov	d6, x14
+	WORD  $0x2f0e04d0           // VUSHR $2, V6.B8, V16.B8              // ushr	v16.8b, v6.8b, #2
+	WORD  $0x2f0c04c7           // VUSHR $4, V6.B8, V7.B8               // ushr	v7.8b, v6.8b, #4
+	VAND  V0.B8, V6.B8, V5.B8   // <--                                  // and	v5.8b, v6.8b, v0.8b
+	VAND  V0.B8, V16.B8, V16.B8 // <--                                  // and	v16.8b, v16.8b, v0.8b
+	BEQ   LBB6_7                // <--                                  // b.eq	.LBB6_7
+	WORD  $0x2e304470           // VUSHL V16.B8, V3.B8, V16.B8          // ushl	v16.8b, v3.8b, v16.8b
+	WORD  $0x2e254471           // VUSHL V5.B8, V3.B8, V17.B8           // ushl	v17.8b, v3.8b, v5.8b
+	VAND  V0.B8, V7.B8, V7.B8   // <--                                  // and	v7.8b, v7.8b, v0.8b
+	WORD  $0x2f0a04c6           // VUSHR $6, V6.B8, V6.B8               // ushr	v6.8b, v6.8b, #6
+	WORD  $0x2f0f0605           // VUSHR $1, V16.B8, V5.B8              // ushr	v5.8b, v16.8b, #1
+	WORD  $0x2e274467           // VUSHL V7.B8, V3.B8, V7.B8            // ushl	v7.8b, v3.8b, v7.8b
+	WORD  $0x2e264466           // VUSHL V6.B8, V3.B8, V6.B8            // ushl	v6.8b, v3.8b, v6.8b
+	WORD  $0x2f0f1625           // VUSRA $1, V17.B8, V5.B8              // usra	v5.8b, v17.8b, #1
+	WORD  $0x2f0f14e5           // VUSRA $1, V7.B8, V5.B8               // usra	v5.8b, v7.8b, #1
+	WORD  $0x2f0f14c5           // VUSRA $1, V6.B8, V5.B8               // usra	v5.8b, v6.8b, #1
+	WORD  $0x0e31b8a6           // VADDV V5.B8, V6                      // addv	b6, v5.8b
+	FMOVS F6, R15               // <--                                  // fmov	w15, s6
+	ADD   R15, R9, R16          // <--                                  // add	x16, x9, x15
+	MOVD  R13, R15              // <--                                  // mov	x15, x13
+	CMP   R11, R16              // <--                                  // cmp	x16, x11
+	BLS   LBB6_8                // <--                                  // b.ls	.LBB6_8
+	JMP   LBB6_9                // <--                                  // b	.LBB6_9
+
+LBB6_7:
+	VAND  V0.B8, V7.B8, V7.B8  // <--                                  // and	v7.8b, v7.8b, v0.8b
+	WORD  $0x2f0a14c5          // VUSRA $6, V6.B8, V5.B8               // usra	v5.8b, v6.8b, #6
+	VADD  V7.B8, V16.B8, V6.B8 // <--                                  // add	v6.8b, v16.8b, v7.8b
+	VADD  V6.B8, V5.B8, V5.B8  // <--                                  // add	v5.8b, v5.8b, v6.8b
+	VADD  V1.B8, V5.B8, V5.B8  // <--                                  // add	v5.8b, v5.8b, v1.8b
+	WORD  $0x0e31b8a6          // VADDV V5.B8, V6                      // addv	b6, v5.8b
+	FMOVS F6, R15              // <--                                  // fmov	w15, s6
+	ADD   R15, R9, R16         // <--                                  // add	x16, x9, x15
+	MOVD  R12, R15             // <--                                  // mov	x15, x12
+	CMP   R11, R16             // <--                                  // cmp	x16, x11
+	BHI   LBB6_9               // <--                                  // b.hi	.LBB6_9
 
 LBB6_8:
-	SUB  R5, R8, R10    // <--                                  // sub	x10, x8, x5
-	SUB  R10->2, R3, R3 // <--                                  // sub	x3, x3, x10, asr #2
-	CMP  $1, R3         // <--                                  // cmp	x3, #1
-	BLT  LBB6_12        // <--                                  // b.lt	.LBB6_12
-	CMP  R5, R8         // <--                                  // cmp	x8, x5
-	BLS  LBB6_12        // <--                                  // b.ls	.LBB6_12
-	WORD $0xb85fc104    // MOVWU -4(R8), R4                     // ldur	w4, [x8, #-4]
-	JMP  LBB6_12        // <--                                  // b	.LBB6_12
+	AND   $255, R14, R16              // <--                                  // and	x16, x14, #0xff
+	WORD  $0x3dc00127                 // FMOVQ (R9), F7                       // ldr	q7, [x9]
+	VDUP  V4.S[3], V4.S4              // <--                                  // dup	v4.4s, v4.s[3]
+	UBFX  $8, R14, $8, R17            // <--                                  // ubfx	x17, x14, #8, #8
+	ADD   $8, R0, R0                  // <--                                  // add	x0, x0, #8
+	WORD  $0x3cf079e6                 // FMOVQ (R15)(R16<<4), F6              // ldr	q6, [x15, x16, lsl #4]
+	FMOVD F5, R16                     // <--                                  // fmov	x16, d5
+	CMP   R10, R0                     // <--                                  // cmp	x0, x10
+	ADD   R16.UXTB, R9, R9            // <--                                  // add	x9, x9, w16, uxtb
+	LSR   $8, R16, R1                 // <--                                  // lsr	x1, x16, #8
+	VTBL  V6.B16, [V7.B16], V6.B16    // <--                                  // tbl	v6.16b, { v7.16b }, v6.16b
+	VEXT  $12, V6.B16, V2.B16, V7.B16 // <--                                  // ext	v7.16b, v2.16b, v6.16b, #12
+	VADD  V6.S4, V7.S4, V6.S4         // <--                                  // add	v6.4s, v7.4s, v6.4s
+	VEXT  $8, V6.B16, V2.B16, V7.B16  // <--                                  // ext	v7.16b, v2.16b, v6.16b, #8
+	VADD  V4.S4, V6.S4, V4.S4         // <--                                  // add	v4.4s, v6.4s, v4.4s
+	VADD  V7.S4, V4.S4, V4.S4         // <--                                  // add	v4.4s, v4.4s, v7.4s
+	WORD  $0x3d800104                 // FMOVQ F4, (R8)                       // str	q4, [x8]
+	VDUP  V4.S[3], V4.S4              // <--                                  // dup	v4.4s, v4.s[3]
+	WORD  $0x3cf179e5                 // FMOVQ (R15)(R17<<4), F5              // ldr	q5, [x15, x17, lsl #4]
+	UBFX  $16, R14, $8, R17           // <--                                  // ubfx	x17, x14, #16, #8
+	WORD  $0x3dc00126                 // FMOVQ (R9), F6                       // ldr	q6, [x9]
+	ADD   R1.UXTB, R9, R9             // <--                                  // add	x9, x9, w1, uxtb
+	LSR   $16, R16, R1                // <--                                  // lsr	x1, x16, #16
+	VTBL  V5.B16, [V6.B16], V5.B16    // <--                                  // tbl	v5.16b, { v6.16b }, v5.16b
+	VEXT  $12, V5.B16, V2.B16, V6.B16 // <--                                  // ext	v6.16b, v2.16b, v5.16b, #12
+	VADD  V5.S4, V6.S4, V5.S4         // <--                                  // add	v5.4s, v6.4s, v5.4s
+	VEXT  $8, V5.B16, V2.B16, V6.B16  // <--                                  // ext	v6.16b, v2.16b, v5.16b, #8
+	VADD  V4.S4, V5.S4, V4.S4         // <--                                  // add	v4.4s, v5.4s, v4.4s
+	VADD  V6.S4, V4.S4, V4.S4         // <--                                  // add	v4.4s, v4.4s, v6.4s
+	WORD  $0x3d800504                 // FMOVQ F4, 16(R8)                     // str	q4, [x8, #16]
+	VDUP  V4.S[3], V4.S4              // <--                                  // dup	v4.4s, v4.s[3]
+	WORD  $0x3cf179e5                 // FMOVQ (R15)(R17<<4), F5              // ldr	q5, [x15, x17, lsl #4]
+	UBFX  $24, R14, $8, R17           // <--                                  // ubfx	x17, x14, #24, #8
+	WORD  $0x3dc00126                 // FMOVQ (R9), F6                       // ldr	q6, [x9]
+	ADD   R1.UXTB, R9, R9             // <--                                  // add	x9, x9, w1, uxtb
+	LSR   $24, R16, R1                // <--                                  // lsr	x1, x16, #24
+	VTBL  V5.B16, [V6.B16], V5.B16    // <--                                  // tbl	v5.16b, { v6.16b }, v5.16b
+	VEXT  $12, V5.B16, V2.B16, V6.B16 // <--                                  // ext	v6.16b, v2.16b, v5.16b, #12
+	VADD  V5.S4, V6.S4, V5.S4         // <--                                  // add	v5.4s, v6.4s, v5.4s
+	VEXT  $8, V5.B16, V2.B16, V6.B16  // <--                                  // ext	v6.16b, v2.16b, v5.16b, #8
+	VADD  V6.S4, V5.S4, V5.S4         // <--                                  // add	v5.4s, v5.4s, v6.4s
+	VADD  V4.S4, V5.S4, V4.S4         // <--                                  // add	v4.4s, v5.4s, v4.4s
+	WORD  $0x3d800904                 // FMOVQ F4, 32(R8)                     // str	q4, [x8, #32]
+	VDUP  V4.S[3], V4.S4              // <--                                  // dup	v4.4s, v4.s[3]
+	WORD  $0x3cf179e5                 // FMOVQ (R15)(R17<<4), F5              // ldr	q5, [x15, x17, lsl #4]
+	UBFX  $32, R14, $8, R17           // <--                                  // ubfx	x17, x14, #32, #8
+	WORD  $0x3dc00126                 // FMOVQ (R9), F6                       // ldr	q6, [x9]
+	ADD   R1.UXTB, R9, R9             // <--                                  // add	x9, x9, w1, uxtb
+	LSR   $32, R16, R1                // <--                                  // lsr	x1, x16, #32
+	VTBL  V5.B16, [V6.B16], V5.B16    // <--                                  // tbl	v5.16b, { v6.16b }, v5.16b
+	VEXT  $12, V5.B16, V2.B16, V6.B16 // <--                                  // ext	v6.16b, v2.16b, v5.16b, #12
+	VADD  V5.S4, V6.S4, V5.S4         // <--                                  // add	v5.4s, v6.4s, v5.4s
+	VEXT  $8, V5.B16, V2.B16, V6.B16  // <--                                  // ext	v6.16b, v2.16b, v5.16b, #8
+	VADD  V6.S4, V5.S4, V5.S4         // <--                                  // add	v5.4s, v5.4s, v6.4s
+	VADD  V4.S4, V5.S4, V4.S4         // <--                                  // add	v4.4s, v5.4s, v4.4s
+	WORD  $0x3d800d04                 // FMOVQ F4, 48(R8)                     // str	q4, [x8, #48]
+	VDUP  V4.S[3], V4.S4              // <--                                  // dup	v4.4s, v4.s[3]
+	WORD  $0x3cf179e5                 // FMOVQ (R15)(R17<<4), F5              // ldr	q5, [x15, x17, lsl #4]
+	UBFX  $40, R14, $8, R17           // <--                                  // ubfx	x17, x14, #40, #8
+	WORD  $0x3dc00126                 // FMOVQ (R9), F6                       // ldr	q6, [x9]
+	ADD   R1.UXTB, R9, R9             // <--                                  // add	x9, x9, w1, uxtb
+	LSR   $40, R16, R1                // <--                                  // lsr	x1, x16, #40
+	VTBL  V5.B16, [V6.B16], V5.B16    // <--                                  // tbl	v5.16b, { v6.16b }, v5.16b
+	VEXT  $12, V5.B16, V2.B16, V6.B16 // <--                                  // ext	v6.16b, v2.16b, v5.16b, #12
+	VADD  V5.S4, V6.S4, V5.S4         // <--                                  // add	v5.4s, v6.4s, v5.4s
+	VEXT  $8, V5.B16, V2.B16, V6.B16  // <--                                  // ext	v6.16b, v2.16b, v5.16b, #8
+	VADD  V6.S4, V5.S4, V5.S4         // <--                                  // add	v5.4s, v5.4s, v6.4s
+	VADD  V4.S4, V5.S4, V4.S4         // <--                                  // add	v4.4s, v5.4s, v4.4s
+	WORD  $0x3d801104                 // FMOVQ F4, 64(R8)                     // str	q4, [x8, #64]
+	VDUP  V4.S[3], V4.S4              // <--                                  // dup	v4.4s, v4.s[3]
+	WORD  $0x3cf179e5                 // FMOVQ (R15)(R17<<4), F5              // ldr	q5, [x15, x17, lsl #4]
+	UBFX  $48, R14, $8, R17           // <--                                  // ubfx	x17, x14, #48, #8
+	WORD  $0x3dc00126                 // FMOVQ (R9), F6                       // ldr	q6, [x9]
+	ADD   R1.UXTB, R9, R9             // <--                                  // add	x9, x9, w1, uxtb
+	LSR   $52, R14, R14               // <--                                  // lsr	x14, x14, #52
+	AND   $4080, R14, R14             // <--                                  // and	x14, x14, #0xff0
+	VTBL  V5.B16, [V6.B16], V5.B16    // <--                                  // tbl	v5.16b, { v6.16b }, v5.16b
+	VEXT  $12, V5.B16, V2.B16, V6.B16 // <--                                  // ext	v6.16b, v2.16b, v5.16b, #12
+	VADD  V5.S4, V6.S4, V5.S4         // <--                                  // add	v5.4s, v6.4s, v5.4s
+	VEXT  $8, V5.B16, V2.B16, V6.B16  // <--                                  // ext	v6.16b, v2.16b, v5.16b, #8
+	VADD  V6.S4, V5.S4, V5.S4         // <--                                  // add	v5.4s, v5.4s, v6.4s
+	VADD  V4.S4, V5.S4, V4.S4         // <--                                  // add	v4.4s, v5.4s, v4.4s
+	WORD  $0x3d801504                 // FMOVQ F4, 80(R8)                     // str	q4, [x8, #80]
+	VDUP  V4.S[3], V4.S4              // <--                                  // dup	v4.4s, v4.s[3]
+	WORD  $0x3cf179e5                 // FMOVQ (R15)(R17<<4), F5              // ldr	q5, [x15, x17, lsl #4]
+	LSR   $48, R16, R17               // <--                                  // lsr	x17, x16, #48
+	WORD  $0x3dc00126                 // FMOVQ (R9), F6                       // ldr	q6, [x9]
+	ADD   R17.UXTB, R9, R9            // <--                                  // add	x9, x9, w17, uxtb
+	VTBL  V5.B16, [V6.B16], V5.B16    // <--                                  // tbl	v5.16b, { v6.16b }, v5.16b
+	VEXT  $12, V5.B16, V2.B16, V6.B16 // <--                                  // ext	v6.16b, v2.16b, v5.16b, #12
+	VADD  V5.S4, V6.S4, V5.S4         // <--                                  // add	v5.4s, v6.4s, v5.4s
+	VEXT  $8, V5.B16, V2.B16, V6.B16  // <--                                  // ext	v6.16b, v2.16b, v5.16b, #8
+	VADD  V6.S4, V5.S4, V5.S4         // <--                                  // add	v5.4s, v5.4s, v6.4s
+	VADD  V4.S4, V5.S4, V4.S4         // <--                                  // add	v4.4s, v5.4s, v4.4s
+	WORD  $0x3d801904                 // FMOVQ F4, 96(R8)                     // str	q4, [x8, #96]
+	VDUP  V4.S[3], V4.S4              // <--                                  // dup	v4.4s, v4.s[3]
+	WORD  $0x3cee69e5                 // FMOVQ (R15)(R14), F5                 // ldr	q5, [x15, x14]
+	WORD  $0x3dc00126                 // FMOVQ (R9), F6                       // ldr	q6, [x9]
+	ADD   R16>>56, R9, R9             // <--                                  // add	x9, x9, x16, lsr #56
+	VTBL  V5.B16, [V6.B16], V5.B16    // <--                                  // tbl	v5.16b, { v6.16b }, v5.16b
+	VEXT  $12, V5.B16, V2.B16, V6.B16 // <--                                  // ext	v6.16b, v2.16b, v5.16b, #12
+	VADD  V5.S4, V6.S4, V5.S4         // <--                                  // add	v5.4s, v6.4s, v5.4s
+	VEXT  $8, V5.B16, V2.B16, V6.B16  // <--                                  // ext	v6.16b, v2.16b, v5.16b, #8
+	VADD  V6.S4, V5.S4, V5.S4         // <--                                  // add	v5.4s, v5.4s, v6.4s
+	VADD  V4.S4, V5.S4, V4.S4         // <--                                  // add	v4.4s, v5.4s, v4.4s
+	WORD  $0x3d801d04                 // FMOVQ F4, 112(R8)                    // str	q4, [x8, #112]
+	ADD   $128, R8, R8                // <--                                  // add	x8, x8, #128
+	BCC   LBB6_5                      // <--                                  // b.lo	.LBB6_5
 
-LBB6_11:
-	MOVD R5, R8 // <--                                  // mov	x8, x5
+LBB6_9:
+	SUBS R5, R8, R10    // <--                                  // subs	x10, x8, x5
+	CMP  R5, R8         // <--                                  // cmp	x8, x5
+	SUB  R10->2, R3, R3 // <--                                  // sub	x3, x3, x10, asr #2
+	BLS  LBB6_13        // <--                                  // b.ls	.LBB6_13
+	CMP  $1, R3         // <--                                  // cmp	x3, #1
+	BLT  LBB6_13        // <--                                  // b.lt	.LBB6_13
+	WORD $0xb85fc104    // MOVWU -4(R8), R4                     // ldur	w4, [x8, #-4]
+	JMP  LBB6_13        // <--                                  // b	.LBB6_13
 
 LBB6_12:
-	CBZ  R9, LBB6_36 // <--                                  // cbz	x9, .LBB6_36
-	CBZW R3, LBB6_36 // <--                                  // cbz	w3, .LBB6_36
+	MOVD R5, R8 // <--                                  // mov	x8, x5
+
+LBB6_13:
+	CBZ  R9, LBB6_37 // <--                                  // cbz	x9, .LBB6_37
+	CBZW R3, LBB6_37 // <--                                  // cbz	w3, .LBB6_37
 	WORD $0x3840140a // MOVBU.P 1(R0), R10                   // ldrb	w10, [x0], #1
 	TSTW $255, R6    // <--                                  // tst	w6, #0xff
-	BEQ  LBB6_25     // <--                                  // b.eq	.LBB6_25
+	BEQ  LBB6_26     // <--                                  // b.eq	.LBB6_26
 	MOVW ZR, R11     // <--                                  // mov	w11, wzr
-	JMP  LBB6_18     // <--                                  // b	.LBB6_18
-
-LBB6_16:
-	WORD $0xb840452c // MOVWU.P 4(R9), R12                   // ldr	w12, [x9], #4
+	JMP  LBB6_19     // <--                                  // b	.LBB6_19
 
 LBB6_17:
+	WORD $0xb840452c // MOVWU.P 4(R9), R12                   // ldr	w12, [x9], #4
+
+LBB6_18:
 	ADDW  R4, R12, R4  // <--                                  // add	w4, w12, w4
 	ADDW  $2, R11, R11 // <--                                  // add	w11, w11, #2
 	SUBSW $1, R3, R3   // <--                                  // subs	w3, w3, #1
 	WORD  $0xb8004504  // MOVW.P R4, 4(R8)                     // str	w4, [x8], #4
-	BEQ   LBB6_36      // <--                                  // b.eq	.LBB6_36
+	BEQ   LBB6_37      // <--                                  // b.eq	.LBB6_37
 
-LBB6_18:
+LBB6_19:
 	ANDW $255, R11, R12 // <--                                  // and	w12, w11, #0xff
 	CMPW $8, R12        // <--                                  // cmp	w12, #8
-	BNE  LBB6_20        // <--                                  // b.ne	.LBB6_20
+	BNE  LBB6_21        // <--                                  // b.ne	.LBB6_21
 	MOVW ZR, R11        // <--                                  // mov	w11, wzr
 	WORD $0x3840140a    // MOVBU.P 1(R0), R10                   // ldrb	w10, [x0], #1
 
-LBB6_20:
+LBB6_21:
 	LSRW  R11, R10, R12 // <--                                  // lsr	w12, w10, w11
 	ANDSW $3, R12, R12  // <--                                  // ands	w12, w12, #0x3
-	BEQ   LBB6_17       // <--                                  // b.eq	.LBB6_17
+	BEQ   LBB6_18       // <--                                  // b.eq	.LBB6_18
 	CMPW  $1, R12       // <--                                  // cmp	w12, #1
-	BEQ   LBB6_24       // <--                                  // b.eq	.LBB6_24
+	BEQ   LBB6_25       // <--                                  // b.eq	.LBB6_25
 	CMPW  $2, R12       // <--                                  // cmp	w12, #2
-	BNE   LBB6_16       // <--                                  // b.ne	.LBB6_16
+	BNE   LBB6_17       // <--                                  // b.ne	.LBB6_17
 	WORD  $0x7840252c   // MOVHU.P 2(R9), R12                   // ldrh	w12, [x9], #2
-	JMP   LBB6_17       // <--                                  // b	.LBB6_17
-
-LBB6_24:
-	WORD $0x3840152c // MOVBU.P 1(R9), R12                   // ldrb	w12, [x9], #1
-	JMP  LBB6_17     // <--                                  // b	.LBB6_17
+	JMP   LBB6_18       // <--                                  // b	.LBB6_18
 
 LBB6_25:
-	MOVW ZR, R11 // <--                                  // mov	w11, wzr
-	JMP  LBB6_28 // <--                                  // b	.LBB6_28
+	WORD $0x3840152c // MOVBU.P 1(R9), R12                   // ldrb	w12, [x9], #1
+	JMP  LBB6_18     // <--                                  // b	.LBB6_18
 
 LBB6_26:
+	MOVW ZR, R11 // <--                                  // mov	w11, wzr
+	JMP  LBB6_29 // <--                                  // b	.LBB6_29
+
+LBB6_27:
 	WORD $0x7940012c // MOVHU (R9), R12                      // ldrh	w12, [x9]
 	MOVW $2, R13     // <--                                  // mov	w13, #2
 
-LBB6_27:
+LBB6_28:
 	ADD   R13, R9, R9  // <--                                  // add	x9, x9, x13
 	ADDW  R4, R12, R4  // <--                                  // add	w4, w12, w4
 	ADDW  $2, R11, R11 // <--                                  // add	w11, w11, #2
 	SUBSW $1, R3, R3   // <--                                  // subs	w3, w3, #1
 	WORD  $0xb8004504  // MOVW.P R4, 4(R8)                     // str	w4, [x8], #4
-	BEQ   LBB6_36      // <--                                  // b.eq	.LBB6_36
+	BEQ   LBB6_37      // <--                                  // b.eq	.LBB6_37
 
-LBB6_28:
+LBB6_29:
 	ANDW $255, R11, R12 // <--                                  // and	w12, w11, #0xff
 	CMPW $8, R12        // <--                                  // cmp	w12, #8
-	BNE  LBB6_30        // <--                                  // b.ne	.LBB6_30
+	BNE  LBB6_31        // <--                                  // b.ne	.LBB6_31
 	MOVW ZR, R11        // <--                                  // mov	w11, wzr
 	WORD $0x3840140a    // MOVBU.P 1(R0), R10                   // ldrb	w10, [x0], #1
 
-LBB6_30:
+LBB6_31:
 	LSRW  R11, R10, R12     // <--                                  // lsr	w12, w10, w11
 	ANDSW $3, R12, R12      // <--                                  // ands	w12, w12, #0x3
-	BEQ   LBB6_34           // <--                                  // b.eq	.LBB6_34
+	BEQ   LBB6_35           // <--                                  // b.eq	.LBB6_35
 	CMPW  $1, R12           // <--                                  // cmp	w12, #1
-	BEQ   LBB6_26           // <--                                  // b.eq	.LBB6_26
+	BEQ   LBB6_27           // <--                                  // b.eq	.LBB6_27
 	CMPW  $2, R12           // <--                                  // cmp	w12, #2
-	BNE   LBB6_35           // <--                                  // b.ne	.LBB6_35
+	BNE   LBB6_36           // <--                                  // b.ne	.LBB6_36
 	WORD  $0x3940092c       // MOVBU 2(R9), R12                     // ldrb	w12, [x9, #2]
 	WORD  $0x7940012d       // MOVHU (R9), R13                      // ldrh	w13, [x9]
 	ORRW  R12<<16, R13, R12 // <--                                  // orr	w12, w13, w12, lsl #16
 	MOVW  $3, R13           // <--                                  // mov	w13, #3
-	JMP   LBB6_27           // <--                                  // b	.LBB6_27
-
-LBB6_34:
-	WORD $0x3940012c // MOVBU (R9), R12                      // ldrb	w12, [x9]
-	MOVW $1, R13     // <--                                  // mov	w13, #1
-	JMP  LBB6_27     // <--                                  // b	.LBB6_27
+	JMP   LBB6_28           // <--                                  // b	.LBB6_28
 
 LBB6_35:
-	WORD $0xb940012c // MOVWU (R9), R12                      // ldr	w12, [x9]
-	MOVW $4, R13     // <--                                  // mov	w13, #4
-	JMP  LBB6_27     // <--                                  // b	.LBB6_27
+	WORD $0x3940012c // MOVBU (R9), R12                      // ldrb	w12, [x9]
+	MOVW $1, R13     // <--                                  // mov	w13, #1
+	JMP  LBB6_28     // <--                                  // b	.LBB6_28
 
 LBB6_36:
+	WORD $0xb940012c // MOVWU (R9), R12                      // ldr	w12, [x9]
+	MOVW $4, R13     // <--                                  // mov	w13, #4
+	JMP  LBB6_28     // <--                                  // b	.LBB6_28
+
+LBB6_37:
 	SUB  R5, R8, R8     // <--                                  // sub	x8, x8, x5
 	CMP  $0, R9         // <--                                  // cmp	x9, #0
 	ASR  $2, R8, R8     // <--                                  // asr	x8, x8, #2

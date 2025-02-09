@@ -3,6 +3,55 @@
 
 #include "svb_tables_decode.h"
 
+static inline uint8_t length_1234_for_key(uint8_t key)
+{
+    uint8_t len = 4 + (key & 3);
+    len += (key / 4) & 3;
+    len += (key / 16) & 3;
+    len += (key / 64) & 3;
+    return len;
+}
+
+static inline uint8x8_t length_1234_for_keys(uint8x8_t keys)
+{
+    const uint8x8_t threes = vdup_n_u8(3);
+    uint8x8_t lengths;
+
+    lengths = vadd_u8(vdup_n_u8(4), vand_u8(keys, threes));
+    keys = vshr_n_u8(keys, 2);
+    lengths = vadd_u8(lengths, vand_u8(keys, threes));
+    keys = vshr_n_u8(keys, 2);
+    lengths = vadd_u8(lengths, vand_u8(keys, threes));
+    keys = vshr_n_u8(keys, 2);
+    lengths = vadd_u8(lengths, vand_u8(keys, threes));
+    return lengths;
+}
+
+static inline uint8_t length_0124_for_key(uint8_t key)
+{
+    uint8_t len = (1 << (key & 3)) / 2;
+    len += (1 << ((key / 4) & 3)) / 2;
+    len += (1 << ((key / 16) & 3)) / 2;
+    len += (1 << ((key / 64) & 3)) / 2;
+    return len;
+}
+
+static inline uint8x8_t length_0124_for_keys(uint8x8_t keys)
+{
+    const uint8x8_t ones = vdup_n_u8(1);
+    const uint8x8_t threes = vdup_n_u8(3);
+    uint8x8_t lengths;
+
+    lengths = vshr_n_u8(vshl_u8(ones, vand_u8(keys, threes)), 1);
+    keys = vshr_n_u8(keys, 2);
+    lengths = vadd_u8(lengths, vshr_n_u8(vshl_u8(ones, vand_u8(keys, threes)), 1));
+    keys = vshr_n_u8(keys, 2);
+    lengths = vadd_u8(lengths, vshr_n_u8(vshl_u8(ones, vand_u8(keys, threes)), 1));
+    keys = vshr_n_u8(keys, 2);
+    lengths = vadd_u8(lengths, vshr_n_u8(vshl_u8(ones, vand_u8(keys, threes)), 1));
+    return lengths;
+}
+
 static inline uint32x4_t svb_decode_quad(uint8_t key, const uint8_t **dataPtrPtr)
 {
 #ifdef AVOIDLENGTHLOOKUP
@@ -21,6 +70,15 @@ static inline uint32x4_t svb_decode_quad(uint8_t key, const uint8_t **dataPtrPtr
     return vreinterpretq_u32_u8(vqtbl1q_u8(compressed, decodingShuffle));
 }
 
+static inline uint32x4_t svb_decode_quad_lite(uint8_t key, const uint8_t *dataPtrPtr)
+{
+    uint8_t *pshuf = (uint8_t *)&shuffleTable_1234[key];
+    uint8x16_t decodingShuffle = vld1q_u8(pshuf);
+    uint8x16_t compressed = vld1q_u8(dataPtrPtr);
+
+    return vreinterpretq_u32_u8(vqtbl1q_u8(compressed, decodingShuffle));
+}
+
 static inline uint32x4_t svb_decode_quad_alt(uint8_t key, const uint8_t **dataPtrPtr)
 {
     uint8_t len = lengthTable_0124[key];
@@ -29,6 +87,15 @@ static inline uint32x4_t svb_decode_quad_alt(uint8_t key, const uint8_t **dataPt
     uint8x16_t compressed = vld1q_u8(*dataPtrPtr);
 
     *dataPtrPtr += len;
+
+    return vreinterpretq_u32_u8(vqtbl1q_u8(compressed, decodingShuffle));
+}
+
+static inline uint32x4_t svb_decode_quad_alt_lite(uint8_t key, const uint8_t *dataPtrPtr)
+{
+    uint8_t *pshuf = (uint8_t *)&shuffleTable_0124[key];
+    uint8x16_t decodingShuffle = vld1q_u8(pshuf);
+    uint8x16_t compressed = vld1q_u8(dataPtrPtr);
 
     return vreinterpretq_u32_u8(vqtbl1q_u8(compressed, decodingShuffle));
 }
