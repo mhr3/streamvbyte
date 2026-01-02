@@ -206,9 +206,11 @@ uint64_t svb_delta_decode_u32(const uint8_t *in, const uint64_t in_len, uint64_t
             break;
 
         uint64_t lengths = vget_lane_u64(vreinterpret_u64_u8(length_vec), 0);
+        uint8_t key;
+        uint32x4_t data;
 
-        uint8_t key = (uint8_t)keys;
-        uint32x4_t data = encodeType == stdEncode ? svb_decode_quad_lite(key, dataPtr) : svb_decode_quad_alt_lite(key, dataPtr);
+        key = (uint8_t)keys;
+        data = encodeType == stdEncode ? svb_decode_quad_lite(key, dataPtr) : svb_decode_quad_alt_lite(key, dataPtr);
         previous = svb_write_u32_delta(out, data, previous);
         dataPtr += (uint8_t)(lengths >>= 8);
         key = (uint8_t)(keys >>= 8);
