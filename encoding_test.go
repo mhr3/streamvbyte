@@ -113,8 +113,8 @@ func TestEncodeDecode(t *testing.T) {
 				for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
 					t.Run(scheme.String(), func(t *testing.T) {
 						// Encode
-						encoded := DeltaEncodeUint32(input, &EncodeOptions[uint32]{Scheme: scheme})
-						decoded := DeltaDecodeUint32(encoded, len(input), &DecodeOptions[uint32]{Scheme: scheme})
+						encoded := EncodeDeltaUint32(input, &EncodeOptions[uint32]{Scheme: scheme})
+						decoded := DecodeDeltaUint32(encoded, len(input), &DecodeOptions[uint32]{Scheme: scheme})
 
 						require.Len(t, decoded, len(input))
 						assert.Equal(t, input, decoded)
@@ -137,8 +137,8 @@ func TestEncodeDecode(t *testing.T) {
 				for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
 					t.Run(scheme.String(), func(t *testing.T) {
 						// Encode
-						encoded := DeltaEncodeInt32(inputSigned, &EncodeOptions[int32]{Scheme: scheme})
-						decoded := DeltaDecodeInt32(encoded, len(inputSigned), &DecodeOptions[int32]{Scheme: scheme})
+						encoded := EncodeDeltaInt32(inputSigned, &EncodeOptions[int32]{Scheme: scheme})
+						decoded := DecodeDeltaInt32(encoded, len(inputSigned), &DecodeOptions[int32]{Scheme: scheme})
 
 						require.Len(t, decoded, len(inputSigned))
 						assert.Equal(t, inputSigned, decoded)
@@ -191,16 +191,16 @@ func TestDecodeTruncatedInput(t *testing.T) {
 				},
 				{
 					name: "delta-uint32",
-					enc:  DeltaEncodeUint32(input, &EncodeOptions[uint32]{Scheme: scheme}),
+					enc:  EncodeDeltaUint32(input, &EncodeOptions[uint32]{Scheme: scheme}),
 					dec: func(b []byte) int {
-						return len(DeltaDecodeUint32(b, n, &DecodeOptions[uint32]{Scheme: scheme}))
+						return len(DecodeDeltaUint32(b, n, &DecodeOptions[uint32]{Scheme: scheme}))
 					},
 				},
 				{
 					name: "delta-int32",
-					enc:  DeltaEncodeInt32(inputSigned, &EncodeOptions[int32]{Scheme: scheme}),
+					enc:  EncodeDeltaInt32(inputSigned, &EncodeOptions[int32]{Scheme: scheme}),
 					dec: func(b []byte) int {
-						return len(DeltaDecodeInt32(b, n, &DecodeOptions[int32]{Scheme: scheme}))
+						return len(DecodeDeltaInt32(b, n, &DecodeOptions[int32]{Scheme: scheme}))
 					},
 				},
 			}
@@ -219,8 +219,8 @@ func TestDecodeTruncatedInput(t *testing.T) {
 
 func TestLargeDeltas(t *testing.T) {
 	input := []uint32{0, 42, math.MaxUint32, 42, 0, 42, 0, 42, 0, 42, 0, 42}
-	encoded := DeltaEncodeUint32(input, nil)
-	decoded := DeltaDecodeUint32(encoded, len(input), nil)
+	encoded := EncodeDeltaUint32(input, nil)
+	decoded := DecodeDeltaUint32(encoded, len(input), nil)
 
 	require.Len(t, decoded, len(input))
 	if !assert.Equal(t, input, decoded) {
@@ -300,7 +300,7 @@ func BenchmarkEncodeDelta(b *testing.B) {
 			b.Run(scheme.String(), func(b *testing.B) {
 				b.SetBytes(int64(4 * benchSize))
 				for i := 0; i < b.N; i++ {
-					encoded = DeltaEncodeUint32(benchUint32Data, &EncodeOptions[uint32]{Buffer: encoded, Scheme: scheme})
+					encoded = EncodeDeltaUint32(benchUint32Data, &EncodeOptions[uint32]{Buffer: encoded, Scheme: scheme})
 					_ = encoded
 				}
 			})
@@ -312,7 +312,7 @@ func BenchmarkEncodeDelta(b *testing.B) {
 			b.Run(scheme.String(), func(b *testing.B) {
 				b.SetBytes(int64(4 * benchSize))
 				for i := 0; i < b.N; i++ {
-					encoded = DeltaEncodeInt32(benchInt32Data, &EncodeOptions[int32]{Buffer: encoded, Scheme: scheme})
+					encoded = EncodeDeltaInt32(benchInt32Data, &EncodeOptions[int32]{Buffer: encoded, Scheme: scheme})
 					_ = encoded
 				}
 			})
@@ -353,7 +353,7 @@ func BenchmarkDecode(b *testing.B) {
 }
 
 func BenchmarkDecodeDelta(b *testing.B) {
-	encoded := DeltaEncodeUint32(benchUint32DataSorted, nil)
+	encoded := EncodeDeltaUint32(benchUint32DataSorted, nil)
 
 	b.Run("uint32", func(b *testing.B) {
 		var decoded []uint32
@@ -362,7 +362,7 @@ func BenchmarkDecodeDelta(b *testing.B) {
 			b.Run(scheme.String(), func(b *testing.B) {
 				b.SetBytes(int64(4 * benchSize))
 				for i := 0; i < b.N; i++ {
-					decoded = DeltaDecodeUint32(encoded, len(benchUint32Data), &DecodeOptions[uint32]{Buffer: decoded, Scheme: scheme})
+					decoded = DecodeDeltaUint32(encoded, len(benchUint32Data), &DecodeOptions[uint32]{Buffer: decoded, Scheme: scheme})
 					_ = decoded
 				}
 			})
@@ -376,7 +376,7 @@ func BenchmarkDecodeDelta(b *testing.B) {
 			b.Run(scheme.String(), func(b *testing.B) {
 				b.SetBytes(int64(4 * benchSize))
 				for i := 0; i < b.N; i++ {
-					decodedInt32 = DeltaDecodeInt32(encoded, len(benchUint32Data), &DecodeOptions[int32]{Buffer: decodedInt32, Scheme: scheme})
+					decodedInt32 = DecodeDeltaInt32(encoded, len(benchUint32Data), &DecodeOptions[int32]{Buffer: decodedInt32, Scheme: scheme})
 					_ = decodedInt32
 				}
 			})
@@ -443,8 +443,8 @@ func FuzzEncodeDecode(f *testing.F) {
 		// DELTA ENCODING
 
 		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
-			encoded := DeltaEncodeUint32(input, &EncodeOptions[uint32]{Scheme: scheme})
-			decoded := DeltaDecodeUint32(encoded, len(input), &DecodeOptions[uint32]{Scheme: scheme})
+			encoded := EncodeDeltaUint32(input, &EncodeOptions[uint32]{Scheme: scheme})
+			decoded := DecodeDeltaUint32(encoded, len(input), &DecodeOptions[uint32]{Scheme: scheme})
 
 			require.Len(t, decoded, len(input))
 			if len(input) == 0 && len(encoded) == 0 {
@@ -460,8 +460,8 @@ func FuzzEncodeDecode(f *testing.F) {
 		}
 
 		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
-			encoded := DeltaEncodeInt32(inputSigned, &EncodeOptions[int32]{Scheme: scheme})
-			decoded := DeltaDecodeInt32(encoded, len(input), &DecodeOptions[int32]{Scheme: scheme})
+			encoded := EncodeDeltaInt32(inputSigned, &EncodeOptions[int32]{Scheme: scheme})
+			decoded := DecodeDeltaInt32(encoded, len(input), &DecodeOptions[int32]{Scheme: scheme})
 
 			require.Len(t, decoded, len(input))
 			if len(input) == 0 && len(encoded) == 0 {
