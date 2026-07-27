@@ -75,14 +75,14 @@ func main() {
     // Unsigned delta encoding
     input := []uint32{100, 101, 102, 103, 104}
     
-    encoded := streamvbyte.DeltaEncodeUint32(input, nil)    
-    decoded := streamvbyte.DeltaDecodeUint32(encoded, len(input), nil)
+    encoded := streamvbyte.EncodeDeltaUint32(input, nil)    
+    decoded := streamvbyte.DecodeDeltaUint32(encoded, len(input), nil)
 
     // Signed delta encoding
     signedInput := []int32{-100, -98, -96, -94, -92}
     
-    encoded = streamvbyte.DeltaEncodeInt32(signedInput, nil)
-    decodedSigned := streamvbyte.DeltaDecodeInt32(encoded, len(signedInput), nil)
+    encoded = streamvbyte.EncodeDeltaInt32(signedInput, nil)
+    decodedSigned := streamvbyte.DecodeDeltaInt32(encoded, len(signedInput), nil)
 }
 ```
 
