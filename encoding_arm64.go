@@ -22,8 +22,9 @@ func (uintEncodingWrapper) Decode(input []byte, count int, output []uint32, sche
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	sz := svb_decode_u32(input, count, &output[0], byte(scheme))
-	return output[:sz]
+	n := int(svb_decode_u32(input, count, &output[0], byte(scheme)))
+	mustDecodeAll(n, count)
+	return output[:count]
 }
 
 func (uintEncodingWrapper) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
@@ -46,8 +47,9 @@ func (uintEncodingWrapper) DecodeDelta(input []byte, count int, output []uint32,
 	if len(output) < count {
 		output = make([]uint32, count)
 	}
-	sz := svb_delta_decode_u32(input, count, prev, &output[0], byte(scheme))
-	return output[:sz]
+	n := int(svb_delta_decode_u32(input, count, prev, &output[0], byte(scheme)))
+	mustDecodeAll(n, count)
+	return output[:count]
 }
 
 /*
@@ -74,8 +76,9 @@ func (intEncodingWrapper) Decode(input []byte, count int, output []int32, scheme
 	if len(output) < count {
 		output = make([]int32, count)
 	}
-	sz := svb_decode_s32(input, count, &output[0], byte(scheme))
-	return output[:sz]
+	n := int(svb_decode_s32(input, count, &output[0], byte(scheme)))
+	mustDecodeAll(n, count)
+	return output[:count]
 }
 
 func (intEncodingWrapper) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
@@ -98,6 +101,7 @@ func (intEncodingWrapper) DecodeDelta(input []byte, count int, output []int32, p
 	if len(output) < count {
 		output = make([]int32, count)
 	}
-	sz := svb_delta_decode_s32(input, count, prev, &output[0], byte(scheme))
-	return output[:sz]
+	n := int(svb_delta_decode_s32(input, count, prev, &output[0], byte(scheme)))
+	mustDecodeAll(n, count)
+	return output[:count]
 }

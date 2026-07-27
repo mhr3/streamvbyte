@@ -71,24 +71,32 @@ static __m128i svb_write_sse41_delta(uint32_t *out, __m128i vec, __m128i prev)
     return vec;
 }
 
-static const uint8_t *svb_delta_decode_sse4_u32_std(uint32_t *out,
-                                                    const uint8_t *__restrict__ keyPtr,
-                                                    const uint8_t *__restrict__ dataPtr,
-                                                    uint64_t count, uint32_t previous)
+// Decodes groups of 32 values. Updates *outPtr / *keyPtrPtr / *dataPtrPtr.
+// Each iteration may load up to 128 bytes from data.
+static void svb_delta_decode_sse4_u32_std(uint32_t **outPtr,
+                                          const uint8_t **keyPtrPtr,
+                                          const uint8_t **dataPtrPtr,
+                                          const uint8_t *dataEndPtr,
+                                          uint64_t count, uint32_t previous)
 {
-    const uint64_t keybytes = count / 4; // number of key bytes
+    uint32_t *out = *outPtr;
+    const uint8_t *keyPtr = *keyPtrPtr;
+    const uint8_t *dataPtr = *dataPtrPtr;
+    const uint64_t keybytes = count / 4;
     __m128i prev = _mm_set1_epi32((int32_t)previous);
     __m128i data;
 
     const uint64_t *keyPtr64 = (const uint64_t *)keyPtr;
+    // exclusive end of complete 8-key-byte groups; keep pointer aligned
+    const uint64_t *keyEndPtr64 = (const uint64_t *)(keyPtr + (keybytes & ~(uint64_t)7));
 
-    for (const uint64_t *keyBoundPtr64 = (const uint64_t *)(keyPtr + keybytes - 7);
-         keyPtr64 < keyBoundPtr64;
-         keyPtr64++)
+    if ((size_t)(dataEndPtr - dataPtr) >= 128)
     {
+        const uint8_t *dataSimdBound = dataEndPtr - 128;
+        for (; keyPtr64 < keyEndPtr64 && dataPtr <= dataSimdBound; keyPtr64++)
+        {
         uint64_t keys = *keyPtr64;
 
-        // faster 16-bit delta since we only have 8-bit values
         if (!keys)
         { // 32 1-byte ints in a row
             data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr)));
@@ -128,30 +136,37 @@ static const uint8_t *svb_delta_decode_sse4_u32_std(uint32_t *out,
         prev = svb_write_sse41_delta(out + 28, data, prev);
 
         out += 32;
+        }
     }
 
-    return dataPtr;
+    *outPtr = out;
+    *keyPtrPtr = (const uint8_t *)keyPtr64;
+    *dataPtrPtr = dataPtr;
 }
 
-static const uint8_t *svb_delta_decode_sse4_u32_alt(uint32_t *out,
-                                                    const uint8_t *__restrict__ keyPtr,
-                                                    const uint8_t *__restrict__ dataPtr,
-                                                    uint64_t count, uint32_t previous)
+static void svb_delta_decode_sse4_u32_alt(uint32_t **outPtr,
+                                          const uint8_t **keyPtrPtr,
+                                          const uint8_t **dataPtrPtr,
+                                          const uint8_t *dataEndPtr,
+                                          uint64_t count, uint32_t previous)
 {
-    const uint64_t keybytes = count / 4; // number of key bytes
+    uint32_t *out = *outPtr;
+    const uint8_t *keyPtr = *keyPtrPtr;
+    const uint8_t *dataPtr = *dataPtrPtr;
+    const uint64_t keybytes = count / 4;
     __m128i prev = _mm_set1_epi32((int32_t)previous);
     __m128i data;
 
     const uint64_t *keyPtr64 = (const uint64_t *)keyPtr;
+    const uint64_t *keyEndPtr64 = (const uint64_t *)(keyPtr + (keybytes & ~(uint64_t)7));
 
-    for (const uint64_t *keyBoundPtr64 = (const uint64_t *)(keyPtr + keybytes - 7);
-         keyPtr64 < keyBoundPtr64;
-         keyPtr64++)
+    if ((size_t)(dataEndPtr - dataPtr) >= 128)
     {
+        const uint8_t *dataSimdBound = dataEndPtr - 128;
+        for (; keyPtr64 < keyEndPtr64 && dataPtr <= dataSimdBound; keyPtr64++)
+        {
         uint64_t keys = *keyPtr64;
 
-        // faster 16-bit delta since we only have 8-bit values
-        // byte: 0b01010101 = 0x55
         if (keys == 0x5555555555555555ull)
         { // 32 1-byte ints in a row
             data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr)));
@@ -191,15 +206,17 @@ static const uint8_t *svb_delta_decode_sse4_u32_alt(uint32_t *out,
         prev = svb_write_sse41_delta(out + 28, data, prev);
 
         out += 32;
+        }
     }
 
-    return dataPtr;
+    *outPtr = out;
+    *keyPtrPtr = (const uint8_t *)keyPtr64;
+    *dataPtrPtr = dataPtr;
 }
 
 static inline __m128i svb_zigzag_decode_sse4(__m128i val)
 {
-    // SSE4 for: (val >> 1) ^ (0 - (val & 1));
-    __m128i shifted = _mm_srli_epi32(val, 1); // val >> 1
+    __m128i shifted = _mm_srli_epi32(val, 1);
     __m128i ones = _mm_set1_epi32(1);
     __m128i masked = _mm_and_si128(val, ones);
     __m128i negated = _mm_sub_epi32(_mm_setzero_si128(), masked);
@@ -207,21 +224,27 @@ static inline __m128i svb_zigzag_decode_sse4(__m128i val)
     return _mm_xor_si128(shifted, negated);
 }
 
-static const uint8_t *svb_delta_decode_sse4_s32_std(uint32_t *out,
-                                                    const uint8_t *__restrict__ keyPtr,
-                                                    const uint8_t *__restrict__ dataPtr,
-                                                    uint64_t count, int32_t previous)
+static void svb_delta_decode_sse4_s32_std(uint32_t **outPtr,
+                                          const uint8_t **keyPtrPtr,
+                                          const uint8_t **dataPtrPtr,
+                                          const uint8_t *dataEndPtr,
+                                          uint64_t count, int32_t previous)
 {
-    const uint64_t keybytes = count / 4; // number of key bytes
+    uint32_t *out = *outPtr;
+    const uint8_t *keyPtr = *keyPtrPtr;
+    const uint8_t *dataPtr = *dataPtrPtr;
+    const uint64_t keybytes = count / 4;
     __m128i prev = _mm_set1_epi32(previous);
     __m128i data;
 
     const uint64_t *keyPtr64 = (const uint64_t *)keyPtr;
+    const uint64_t *keyEndPtr64 = (const uint64_t *)(keyPtr + (keybytes & ~(uint64_t)7));
 
-    for (const uint64_t *keyBoundPtr64 = (const uint64_t *)(keyPtr + keybytes - 7);
-         keyPtr64 < keyBoundPtr64;
-         keyPtr64++)
+    if ((size_t)(dataEndPtr - dataPtr) >= 128)
     {
+        const uint8_t *dataSimdBound = dataEndPtr - 128;
+        for (; keyPtr64 < keyEndPtr64 && dataPtr <= dataSimdBound; keyPtr64++)
+        {
         uint64_t keys = *keyPtr64;
 
         data = svb_decode_quad(keys & 0x00FF, &dataPtr);
@@ -256,26 +279,35 @@ static const uint8_t *svb_delta_decode_sse4_s32_std(uint32_t *out,
         prev = svb_write_sse41_delta(out + 28, data, prev);
 
         out += 32;
+        }
     }
 
-    return dataPtr;
+    *outPtr = out;
+    *keyPtrPtr = (const uint8_t *)keyPtr64;
+    *dataPtrPtr = dataPtr;
 }
 
-static const uint8_t *svb_delta_decode_sse4_s32_alt(uint32_t *out,
-                                                    const uint8_t *__restrict__ keyPtr,
-                                                    const uint8_t *__restrict__ dataPtr,
-                                                    uint64_t count, int32_t previous)
+static void svb_delta_decode_sse4_s32_alt(uint32_t **outPtr,
+                                          const uint8_t **keyPtrPtr,
+                                          const uint8_t **dataPtrPtr,
+                                          const uint8_t *dataEndPtr,
+                                          uint64_t count, int32_t previous)
 {
-    const uint64_t keybytes = count / 4; // number of key bytes
+    uint32_t *out = *outPtr;
+    const uint8_t *keyPtr = *keyPtrPtr;
+    const uint8_t *dataPtr = *dataPtrPtr;
+    const uint64_t keybytes = count / 4;
     __m128i prev = _mm_set1_epi32(previous);
     __m128i data;
 
     const uint64_t *keyPtr64 = (const uint64_t *)keyPtr;
+    const uint64_t *keyEndPtr64 = (const uint64_t *)(keyPtr + (keybytes & ~(uint64_t)7));
 
-    for (const uint64_t *keyBoundPtr64 = (const uint64_t *)(keyPtr + keybytes - 7);
-         keyPtr64 < keyBoundPtr64;
-         keyPtr64++)
+    if ((size_t)(dataEndPtr - dataPtr) >= 128)
     {
+        const uint8_t *dataSimdBound = dataEndPtr - 128;
+        for (; keyPtr64 < keyEndPtr64 && dataPtr <= dataSimdBound; keyPtr64++)
+        {
         uint64_t keys = *keyPtr64;
 
         data = svb_decode_quad_alt(keys & 0x00FF, &dataPtr);
@@ -310,7 +342,10 @@ static const uint8_t *svb_delta_decode_sse4_s32_alt(uint32_t *out,
         prev = svb_write_sse41_delta(out + 28, data, prev);
 
         out += 32;
+        }
     }
 
-    return dataPtr;
+    *outPtr = out;
+    *keyPtrPtr = (const uint8_t *)keyPtr64;
+    *dataPtrPtr = dataPtr;
 }

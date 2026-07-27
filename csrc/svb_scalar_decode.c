@@ -1,3 +1,5 @@
+#include <stddef.h>
+
 #include "svb_type.h"
 
 static inline uint32_t svb_decode_data_1234(const uint8_t **dataPtrPtr, uint8_t code)
@@ -76,9 +78,20 @@ static inline int32_t svb_zigzag_decode_32(uint32_t val)
     return (val >> 1) ^ (0 - (val & 1));
 }
 
-// FIXME: this isn't checking whether dataPtr is within bounds
+// bytes needed for one value given the 2-bit length code
+static inline uint8_t svb_code_nbytes_1234(uint8_t code)
+{
+    return (uint8_t)(code + 1);
+}
+
+static inline uint8_t svb_code_nbytes_0124(uint8_t code)
+{
+    return code == 3 ? 4 : code;
+}
+
+// returns NULL if there aren't enough input bytes
 static inline const uint8_t *svb_scalar_decode(uint32_t **outPtrPtr, const uint8_t *keyPtr,
-                                               const uint8_t *dataPtr,
+                                               const uint8_t *dataPtr, const uint8_t *dataEndPtr,
                                                uint32_t count, EncodeType encodeType)
 {
     // no reads or writes if no data
@@ -96,21 +109,28 @@ static inline const uint8_t *svb_scalar_decode(uint32_t **outPtrPtr, const uint8
             shift = 0;
             key = *keyPtr++;
         }
+        uint8_t code = (uint8_t)((key >> shift) & 0x3);
+        uint8_t needed = (encodeType == altEncode || encodeType == zzAltEncode)
+                             ? svb_code_nbytes_0124(code)
+                             : svb_code_nbytes_1234(code);
+        if (__builtin_expect((size_t)(dataEndPtr - dataPtr) < needed, 0))
+            return NULL;
+
         uint32_t val;
         switch (encodeType)
         {
         case stdEncode:
-            val = svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3);
+            val = svb_decode_data_1234(&dataPtr, code);
             break;
         case zzEncode:
-            val = svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3);
+            val = svb_decode_data_1234(&dataPtr, code);
             val = (uint32_t)svb_zigzag_decode_32(val);
             break;
         case altEncode:
-            val = svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
+            val = svb_decode_data_0124(&dataPtr, code);
             break;
         case zzAltEncode:
-            val = svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
+            val = svb_decode_data_0124(&dataPtr, code);
             val = (uint32_t)svb_zigzag_decode_32(val);
             break;
         }
@@ -123,9 +143,10 @@ static inline const uint8_t *svb_scalar_decode(uint32_t **outPtrPtr, const uint8
     return dataPtr; // pointer to first unused byte after end
 }
 
-// FIXME: this isn't checking whether dataPtr is within bounds
+// returns NULL if there aren't enough input bytes
 static inline const uint8_t *svb_scalar_delta_decode(uint32_t **outPtrPtr, const uint8_t *keyPtr,
-                                                     const uint8_t *dataPtr, uint32_t count, EncodeType encodeType, uint32_t prev)
+                                                     const uint8_t *dataPtr, const uint8_t *dataEndPtr,
+                                                     uint32_t count, EncodeType encodeType, uint32_t prev)
 {
     // no reads or writes if no data
     if (count == 0 || dataPtr == NULL)
@@ -142,26 +163,33 @@ static inline const uint8_t *svb_scalar_delta_decode(uint32_t **outPtrPtr, const
             shift = 0;
             key = *keyPtr++;
         }
+        uint8_t code = (uint8_t)((key >> shift) & 0x3);
+        uint8_t needed = (encodeType == altEncode || encodeType == zzAltEncode)
+                             ? svb_code_nbytes_0124(code)
+                             : svb_code_nbytes_1234(code);
+        if (__builtin_expect((size_t)(dataEndPtr - dataPtr) < needed, 0))
+            return NULL;
+
         uint32_t val;
         int32_t sVal;
         switch (encodeType)
         {
         case stdEncode:
-            val = svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3);
+            val = svb_decode_data_1234(&dataPtr, code);
             val += prev;
             break;
         case zzEncode:
-            val = svb_decode_data_1234(&dataPtr, (key >> shift) & 0x3);
+            val = svb_decode_data_1234(&dataPtr, code);
             sVal = svb_zigzag_decode_32(val);
             sVal += (int32_t)prev;
             val = (uint32_t)sVal;
             break;
         case altEncode:
-            val = svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
+            val = svb_decode_data_0124(&dataPtr, code);
             val += prev;
             break;
         case zzAltEncode:
-            val = svb_decode_data_0124(&dataPtr, (key >> shift) & 0x3);
+            val = svb_decode_data_0124(&dataPtr, code);
             sVal = svb_zigzag_decode_32(val);
             sVal += (int32_t)prev;
             val = (uint32_t)sVal;

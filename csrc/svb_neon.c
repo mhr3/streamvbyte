@@ -63,14 +63,14 @@ uint64_t svb_decode_u32(const uint8_t *in, const uint64_t in_len, uint64_t in_ca
         return 0;
 
     const EncodeType encodeType = scheme != 0 ? altEncode : stdEncode;
-    const uint8_t *dataStartPtr = &in[(count + 3) / 4];
     const uint8_t *dataEndPtr = in + in_len;
-    const uint8_t *dataNeonBound = in + (in_len - (in_len % 16));
+    // SIMD loads 16 bytes; precompute bound so the hot loop is a single compare
+    const uint8_t *dataSimdBound = (in_len >= 16) ? (dataEndPtr - 16) : in;
     const uint8_t *keyPtr = in;
-    const uint8_t *currPtr = dataStartPtr;
+    const uint8_t *currPtr = &in[(count + 3) / 4];
     const uint32_t *outStartPtr = out;
 
-    for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && currPtr < dataNeonBound; keyPtr++)
+    for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && currPtr <= dataSimdBound; keyPtr++)
     {
         uint32x4_t data = encodeType == stdEncode ? svb_decode_quad(*keyPtr, &currPtr) : svb_decode_quad_alt(*keyPtr, &currPtr);
         vst1q_u32(out, data);
@@ -79,7 +79,7 @@ uint64_t svb_decode_u32(const uint8_t *in, const uint64_t in_len, uint64_t in_ca
     }
     count -= (out - outStartPtr);
 
-    currPtr = svb_scalar_decode(&out, keyPtr, currPtr, count, encodeType);
+    currPtr = svb_scalar_decode(&out, keyPtr, currPtr, dataEndPtr, count, encodeType);
     if (currPtr == NULL)
         return 0;
 
@@ -94,14 +94,13 @@ uint64_t svb_decode_s32(const uint8_t *in, const uint64_t in_len, uint64_t in_ca
         return 0;
 
     const EncodeType encodeType = scheme != 0 ? zzAltEncode : zzEncode;
-    const uint8_t *dataStartPtr = &in[(count + 3) / 4];
     const uint8_t *dataEndPtr = in + in_len;
-    const uint8_t *dataNeonBound = in + (in_len - (in_len % 16));
+    const uint8_t *dataSimdBound = (in_len >= 16) ? (dataEndPtr - 16) : in;
     const uint8_t *keyPtr = in;
-    const uint8_t *currPtr = dataStartPtr;
+    const uint8_t *currPtr = &in[(count + 3) / 4];
     const int32_t *outStartPtr = out;
 
-    for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && currPtr < dataNeonBound; keyPtr++)
+    for (const uint8_t *keyBoundPtr = in + (count / 4); keyPtr < keyBoundPtr && currPtr <= dataSimdBound; keyPtr++)
     {
         uint32x4_t data = encodeType == zzEncode ? svb_decode_quad(*keyPtr, &currPtr) : svb_decode_quad_alt(*keyPtr, &currPtr);
         int32x4_t zzData = svb_zigzag_decode_neon(data);
@@ -111,7 +110,7 @@ uint64_t svb_decode_s32(const uint8_t *in, const uint64_t in_len, uint64_t in_ca
     }
     count -= (out - outStartPtr);
 
-    currPtr = svb_scalar_decode((uint32_t**)&out, keyPtr, currPtr, count, encodeType);
+    currPtr = svb_scalar_decode((uint32_t**)&out, keyPtr, currPtr, dataEndPtr, count, encodeType);
     if (currPtr == NULL)
         return 0;
 
@@ -187,49 +186,51 @@ uint64_t svb_delta_decode_u32(const uint8_t *in, const uint64_t in_len, uint64_t
         return 0;
 
     const EncodeType encodeType = scheme != 0 ? altEncode : stdEncode;
-    const uint8_t *dataStartPtr = &in[(count + 3) / 4];
     const uint8_t *dataEndPtr = in + in_len;
-    const uint8_t *dataNeonBound = in + (in_len - (in_len % 128));
+    // each iteration may load up to 8*16 bytes from data
+    const uint8_t *dataSimdBound = (in_len >= 128) ? (dataEndPtr - 128) : in;
     const uint64_t *keyPtr64 = (const uint64_t *)in;
-    const uint8_t *currPtr = dataStartPtr;
+    const uint8_t *currPtr = &in[(count + 3) / 4];
     const uint32_t *outStartPtr = out;
 
     uint32x4_t previous = vdupq_n_u32(prev);
 
-    // unrolling the loop to process 8 bytes at a time speeds it up by about 33%
-    for (const uint64_t *keyBoundPtr64 = (const uint64_t *)(in + (count / 4) - 7); keyPtr64 < keyBoundPtr64 && currPtr < dataNeonBound; keyPtr64++)
+    // exclusive end of complete 8-key-byte groups (32 values); keep pointer aligned
+    const uint64_t keyBytes = (uint64_t)(count / 4);
+    const uint64_t *keyEndPtr64 = (const uint64_t *)(in + (keyBytes & ~(uint64_t)7));
+    for (; keyPtr64 < keyEndPtr64 && currPtr <= dataSimdBound; keyPtr64++)
     {
-        uint32x4_t data;
-        uint64_t keys = *keyPtr64;
+            uint32x4_t data;
+            uint64_t keys = *keyPtr64;
 
-        data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        previous = svb_write_u32_delta(out, data, previous);
-        keys >>= 8;
-        data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        previous = svb_write_u32_delta(out+4, data, previous);
+            data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            previous = svb_write_u32_delta(out, data, previous);
+            keys >>= 8;
+            data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            previous = svb_write_u32_delta(out+4, data, previous);
 
-        keys >>= 8;
-        data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        previous = svb_write_u32_delta(out+8, data, previous);
-        keys >>= 8;
-        data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        previous = svb_write_u32_delta(out+12, data, previous);
+            keys >>= 8;
+            data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            previous = svb_write_u32_delta(out+8, data, previous);
+            keys >>= 8;
+            data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            previous = svb_write_u32_delta(out+12, data, previous);
 
-        keys >>= 8;
-        data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        previous = svb_write_u32_delta(out+16, data, previous);
-        keys >>= 8;
-        data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        previous = svb_write_u32_delta(out+20, data, previous);
+            keys >>= 8;
+            data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            previous = svb_write_u32_delta(out+16, data, previous);
+            keys >>= 8;
+            data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            previous = svb_write_u32_delta(out+20, data, previous);
 
-        keys >>= 8;
-        data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        previous = svb_write_u32_delta(out+24, data, previous);
-        keys >>= 8;
-        data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        previous = svb_write_u32_delta(out+28, data, previous);
+            keys >>= 8;
+            data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            previous = svb_write_u32_delta(out+24, data, previous);
+            keys >>= 8;
+            data = encodeType == stdEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            previous = svb_write_u32_delta(out+28, data, previous);
 
-        out += 32; // 128-byte shift
+            out += 32; // 128-byte shift
     }
     count -= (out - outStartPtr);
 
@@ -238,7 +239,7 @@ uint64_t svb_delta_decode_u32(const uint8_t *in, const uint64_t in_len, uint64_t
 
     const uint8_t *keyPtr = (const uint8_t *)keyPtr64;
 
-    currPtr = svb_scalar_delta_decode(&out, keyPtr, currPtr, count, encodeType, prev);
+    currPtr = svb_scalar_delta_decode(&out, keyPtr, currPtr, dataEndPtr, count, encodeType, prev);
     if (currPtr == NULL)
         return 0;
 
@@ -253,58 +254,58 @@ uint64_t svb_delta_decode_s32(const uint8_t *in, const uint64_t in_len, uint64_t
         return 0;
 
     const EncodeType encodeType = scheme != 0 ? zzAltEncode : zzEncode;
-    const uint8_t *dataStartPtr = &in[(count + 3) / 4];
     const uint8_t *dataEndPtr = in + in_len;
-    const uint8_t *dataNeonBound = in + (in_len - (in_len % 128));
+    const uint8_t *dataSimdBound = (in_len >= 128) ? (dataEndPtr - 128) : in;
     const uint64_t *keyPtr64 = (const uint64_t *)in;
-    const uint8_t *currPtr = dataStartPtr;
+    const uint8_t *currPtr = &in[(count + 3) / 4];
     const int32_t *outStartPtr = out;
 
     int32x4_t previous = vdupq_n_s32(prev);
 
-    // unrolling the loop to process 8 bytes at a time speeds it up by about 33%
-    for (const uint64_t *keyBoundPtr64 = (const uint64_t *)(in + (count / 4) - 7); keyPtr64 < keyBoundPtr64 && currPtr < dataNeonBound; keyPtr64++)
+    const uint64_t keyBytes = (uint64_t)(count / 4);
+    const uint64_t *keyEndPtr64 = (const uint64_t *)(in + (keyBytes & ~(uint64_t)7));
+    for (; keyPtr64 < keyEndPtr64 && currPtr <= dataSimdBound; keyPtr64++)
     {
-        uint32x4_t data;
-        int32x4_t zzData;
-        uint64_t keys = *keyPtr64;
+            uint32x4_t data;
+            int32x4_t zzData;
+            uint64_t keys = *keyPtr64;
 
-        data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        zzData = svb_zigzag_decode_neon(data);
-        previous = svb_write_s32_delta(out, zzData, previous);
-        keys >>= 8;
-        data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        zzData = svb_zigzag_decode_neon(data);
-        previous = svb_write_s32_delta(out+4, zzData, previous);
+            data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            zzData = svb_zigzag_decode_neon(data);
+            previous = svb_write_s32_delta(out, zzData, previous);
+            keys >>= 8;
+            data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            zzData = svb_zigzag_decode_neon(data);
+            previous = svb_write_s32_delta(out+4, zzData, previous);
 
-        keys >>= 8;
-        data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        zzData = svb_zigzag_decode_neon(data);
-        previous = svb_write_s32_delta(out+8, zzData, previous);
-        keys >>= 8;
-        data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        zzData = svb_zigzag_decode_neon(data);
-        previous = svb_write_s32_delta(out+12, zzData, previous);
+            keys >>= 8;
+            data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            zzData = svb_zigzag_decode_neon(data);
+            previous = svb_write_s32_delta(out+8, zzData, previous);
+            keys >>= 8;
+            data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            zzData = svb_zigzag_decode_neon(data);
+            previous = svb_write_s32_delta(out+12, zzData, previous);
 
-        keys >>= 8;
-        data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        zzData = svb_zigzag_decode_neon(data);
-        previous = svb_write_s32_delta(out+16, zzData, previous);
-        keys >>= 8;
-        data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        zzData = svb_zigzag_decode_neon(data);
-        previous = svb_write_s32_delta(out+20, zzData, previous);
+            keys >>= 8;
+            data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            zzData = svb_zigzag_decode_neon(data);
+            previous = svb_write_s32_delta(out+16, zzData, previous);
+            keys >>= 8;
+            data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            zzData = svb_zigzag_decode_neon(data);
+            previous = svb_write_s32_delta(out+20, zzData, previous);
 
-        keys >>= 8;
-        data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        zzData = svb_zigzag_decode_neon(data);
-        previous = svb_write_s32_delta(out+24, zzData, previous);
-        keys >>= 8;
-        data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
-        zzData = svb_zigzag_decode_neon(data);
-        previous = svb_write_s32_delta(out+28, zzData, previous);
+            keys >>= 8;
+            data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            zzData = svb_zigzag_decode_neon(data);
+            previous = svb_write_s32_delta(out+24, zzData, previous);
+            keys >>= 8;
+            data = encodeType == zzEncode ? svb_decode_quad((uint8_t)keys, &currPtr) : svb_decode_quad_alt((uint8_t)keys, &currPtr);
+            zzData = svb_zigzag_decode_neon(data);
+            previous = svb_write_s32_delta(out+28, zzData, previous);
 
-        out += 32; // 128-byte shift
+            out += 32; // 128-byte shift
     }
     count -= (out - outStartPtr);
 
@@ -313,7 +314,7 @@ uint64_t svb_delta_decode_s32(const uint8_t *in, const uint64_t in_len, uint64_t
 
     const uint8_t *keyPtr = (const uint8_t *)keyPtr64;
 
-    currPtr = svb_scalar_delta_decode((uint32_t**)&out, keyPtr, currPtr, count, encodeType, (uint32_t)prev);
+    currPtr = svb_scalar_delta_decode((uint32_t**)&out, keyPtr, currPtr, dataEndPtr, count, encodeType, (uint32_t)prev);
     if (currPtr == NULL)
         return 0;
 

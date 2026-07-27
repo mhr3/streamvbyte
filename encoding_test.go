@@ -155,6 +155,68 @@ func TestEncodeDecode(t *testing.T) {
 	}
 }
 
+// Truncated inputs must panic (matching pure-Go slice bounds behavior).
+func TestDecodeTruncatedInput(t *testing.T) {
+	sizes := []int{1, 3, 4, 7, 16, 31, 32, 33, 64, 100, 127, 128, 129, 256, 1000}
+
+	for _, n := range sizes {
+		input := make([]uint32, n)
+		for i := range input {
+			input[i] = uint32(i*10007 + 1) // avoid trailing zeros (0124 can encode those with no data bytes)
+		}
+		inputSigned := make([]int32, n)
+		for i, v := range input {
+			inputSigned[i] = int32(v) - 500000
+		}
+
+		for _, scheme := range []Scheme{Scheme1234, Scheme0124} {
+			cases := []struct {
+				name string
+				enc  []byte
+				dec  func([]byte) int
+			}{
+				{
+					name: "uint32",
+					enc:  EncodeUint32(input, &EncodeOptions[uint32]{Scheme: scheme}),
+					dec: func(b []byte) int {
+						return len(DecodeUint32(b, n, &DecodeOptions[uint32]{Scheme: scheme}))
+					},
+				},
+				{
+					name: "int32",
+					enc:  EncodeInt32(inputSigned, &EncodeOptions[int32]{Scheme: scheme}),
+					dec: func(b []byte) int {
+						return len(DecodeInt32(b, n, &DecodeOptions[int32]{Scheme: scheme}))
+					},
+				},
+				{
+					name: "delta-uint32",
+					enc:  DeltaEncodeUint32(input, &EncodeOptions[uint32]{Scheme: scheme}),
+					dec: func(b []byte) int {
+						return len(DeltaDecodeUint32(b, n, &DecodeOptions[uint32]{Scheme: scheme}))
+					},
+				},
+				{
+					name: "delta-int32",
+					enc:  DeltaEncodeInt32(inputSigned, &EncodeOptions[int32]{Scheme: scheme}),
+					dec: func(b []byte) int {
+						return len(DeltaDecodeInt32(b, n, &DecodeOptions[int32]{Scheme: scheme}))
+					},
+				},
+			}
+
+			for _, tc := range cases {
+				require.Equal(t, n, tc.dec(tc.enc), "full decode %s scheme=%s n=%d", tc.name, scheme, n)
+				for cut := 0; cut < len(tc.enc); cut++ {
+					b := tc.enc[:cut]
+					require.Panics(t, func() { tc.dec(b) },
+						"truncated decode %s scheme=%s n=%d cut=%d/%d", tc.name, scheme, n, cut, len(tc.enc))
+				}
+			}
+		}
+	}
+}
+
 func TestLargeDeltas(t *testing.T) {
 	input := []uint32{0, 42, math.MaxUint32, 42, 0, 42, 0, 42, 0, 42, 0, 42}
 	encoded := DeltaEncodeUint32(input, nil)
