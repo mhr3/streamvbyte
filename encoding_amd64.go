@@ -47,11 +47,11 @@ func (uintEncodingWrapper) Decode(input []byte, count int, output []uint32, sche
 		case Scheme0124:
 			n = int(svb_decode_u32_alt(input, count, &output[0]))
 		}
+		mustDecodeAll(n, count)
 	} else {
 		decodeScalar(output, input, scheme)
-		n = count
 	}
-	return output[:n]
+	return output[:count]
 }
 
 func (uintEncodingWrapper) EncodeDelta(input []uint32, output []byte, prev uint32, scheme Scheme) []byte {
@@ -93,11 +93,11 @@ func (uintEncodingWrapper) DecodeDelta(input []byte, count int, output []uint32,
 		case Scheme0124:
 			n = int(svb_delta_decode_u32_alt(input, count, prev, &output[0]))
 		}
+		mustDecodeAll(n, count)
 	} else {
 		decodeDeltaScalar(output, input, prev, scheme)
-		n = count
 	}
-	return output[:n]
+	return output[:count]
 }
 
 /*
@@ -143,11 +143,11 @@ func (intEncodingWrapper) Decode(input []byte, count int, output []int32, scheme
 		case Scheme0124:
 			n = int(svb_decode_s32_alt(input, count, &output[0]))
 		}
+		mustDecodeAll(n, count)
 	} else {
 		decodeScalarZigzag(output, input, scheme)
-		n = count
 	}
-	return output[:n]
+	return output[:count]
 }
 
 func (intEncodingWrapper) EncodeDelta(input []int32, output []byte, prev int32, scheme Scheme) []byte {
@@ -189,9 +189,9 @@ func (intEncodingWrapper) DecodeDelta(input []byte, count int, output []int32, p
 		case Scheme0124:
 			n = int(svb_delta_decode_s32_alt(input, count, prev, &output[0]))
 		}
+		mustDecodeAll(n, count)
 	} else {
 		decodeDeltaScalarZigzag(output, input, prev, scheme)
-		n = count
 	}
-	return output[:n]
+	return output[:count]
 }
