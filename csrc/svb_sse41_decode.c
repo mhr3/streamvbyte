@@ -95,47 +95,47 @@ static void svb_delta_decode_sse4_u32_std(uint32_t **outPtr,
         const uint8_t *dataSimdBound = dataEndPtr - 128;
         for (; keyPtr64 < keyEndPtr64 && dataPtr <= dataSimdBound; keyPtr64++)
         {
-        uint64_t keys = *keyPtr64;
+            uint64_t keys = *keyPtr64;
 
-        if (!keys)
-        { // 32 1-byte ints in a row
-            data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr)));
-            prev = svb_write_16bit_sse41_delta(out, data, prev);
-            data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 8)));
-            prev = svb_write_16bit_sse41_delta(out + 8, data, prev);
-            data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 16)));
-            prev = svb_write_16bit_sse41_delta(out + 16, data, prev);
-            data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 24)));
-            prev = svb_write_16bit_sse41_delta(out + 24, data, prev);
+            if (!keys)
+            { // 32 1-byte ints in a row
+                data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr)));
+                prev = svb_write_16bit_sse41_delta(out, data, prev);
+                data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 8)));
+                prev = svb_write_16bit_sse41_delta(out + 8, data, prev);
+                data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 16)));
+                prev = svb_write_16bit_sse41_delta(out + 16, data, prev);
+                data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 24)));
+                prev = svb_write_16bit_sse41_delta(out + 24, data, prev);
+                out += 32;
+                dataPtr += 32;
+                continue;
+            }
+
+            data = svb_decode_quad(keys & 0x00FF, &dataPtr);
+            prev = svb_write_sse41_delta(out, data, prev);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            prev = svb_write_sse41_delta(out + 4, data, prev);
+
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0x00FF), &dataPtr);
+            prev = svb_write_sse41_delta(out + 8, data, prev);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            prev = svb_write_sse41_delta(out + 12, data, prev);
+
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0x00FF), &dataPtr);
+            prev = svb_write_sse41_delta(out + 16, data, prev);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            prev = svb_write_sse41_delta(out + 20, data, prev);
+
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0x00FF), &dataPtr);
+            prev = svb_write_sse41_delta(out + 24, data, prev);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            prev = svb_write_sse41_delta(out + 28, data, prev);
+
             out += 32;
-            dataPtr += 32;
-            continue;
-        }
-
-        data = svb_decode_quad(keys & 0x00FF, &dataPtr);
-        prev = svb_write_sse41_delta(out, data, prev);
-        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
-        prev = svb_write_sse41_delta(out + 4, data, prev);
-
-        keys >>= 16;
-        data = svb_decode_quad((keys & 0x00FF), &dataPtr);
-        prev = svb_write_sse41_delta(out + 8, data, prev);
-        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
-        prev = svb_write_sse41_delta(out + 12, data, prev);
-
-        keys >>= 16;
-        data = svb_decode_quad((keys & 0x00FF), &dataPtr);
-        prev = svb_write_sse41_delta(out + 16, data, prev);
-        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
-        prev = svb_write_sse41_delta(out + 20, data, prev);
-
-        keys >>= 16;
-        data = svb_decode_quad((keys & 0x00FF), &dataPtr);
-        prev = svb_write_sse41_delta(out + 24, data, prev);
-        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
-        prev = svb_write_sse41_delta(out + 28, data, prev);
-
-        out += 32;
         }
     }
 
@@ -165,47 +165,47 @@ static void svb_delta_decode_sse4_u32_alt(uint32_t **outPtr,
         const uint8_t *dataSimdBound = dataEndPtr - 128;
         for (; keyPtr64 < keyEndPtr64 && dataPtr <= dataSimdBound; keyPtr64++)
         {
-        uint64_t keys = *keyPtr64;
+            uint64_t keys = *keyPtr64;
 
-        if (keys == 0x5555555555555555ull)
-        { // 32 1-byte ints in a row
-            data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr)));
-            prev = svb_write_16bit_sse41_delta(out, data, prev);
-            data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 8)));
-            prev = svb_write_16bit_sse41_delta(out + 8, data, prev);
-            data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 16)));
-            prev = svb_write_16bit_sse41_delta(out + 16, data, prev);
-            data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 24)));
-            prev = svb_write_16bit_sse41_delta(out + 24, data, prev);
+            if (keys == 0x5555555555555555ull)
+            { // 32 1-byte ints in a row
+                data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr)));
+                prev = svb_write_16bit_sse41_delta(out, data, prev);
+                data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 8)));
+                prev = svb_write_16bit_sse41_delta(out + 8, data, prev);
+                data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 16)));
+                prev = svb_write_16bit_sse41_delta(out + 16, data, prev);
+                data = _mm_cvtepu8_epi16(_mm_lddqu_si128((const __m128i *)(dataPtr + 24)));
+                prev = svb_write_16bit_sse41_delta(out + 24, data, prev);
+                out += 32;
+                dataPtr += 32;
+                continue;
+            }
+
+            data = svb_decode_quad_alt(keys & 0x00FF, &dataPtr);
+            prev = svb_write_sse41_delta(out, data, prev);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            prev = svb_write_sse41_delta(out + 4, data, prev);
+
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
+            prev = svb_write_sse41_delta(out + 8, data, prev);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            prev = svb_write_sse41_delta(out + 12, data, prev);
+
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
+            prev = svb_write_sse41_delta(out + 16, data, prev);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            prev = svb_write_sse41_delta(out + 20, data, prev);
+
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
+            prev = svb_write_sse41_delta(out + 24, data, prev);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            prev = svb_write_sse41_delta(out + 28, data, prev);
+
             out += 32;
-            dataPtr += 32;
-            continue;
-        }
-
-        data = svb_decode_quad_alt(keys & 0x00FF, &dataPtr);
-        prev = svb_write_sse41_delta(out, data, prev);
-        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
-        prev = svb_write_sse41_delta(out + 4, data, prev);
-
-        keys >>= 16;
-        data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
-        prev = svb_write_sse41_delta(out + 8, data, prev);
-        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
-        prev = svb_write_sse41_delta(out + 12, data, prev);
-
-        keys >>= 16;
-        data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
-        prev = svb_write_sse41_delta(out + 16, data, prev);
-        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
-        prev = svb_write_sse41_delta(out + 20, data, prev);
-
-        keys >>= 16;
-        data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
-        prev = svb_write_sse41_delta(out + 24, data, prev);
-        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
-        prev = svb_write_sse41_delta(out + 28, data, prev);
-
-        out += 32;
         }
     }
 
@@ -245,40 +245,40 @@ static void svb_delta_decode_sse4_s32_std(uint32_t **outPtr,
         const uint8_t *dataSimdBound = dataEndPtr - 128;
         for (; keyPtr64 < keyEndPtr64 && dataPtr <= dataSimdBound; keyPtr64++)
         {
-        uint64_t keys = *keyPtr64;
+            uint64_t keys = *keyPtr64;
 
-        data = svb_decode_quad(keys & 0x00FF, &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 0, data, prev);
-        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 4, data, prev);
+            data = svb_decode_quad(keys & 0x00FF, &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 0, data, prev);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 4, data, prev);
 
-        keys >>= 16;
-        data = svb_decode_quad((keys & 0x00FF), &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 8, data, prev);
-        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 12, data, prev);
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0x00FF), &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 8, data, prev);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 12, data, prev);
 
-        keys >>= 16;
-        data = svb_decode_quad((keys & 0x00FF), &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 16, data, prev);
-        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 20, data, prev);
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0x00FF), &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 16, data, prev);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 20, data, prev);
 
-        keys >>= 16;
-        data = svb_decode_quad((keys & 0x00FF), &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 24, data, prev);
-        data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 28, data, prev);
+            keys >>= 16;
+            data = svb_decode_quad((keys & 0x00FF), &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 24, data, prev);
+            data = svb_decode_quad((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 28, data, prev);
 
-        out += 32;
+            out += 32;
         }
     }
 
@@ -308,40 +308,40 @@ static void svb_delta_decode_sse4_s32_alt(uint32_t **outPtr,
         const uint8_t *dataSimdBound = dataEndPtr - 128;
         for (; keyPtr64 < keyEndPtr64 && dataPtr <= dataSimdBound; keyPtr64++)
         {
-        uint64_t keys = *keyPtr64;
+            uint64_t keys = *keyPtr64;
 
-        data = svb_decode_quad_alt(keys & 0x00FF, &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 0, data, prev);
-        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 4, data, prev);
+            data = svb_decode_quad_alt(keys & 0x00FF, &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 0, data, prev);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 4, data, prev);
 
-        keys >>= 16;
-        data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 8, data, prev);
-        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 12, data, prev);
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 8, data, prev);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 12, data, prev);
 
-        keys >>= 16;
-        data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 16, data, prev);
-        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 20, data, prev);
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 16, data, prev);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 20, data, prev);
 
-        keys >>= 16;
-        data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 24, data, prev);
-        data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
-        data = svb_zigzag_decode_sse4(data);
-        prev = svb_write_sse41_delta(out + 28, data, prev);
+            keys >>= 16;
+            data = svb_decode_quad_alt((keys & 0x00FF), &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 24, data, prev);
+            data = svb_decode_quad_alt((keys & 0xFF00) >> 8, &dataPtr);
+            data = svb_zigzag_decode_sse4(data);
+            prev = svb_write_sse41_delta(out + 28, data, prev);
 
-        out += 32;
+            out += 32;
         }
     }
 

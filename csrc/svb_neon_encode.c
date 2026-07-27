@@ -18,7 +18,7 @@ static inline size_t svb_encode_quad(const uint32x4_t data, uint8_t *__restrict_
     uint32x4_t clzbytes = vshrq_n_u32(vclzq_u32(data), 3);
     uint32x4_t lanecodes = vqsubq_u32(vdupq_n_u32(3), clzbytes);
     uint8x8_t lobytes = vqtbl1_u8(vreinterpretq_u8_u32(lanecodes), gatherlo);
-    uint32x2_t mulshift = vreinterpret_u32_u8(lobytes);  // [0x(l3 l2 l1 l0), 0x(l3 l2 l1 l0)]
+    uint32x2_t mulshift = vreinterpret_u32_u8(lobytes); // [0x(l3 l2 l1 l0), 0x(l3 l2 l1 l0)]
 
     uint32_t codeAndLength[2];
     vst1_u32(codeAndLength, vmul_u32(mulshift, aggregators));
@@ -41,10 +41,10 @@ static inline size_t svb_encode_quad_alt(const uint32x4_t data, uint8_t *__restr
     const uint8x16_t lanecodesTbl = vld1q_u8(pAltLaneCodes);
 
     // lane code is: min(4 - (clz(data)/8)), 3)
-    uint32x4_t clzbytes = vshrq_n_u32(vclzq_u32(data), 3);      // 0 -> 4, <256 -> 3, <65536 -> 2, <16777216 -> 1, else 0
-    //uint32x4_t lanecodes = vsubq_u32(vdupq_n_u32(4), clzbytes); // 4 -> 0, 3 -> 1, 2 -> 2, 1 -> 3, 0 -> 4
-    //lanecodes = vminq_u32(lanecodes, vdupq_n_u32(3));
-    // using a table saves one instruction
+    uint32x4_t clzbytes = vshrq_n_u32(vclzq_u32(data), 3); // 0 -> 4, <256 -> 3, <65536 -> 2, <16777216 -> 1, else 0
+    // uint32x4_t lanecodes = vsubq_u32(vdupq_n_u32(4), clzbytes); // 4 -> 0, 3 -> 1, 2 -> 2, 1 -> 3, 0 -> 4
+    // lanecodes = vminq_u32(lanecodes, vdupq_n_u32(3));
+    //  using a table saves one instruction
     uint8x16_t lanecodes = vqtbl1q_u8(lanecodesTbl, vreinterpretq_u8_u32(clzbytes));
     uint8x8_t lobytes = vqtbl1_u8(lanecodes, gatherlo);
     uint32x2_t mulshift = vreinterpret_u32_u8(lobytes); // [0x(l3 l2 l1 l0), 0x(l3 l2 l1 l0)]
@@ -54,7 +54,8 @@ static inline size_t svb_encode_quad_alt(const uint32x4_t data, uint8_t *__restr
     uint8_t code = (uint8_t)(codes32 >> 24);
 
     *outCode = code;
-    if (code == 0) return 0;
+    if (code == 0)
+        return 0;
 
     // no multiplication trick here, use the table
     size_t length = lengthTable_0124[code];
